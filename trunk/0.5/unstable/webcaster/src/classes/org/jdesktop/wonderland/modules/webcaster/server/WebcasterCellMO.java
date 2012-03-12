@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -37,7 +37,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
  */
 public class WebcasterCellMO extends CellMO
 {
-    private transient boolean isWebcasting;
+    private boolean isWebcasting;
     private String streamID;
     
     public WebcasterCellMO(){
@@ -58,6 +58,9 @@ public class WebcasterCellMO extends CellMO
                     (ChannelComponentMO.ComponentMessageReceiver) new WebcasterCellMOMessageReceiver(this));
         } else {
             getChannel().removeMessageReceiver(WebcasterCellChangeMessage.class);
+            isWebcasting = false;
+            WebcasterCellChangeMessage wccm = new WebcasterCellChangeMessage(isWebcasting);
+            getChannel().sendAll(null, wccm);
         }
     }
 

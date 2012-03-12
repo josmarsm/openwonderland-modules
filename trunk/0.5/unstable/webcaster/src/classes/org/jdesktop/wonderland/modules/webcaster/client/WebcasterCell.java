@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -23,11 +23,11 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
-import org.jdesktop.wonderland.modules.webcaster.client.jme.cellrenderer.WebcasterCellRenderer;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -35,7 +35,6 @@ import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.ChannelComponent;
 import org.jdesktop.wonderland.client.cell.ChannelComponent.ComponentMessageReceiver;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
-import org.jdesktop.wonderland.client.cell.asset.AssetUtils;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -48,6 +47,7 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.utils.AudioResource;
+import org.jdesktop.wonderland.video.client.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -85,6 +85,8 @@ public class WebcasterCell extends Cell {
         SERVER_URL = host;
         //logger.warning("SERVER_URL: " + SERVER_URL);
     }
+    private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle");
+
     private WebcasterCellRenderer renderer = null;
     @UsesCellComponent
     private ContextMenuComponent contextComp = null;
@@ -92,8 +94,9 @@ public class WebcasterCell extends Cell {
     private HUD mainHUD;
     private HUDComponent hudComponent;
     private WebcasterControlPanel controlPanel;
-    private boolean localWebcasting = false;
-    private boolean remoteWebcasting = false;
+
+    private boolean localWebcasting;
+    private boolean remoteWebcasting;
     private RTMPOut streamOutput;
     private AudioResource startSound = null;
     /** the message handler, or null if no message handler is registered */
@@ -107,12 +110,10 @@ public class WebcasterCell extends Cell {
 
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);
-        //TODO
-        try {
-            startSound = new AudioResource(AssetUtils.getAssetURL("wla://webcaster/startsound.au"));
-        } catch (MalformedURLException e) {
-            logger.log(Level.SEVERE, "Failed to get startsound", e);
-        }
+        localWebcasting = false;
+        remoteWebcasting = false;
+        URL url = WebcasterCell.class.getResource("resources/startsound.au");
+        startSound = new AudioResource(url);
     }
 
     public void showControlPanel() {
@@ -133,7 +134,7 @@ public class WebcasterCell extends Cell {
     }
 
     public void setWebcasting(boolean isWebcasting) {
-        logger.warning("isWebcasting: " + isWebcasting);
+        logger.warning("webcasting: " + isWebcasting);
         //TODO need to check if remote webcasting
         renderer.setButtonWebcastingState(isWebcasting);
         if (!isWebcasting & localWebcasting) {
@@ -147,21 +148,18 @@ public class WebcasterCell extends Cell {
 
         startSound.play();
         localWebcasting = isWebcasting;
-        //TODO
         WebcasterCellChangeMessage msg = new WebcasterCellChangeMessage(localWebcasting);
         sendCellMessage(msg);
     }
 
-    public boolean isWebcasting() {
+    public boolean getWebcasting(){
         return localWebcasting;
     }
 
     public void write(BufferedImage frame) {
         if (streamOutput == null) {
-            streamOutput = new RTMPOut(SERVER_URL, controlPanel.getStreamName(), controlPanel.getAudioState());
-            logger.warning("creating new streamOutput: " + streamOutput);
+            streamOutput = new RTMPOut("rtmp://" + SERVER_URL + ":1935/live/" + streamID);
         }
-
         streamOutput.write(frame);
     }
 
@@ -182,7 +180,7 @@ public class WebcasterCell extends Cell {
                                     controlPanel = new WebcasterControlPanel(WebcasterCell.this, streamID);
                                     hudComponent = mainHUD.createComponent(controlPanel);
                                     hudComponent.setPreferredLocation(Layout.NORTHWEST);
-                                    hudComponent.setName("Webcaster Control Panel");
+                                    hudComponent.setName(bundle.getString("WEBCASTER CONTROL PANEL"));
                                     mainHUD.addComponent(hudComponent);
                                 }
                             });
@@ -195,7 +193,7 @@ public class WebcasterCell extends Cell {
                         menuFactory = new ContextMenuFactorySPI() {
 
                             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                return new ContextMenuItem[]{new SimpleContextMenuItem("Open Control Panel", new ContextMenuActionListener() {
+                                return new ContextMenuItem[]{new SimpleContextMenuItem(bundle.getString("OPEN CONTROL PANEL"), new ContextMenuActionListener() {
 
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
@@ -210,8 +208,8 @@ public class WebcasterCell extends Cell {
                                             }
                                         }
                                     }),
-                                            new SimpleContextMenuItem("Open Web Browser", new ContextMenuActionListener() {
 
+                                    new SimpleContextMenuItem(bundle.getString("OPEN BROWSER VIEWER"), new ContextMenuActionListener(){
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
                                                 SwingUtilities.invokeLater(new Runnable() {
@@ -318,7 +316,7 @@ public class WebcasterCell extends Cell {
                 setRemoteWebcasting(wccm.isWebcasting());
 
             } else {
-                logger.warning("it's from me to me, ignored");
+                //logger.warning("it's from me to me!");
             }
         }
     }

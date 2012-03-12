@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -28,7 +28,7 @@ public class WebcasterCellClientState extends CellClientState
 {
     private final boolean isWebcasting;
     private final String streamID;
-    
+
     public WebcasterCellClientState(boolean isWebcasting, String streamID){
         super();
         this.isWebcasting = isWebcasting;
