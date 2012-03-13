@@ -47,7 +47,6 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.scenemanager.event.ContextEvent;
 import org.jdesktop.wonderland.client.utils.AudioResource;
-import org.jdesktop.wonderland.video.client.VideoLibraryLoader;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
@@ -101,12 +100,7 @@ public class WebcasterCell extends Cell {
     private AudioResource startSound = null;
     /** the message handler, or null if no message handler is registered */
     private WebcasterCellMessageReceiver receiver = null;
-    private String streamID = "";
-
-    enum AudioEnv {
-
-        OFF, MIC_ONLY, ENVIROMENT_ONLY, BOTH;
-    }
+    private int streamID;
 
     public WebcasterCell(CellID cellID, CellCache cellCache) {
         super(cellID, cellCache);

@@ -9,19 +9,27 @@
     <property name="module.src" value="${module.plugin.src}"/>
     <property name="module.jarname" value="${module.name}"/>
     
+    
+    
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
     <pathconvert property="module-server.classpath">
             <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
             <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
             <path location="${modules.dir}/tools/audio-manager/lib/voip.jar"/>
+            <path location="${modules.dir}/tools/phone/build/lib/server/phone-server.jar"/>
     </pathconvert>
-    
-    <!-- import common build file -->
-    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/tools/phone/build/lib/server/phone-server.jar"/>
+    </pathconvert>
 
     <pathconvert property="module-client.classpath">
             <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
             <path location="${modules.dir}/foundation/hud/build/client/hud-client.jar"/>
             <path location="${wonderland.dir}/../wonderland-video/build/lib/wonderland-video.jar"/>
+            <path location="${modules.dir}/tools/phone/build/lib/client/phone-client.jar"/>
     </pathconvert>
        
    <!-- import web build file -->

@@ -39,10 +39,10 @@ public class WebcasterControlPanel extends javax.swing.JPanel {
     /** Creates new form WebcasterControlPanel
      * @param cell the webcaster cell controlled by this panel
      */
-    public WebcasterControlPanel(WebcasterCell cell, String streamID) {
+    public WebcasterControlPanel(WebcasterCell cell, int streamID) {
         this.webcasterCell = cell;
         initComponents();
-        streamField.setText(streamID);
+        streamField.setText(String.valueOf(streamID));
         previewPanel.add(cell.getCaptureComponent(), BorderLayout.CENTER);
         setRemoteWebcasting(cell.isRemoteWebcasting());
     }

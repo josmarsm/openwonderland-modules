@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011-12, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -23,31 +23,45 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.common.cell.state.annotation.ServerState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 
 /**
  * @author Christian O'Connell
+ * @author Bernard Horan
  */
 @XmlRootElement(name="webcaster-cell")
 @ServerState
-public class WebcasterCellServerState extends CellServerState
-{
-    public WebcasterCellServerState(){
+public class WebcasterCellServerState extends CellServerState {
+    private PhoneCellServerState phoneCellState;
+
+    public WebcasterCellServerState() {
+        super();
     }
 
-    @XmlElement(name="stream-id")
-    private static String streamID = "0";
+    @XmlElement(name = "stream-id")
+    private int streamID;
 
-    public void setStreamID(String streamID){
-        this.streamID = streamID;
+    public WebcasterCellServerState(int i) {
+        this();
+        streamID = i;
     }
 
-    @XmlTransient public String getStreamID() {
-        setStreamID(Integer.toString(Integer.parseInt(streamID)+1));
+    @XmlTransient
+    public int getStreamID() {
         return streamID;
     }
-    
+
     @Override
     public String getServerClassName() {
         return "org.jdesktop.wonderland.modules.webcaster.server.WebcasterCellMO";
+    }
+
+    @XmlElement(name = "phone-cell")
+    public PhoneCellServerState getPhoneCellState() {
+        return phoneCellState;
+    }
+
+    public void setPhoneCellState(PhoneCellServerState phoneCellState) {
+        this.phoneCellState = phoneCellState;
     }
 }
