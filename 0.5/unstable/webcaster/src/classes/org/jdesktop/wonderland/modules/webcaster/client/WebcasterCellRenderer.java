@@ -131,6 +131,8 @@ public class WebcasterCellRenderer extends BasicRenderer implements RenderUpdate
         CameraNode cn = new CameraNode("MyCamera", null);
         Node cameraSG = new Node("cameraSG");
         cameraSG.attachChild(cn);
+        //Move the camera so that it's in the right position
+        cameraSG.setLocalTranslation(0, 0.45f, -0.85f);
 
         CameraComponent cc = wm.getRenderManager().createCameraComponent(cameraSG, cn, IMAGE_WIDTH, IMAGE_HEIGHT, 45.0f, (float) IMAGE_WIDTH/ (float) IMAGE_HEIGHT, 1f, 2000f, false);
 

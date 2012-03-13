@@ -18,15 +18,23 @@
 
 package org.jdesktop.wonderland.modules.webcaster.server;
 
+import com.jme.math.Quaternion;
+import com.jme.math.Vector3f;
+import java.util.logging.Level;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
+import org.jdesktop.wonderland.common.cell.MultipleParentException;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
+import org.jdesktop.wonderland.common.cell.state.PositionComponentServerState;
+import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellChangeMessage;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellClientState;
 import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellServerState;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.CellMOFactory;
 import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
@@ -38,7 +46,7 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 public class WebcasterCellMO extends CellMO
 {
     private boolean isWebcasting;
-    private String streamID;
+    private int streamID;
     
     public WebcasterCellMO(){
         super();
@@ -76,7 +84,11 @@ public class WebcasterCellMO extends CellMO
     @Override
     public void setServerState(CellServerState state){
         super.setServerState(state);
-        this.streamID = ((WebcasterCellServerState)state).getStreamID();
+        WebcasterCellServerState wcss = (WebcasterCellServerState) state;
+        this.streamID = wcss.getStreamID();
+        if (wcss.getPhoneCellState() != null) {
+            addPhoneCell(wcss.getPhoneCellState());
+        }
     }
     
     @Override
@@ -102,6 +114,41 @@ public class WebcasterCellMO extends CellMO
     private void setWebcasting(boolean isWebcasting) {
         logger.warning("isWebcasting: " + isWebcasting);
         this.isWebcasting = isWebcasting;
+    }
+
+    private CellMO addPhoneCell(PhoneCellServerState setup) {
+        CellTransform transform = new CellTransform(new Quaternion(), new Vector3f(0, 0, 0.75f));
+        //Set the position
+        // Create a position component that will set the initial origin
+        PositionComponentServerState position = (PositionComponentServerState)
+                setup.getComponentServerState(PositionComponentServerState.class);
+        if (position == null) {
+            position = new PositionComponentServerState();
+            setup.addComponentServerState(position);
+        }
+        position.setTranslation(transform.getTranslation(null));
+        position.setRotation(transform.getRotation(null));
+        position.setScaling(transform.getScaling(null));
+        // fetch the server-side cell class name and create the cell
+        String className = setup.getServerClassName();
+        CellMO cellMO = CellMOFactory.loadCellMO(className);
+
+        // call the cell's setup method
+        try {
+
+            cellMO.setServerState(setup);
+            addChild(cellMO);
+        } catch (ClassCastException cce) {
+            logger.log(Level.WARNING, "Error setting up new cell "
+                    + cellMO.getName() + " of type "
+                    + cellMO.getClass() + ", it does not implement "
+                    + "BeanSetupMO.", cce);
+            return null;
+        } catch (MultipleParentException excp) {
+            logger.log(Level.WARNING, "Error adding new cell " + cellMO.getName()
+                    + " of type " + cellMO.getClass() + ", has multiple parents", excp);
+        }
+        return cellMO;
     }
     
     private static class WebcasterCellMOMessageReceiver extends AbstractComponentMessageReceiver {
