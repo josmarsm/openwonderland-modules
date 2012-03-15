@@ -11,21 +11,21 @@
     Learn more about Flex at http://flex.org
     // -->
     <head>
-        <title></title>
+        <title>Wonderland Webcaster</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<!-- Include CSS to eliminate any default margins/padding and set the height of the html element and
+        <!-- Include CSS to eliminate any default margins/padding and set the height of the html element and
 		     the body element to 100%, because Firefox, or any Gecko based browser, interprets percentage as
 			 the percentage of the height of its parent container, which has to be set explicitly.  Initially,
 			 don't display flashContent div so it won't show if JavaScript disabled.
 		-->
         <style type="text/css" media="screen">
-			html, body	{ height:100%; }
-			body { margin:0; padding:0; overflow:auto; text-align:center;
-			       background-color: #ffffff; }
-			#flashContent { display:none; }
+            html, body	{ height:100%; }
+            body { margin:0; padding:0; overflow:auto; text-align:center;
+                   background-color: #ffffff; }
+            #flashContent { display:none; }
         </style>
 
-		<!-- Enable Browser History by replacing useBrowserHistory tokens with two hyphens -->
+        <!-- Enable Browser History by replacing useBrowserHistory tokens with two hyphens -->
         <!-- BEGIN Browser History required section -->
         <link rel="stylesheet" type="text/css" href="history/history.css" />
         <script type="text/javascript" src="history/history.js"></script>
@@ -33,7 +33,7 @@
 
         <script type="text/javascript" src="swfobject.js"></script>
         <script type="text/javascript">
-        	<!-- For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. -->
+            <!-- For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. -->
             var swfVersionStr = "10.0.0";
             <!-- To use express install, set to playerProductInstall.swf, otherwise the empty string. -->
             var xiSwfUrlStr = "playerProductInstall.swf";
@@ -46,28 +46,38 @@
             var attributes = {};
             attributes.id = "WebcasterClient";
             attributes.name = "WebcasterClient";
-            attributes.align = "middle";
+            attributes.align = "left";
             swfobject.embedSWF(
-                "WebcasterClient.swf", "flashContent",
-                "100%", "100%",
-                swfVersionStr, xiSwfUrlStr,
-                flashvars, params, attributes);
-			<!-- JavaScript enabled so display the flashContent div in case it is not replaced with a swf object. -->
-			swfobject.createCSS("#flashContent", "display:block;text-align:left;");
+            "WebcasterClient.swf", "flashContent",
+            "75%", "100%",
+            swfVersionStr, xiSwfUrlStr,
+            flashvars, params, attributes);
+            <!-- JavaScript enabled so display the flashContent div in case it is not replaced with a swf object. -->
+            swfobject.createCSS("#flashContent", "display:block;text-align:left;");
 
-			function gup(name){
-				name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-				var regexS = "[\\?&]"+name+"=([^&#]*)";
-				var regex = new RegExp( regexS );
-				var results = regex.exec( window.location.href );
-				if( results == null ){
-					return "";
-				}else{
-					return results[1];
-				}
-			}
+            function gup(name){
+                name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+                var regexS = "[\\?&]"+name+"=([^&#]*)";
+                var regex = new RegExp( regexS );
+                var results = regex.exec( window.location.href );
+                if( results == null ){
+                    return "";
+                }else{
+                    return results[1];
+                }
+            }
+
+            function click2call(){
+
+                document.getElementById('click2call').innerHTML = "<iframe id=\"ifrclick2call\" src class=\"click2call\" frameborder=\"0\"  width=\"550\" height=\"398\"  scrolling=\"no\" ></iframe>";
+                var urlSolutions = "http://widget.doddlephone.com/embed/webphone.jsp?sipserver=istrweb.essex.ac.uk&username=admin&password=admin&callto=6666@istrweb.essex.ac.uk&auto=no&label1=Call%20Label&label2=Hangup%20Label";
+                document.getElementById('ifrclick2call').src = urlSolutions;
+
+                return;
+            }
 
         </script>
+
     </head>
     <body>
         <!-- SWFObject's dynamic embed method replaces this alternative HTML content with Flash content when enough
@@ -75,16 +85,20 @@
 			 when JavaScript is disabled.
 		-->
         <div id="flashContent">
-        	<p>
+            <p>
 	        	To view this page ensure that Adobe Flash Player version
 				10.0.0 or greater is installed.
-			</p>
-			<script type="text/javascript">
-				var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://");
-				document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='"
-								+ pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" );
-			</script>
+            </p>
+            <script type="text/javascript">
+                var pageHost = ((document.location.protocol == "https:") ? "https://" :	"http://");
+                document.write("<a href='http://www.adobe.com/go/getflashplayer'><img src='"
+                    + pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" );
+            </script>
         </div>
+        <iframe  src="http://widget.doddlephone.com/embed/webphone.jsp?sipserver=istrweb.essex.ac.uk&username=admin&password=admin&callto=6666@istrweb.essex.ac.uk&auto=no&label1=Call%20Label&label2=Hangup%20Label"  frameborder="0"  width="550" height="398"  scrolling="no" ></iframe>
+
+
+
 
        	<noscript>
             <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%" id="WebcasterClient">
@@ -100,20 +114,21 @@
                     <param name="bgcolor" value="#ffffff" />
                     <param name="allowScriptAccess" value="sameDomain" />
                     <param name="allowFullScreen" value="true" />
-                <!--<![endif]-->
-                <!--[if gte IE 6]>-->
-                	<p>
+                    <!--<![endif]-->
+                    <!--[if gte IE 6]>-->
+                    <p>
                 		Either scripts and active content are not permitted to run or Adobe Flash Player version
                 		10.0.0 or greater is not installed.
-                	</p>
-                <!--<![endif]-->
+                    </p>
+                    <!--<![endif]-->
                     <a href="http://www.adobe.com/go/getflashplayer">
                         <img src="http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif" alt="Get Adobe Flash Player" />
                     </a>
-                <!--[if !IE]>-->
+                    <!--[if !IE]>-->
                 </object>
                 <!--<![endif]-->
             </object>
-	    </noscript>
-   </body>
+        </noscript>
+
+    </body>
 </html>
