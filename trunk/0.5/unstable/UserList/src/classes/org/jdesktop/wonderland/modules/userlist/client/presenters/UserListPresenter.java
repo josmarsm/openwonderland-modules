@@ -601,28 +601,32 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
         NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
         view.addEntryToView(myName, 0);
         
-        //add all users in range
-        for(PresenceInfo info: model.getUsersInRange()) {
-            //we've already added me at the top, skip over if found here.
-            if(model.isMe(info)) {
-                continue;
+        synchronized (model.getUsersInRange()) {
+            //add all users in range
+            for (PresenceInfo info : model.getUsersInRange()) {
+                //we've already added me at the top, skip over if found here.
+                if (model.isMe(info)) {
+                    continue;
+                }
+
+                String display = getDisplayName(info);
+                view.addEntryToView(display);
             }
-            
-            String display = getDisplayName(info);
-            view.addEntryToView(display);
         }
-        //add all users not in range
-        for(PresenceInfo info: model.getUsersNotInRange()) {
-            
-            //we've already added me at the top, skip over if found here.
-            if(model.isMe(info)) {
-                continue;
-            }
-            
-            String display = getDisplayName(info);
-            view.addEntryToView(display);
-        }        
         
+        synchronized (model.getUsersNotInRange()) {
+            //add all users not in range
+            for (PresenceInfo info : model.getUsersNotInRange()) {
+
+                //we've already added me at the top, skip over if found here.
+                if (model.isMe(info)) {
+                    continue;
+                }
+
+                String display = getDisplayName(info);
+                view.addEntryToView(display);
+            }
+        }
         //update the title of the view
         
         userListComponent.setName(BUNDLE.getString("Users") + " (" + view.getNumberOfElements() + ") ");
