@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<deployed-model>
+    <version>1</version>
+    <modelURL>wla://twitter/pigeon.dae/pigeon.dae.gz</modelURL>
+    <loaderDataURL>wla://twitter/pigeon.dae/pigeon.dae.gz.ldr</loaderDataURL>
+    <modelBGScale>
+        <x>0.01</x>
+        <y>0.01</y>
+        <z>0.01</z>
+    </modelBGScale>
+    <modelBGTranslation>
+        <x>0</x>
+        <y>-0.6</y>
+        <z>4</z>
+    </modelBGTranslation>
+    <modelBGRotation>
+        <x>-1</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>1.5707964</angle>
+    </modelBGRotation>
+    
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+</deployed-model>
