@@ -73,7 +73,7 @@ public class ChangeNamePresenter {
     public void handleCancelButtonPressed() {
         setVisible(false);
     }
-    
+  
     
     private void addListeners() {
         view.addAliasTextFormActionListener(new ActionListener() {                       
