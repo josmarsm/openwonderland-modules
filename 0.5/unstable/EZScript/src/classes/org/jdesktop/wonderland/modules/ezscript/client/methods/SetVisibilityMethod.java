@@ -36,7 +36,9 @@ public class SetVisibilityMethod implements ScriptMethodSPI {
     }
 
     public String getDescription() {
-        return "make a cell in/visible";
+        return "Make a cell in/visible.\n"
+                + "-- usage: SetVisible(cell, true);\n"
+                + "-- usage: SetVisible(cell, false);";
     }
 
     public String getCategory() {
