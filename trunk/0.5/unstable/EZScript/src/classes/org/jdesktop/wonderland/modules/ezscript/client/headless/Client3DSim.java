@@ -17,6 +17,8 @@
  */
 package org.jdesktop.wonderland.modules.ezscript.client.headless;
 
+import client.stage.FakeMainFrame;
+import client.stage.HeadlessClientLoginUI;
 import com.jme.math.Vector3f;
 import com.jme.scene.Node;
 import java.io.File;
