@@ -23,6 +23,8 @@
         <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
         <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
+        <path location="${modules.dir}/tools/error-report/build/client/error-report-client.jar"/>
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">

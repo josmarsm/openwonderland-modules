@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -48,12 +48,12 @@ public class UserList implements Serializable {
     public static class User implements Serializable {
         public String name;
         public String id;
-        public String when;
+        public Date when;
 
         public User() {
         }
 
-        public User(String id, String name, String when) {
+        public User(String id, String name, Date when) {
             this.name = name;
             this.id = id;
             this.when = when;

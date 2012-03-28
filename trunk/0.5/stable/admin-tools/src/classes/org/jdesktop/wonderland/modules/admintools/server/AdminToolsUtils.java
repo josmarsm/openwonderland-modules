@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -32,6 +32,7 @@ import java.util.logging.Logger;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsConnectionType;
 import org.jdesktop.wonderland.modules.admintools.common.BroadcastMessage;
 import org.jdesktop.wonderland.modules.admintools.common.DisconnectMessage;
+import org.jdesktop.wonderland.modules.admintools.common.ErrorReportMessage;
 import org.jdesktop.wonderland.modules.admintools.common.MuteMessage;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.presencemanager.server.PresenceManagerSrv;
@@ -76,6 +77,26 @@ public class AdminToolsUtils {
 
         } else {
             LOGGER.warning("No clientID found for " + disconnect.getSessionID());
+        }
+    }
+    
+    static void handleErrorReport(WonderlandClientSender sender,
+                                  ErrorReportMessage report)
+    {
+        LOGGER.warning("Handle error report request for " +
+                       report.getSessionID());
+
+        CommsManager cm = WonderlandContext.getCommsManager();
+        WonderlandClientID remote =
+                cm.getWonderlandClientID(report.getSessionID());
+        WonderlandClientSender noticeSender =
+                cm.getSender(AdminToolsConnectionType.CONNECTION_TYPE);
+
+        if (remote != null) {
+            noticeSender.send(remote, report);
+        } else {
+            LOGGER.warning("Unable to find clientID for session " +
+                           report.getSessionID());
         }
     }
 

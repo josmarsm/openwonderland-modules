@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -18,7 +18,6 @@
 package org.jdesktop.wonderland.modules.admintools.web;
 
 import java.math.BigInteger;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.comms.BaseConnection;
@@ -29,6 +28,7 @@ import org.jdesktop.wonderland.common.messages.ResponseMessage;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsWebConnectionType;
 import org.jdesktop.wonderland.modules.admintools.common.BroadcastMessage;
 import org.jdesktop.wonderland.modules.admintools.common.DisconnectMessage;
+import org.jdesktop.wonderland.modules.admintools.common.ErrorReportMessage;
 import org.jdesktop.wonderland.modules.admintools.common.MuteMessage;
 import org.jdesktop.wonderland.modules.admintools.common.UserList;
 import org.jdesktop.wonderland.modules.admintools.common.UserListRequestMessage;
@@ -67,6 +67,10 @@ public class AdminToolsWebConnection extends BaseConnection {
         send(new MuteMessage(null, sessionID));
     }
 
+    public void forceErrorReport(BigInteger sessionID, String reportID) {
+        send(new ErrorReportMessage(null, sessionID, reportID));
+    }
+    
     public void forceDisconnect(BigInteger sessionID) {
         send(new DisconnectMessage(null, sessionID));
     }
