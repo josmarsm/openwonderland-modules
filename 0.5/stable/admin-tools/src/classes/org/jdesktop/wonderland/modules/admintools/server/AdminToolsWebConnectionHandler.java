@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,8 +21,6 @@ import com.sun.sgs.app.ManagedObject;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -37,6 +35,7 @@ import org.jdesktop.wonderland.common.security.Action;
 import org.jdesktop.wonderland.modules.admintools.common.AdminToolsWebConnectionType;
 import org.jdesktop.wonderland.modules.admintools.common.BroadcastMessage;
 import org.jdesktop.wonderland.modules.admintools.common.DisconnectMessage;
+import org.jdesktop.wonderland.modules.admintools.common.ErrorReportMessage;
 import org.jdesktop.wonderland.modules.admintools.common.MuteMessage;
 import org.jdesktop.wonderland.modules.admintools.common.UserList;
 import org.jdesktop.wonderland.modules.admintools.common.UserList.User;
@@ -96,6 +95,8 @@ public class AdminToolsWebConnectionHandler
     {
         if (message instanceof MuteMessage) {
             AdminToolsUtils.handleMute(sender, (MuteMessage) message);
+        } else if (message instanceof ErrorReportMessage) {
+            AdminToolsUtils.handleErrorReport(sender, (ErrorReportMessage) message);
         } else if (message instanceof DisconnectMessage) {
             AdminToolsUtils.handleDisconnect(sender, (DisconnectMessage) message);
         } else if (message instanceof BroadcastMessage) {
@@ -122,7 +123,7 @@ public class AdminToolsWebConnectionHandler
     {
         users.put(clientID, new User(clientID.getID().toString(),
                                      userRef.get().getUsername(),
-                                     DateFormat.getDateTimeInstance().format(new Date())));
+                                     new Date()));
     }
 
     public void userLoggedOut(WonderlandClientID clientID, 

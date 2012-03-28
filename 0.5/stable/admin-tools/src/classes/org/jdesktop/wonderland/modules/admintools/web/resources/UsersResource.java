@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -29,6 +29,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -78,6 +79,19 @@ public class UsersResource {
         }
 
         conn.forceMute(new BigInteger(userId));
+        return Response.ok().build();
+    }
+    
+    @GET @Path("{userId}/errorReport")
+    public Response errorReport(@PathParam("userId") String userId,
+                                @QueryParam("reportId") String reportId) 
+    {
+        AdminToolsWebConnection conn = getConnection();
+        if (conn == null) {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE).build();
+        }
+
+        conn.forceErrorReport(new BigInteger(userId), reportId);
         return Response.ok().build();
     }
 
