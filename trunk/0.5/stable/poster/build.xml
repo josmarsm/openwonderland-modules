@@ -22,7 +22,7 @@
     <property name="appbase.dir" value="${wonderland.dir}/modules/foundation/appbase"/>
 
     <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${appbase.dir}/build/client/appbase-client.jar"/>
         <path location="${appbase.dir}/build/client/appbase-client-cell.jar"/>
         <path location="${modules.dir}/foundation/placemarks-api/build/client/placemarks-api-client.jar"/>
@@ -34,7 +34,7 @@
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${appbase.dir}/build/server/appbase-server.jar"/>
     </pathconvert>
 

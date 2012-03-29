@@ -16,7 +16,7 @@
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${current.dir}/../tooltip-component/build/client/tooltip-component-client.jar"/>
     </pathconvert>
 
@@ -27,7 +27,7 @@
 
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${current.dir}/../tooltip-component/build/server/tooltip-component-server.jar"/>
     </pathconvert>
 

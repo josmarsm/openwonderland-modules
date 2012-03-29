@@ -20,17 +20,17 @@
         <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
         <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar"/>
         <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar"/>
         <path location="${modules.dir}/tools/presence-manager/build/lib/server/presencemanager-server.jar"/>

@@ -19,11 +19,11 @@
 
     <!-- classpath modifications -->
     <pathconvert property="module-client.classpath">
-        <path location="${wonderland.dir}/modules/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/client/sharedstate-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${wonderland.dir}/modules/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${current.dir}/lib/foundation.jar"/>
         <path location="${current.dir}/lib/moveandturn.jar"/>
         <path location="${current.dir}/lib/ide.jar"/>
