@@ -56,8 +56,16 @@ public class BestViewUtils {
         float distance = getBestDistance(bounds);
 
         // add a small fudge factor so we can see borders
-        distance += 0.2f;
+        distance *= 1.05f;
 
+        // the minimum distance should be the front clip, so things don't
+        // get cut off
+        float frontClip = ViewManager.getViewManager().getViewProperties().getFrontClip();
+        frontClip += .10f;
+        if (distance < frontClip) {
+            distance = frontClip;
+        }
+        
         // calculate the look vector to this cell -- we only care about the y axis
         // rotation
         Quaternion rotation = cell.getWorldTransform().getRotation(null);
