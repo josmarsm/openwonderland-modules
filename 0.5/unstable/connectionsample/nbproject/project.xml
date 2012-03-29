@@ -76,7 +76,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme-effects.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/modules/foundation/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

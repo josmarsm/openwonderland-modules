@@ -13,12 +13,12 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
     <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${wonderland.dir}/../wonderland-modules/unstable/scriptingComponent/build/client/scriptingComponent-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${wonderland.dir}/../wonderland-modules/unstable/scriptingComponent/build/server/scripting-component-module-server.jar"/>
     </pathconvert>
 

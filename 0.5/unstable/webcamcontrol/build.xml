@@ -20,13 +20,13 @@
     <import file="${web.dir}/build-tools/build-scripts/web-build.xml"/>
 
     <pathconvert property="module-common.classpath">
-        <!--<path location="${wonderland.dir}/modules/tools/sharedstate/build/server/sharedstate-server.jar"/>-->
+        <!--<path location="${wonderland.dir}/modules/foundation/sharedstate/build/server/sharedstate-server.jar"/>-->
         <path location="${current.dir}/../../../wonderland-modules/stable/webcamviewer/build/server/webcamviewer-server.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
-        <path location="${wonderland.dir}/modules/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${current.dir}/../../../wonderland-modules/stable/webcamviewer/build/server/webcamviewer-server.jar"/>
     </pathconvert>
 

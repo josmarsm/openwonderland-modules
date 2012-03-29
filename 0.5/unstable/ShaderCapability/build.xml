@@ -22,11 +22,11 @@
     <!-- this module depends on the content repository module -->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
     </pathconvert>
     
     <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,

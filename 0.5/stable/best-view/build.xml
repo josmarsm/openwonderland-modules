@@ -17,16 +17,16 @@
     <property name="module.jarname" value="${module.name}"/>
 
     <pathconvert property="module-client.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
         <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
         <path location="${current.dir}/../image-viewer/build/server/imageviewer-server.jar"/>

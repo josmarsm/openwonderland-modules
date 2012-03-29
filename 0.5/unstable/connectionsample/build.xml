@@ -9,11 +9,11 @@
     <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
 
     <pathconvert property="module-client.classpath">
-        <path location="${wonderland.dir}/modules/tools/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/client/sharedstate-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-server.classpath">
-        <path location="${wonderland.dir}/modules/tools/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/server/sharedstate-server.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,
