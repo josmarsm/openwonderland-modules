@@ -37,7 +37,6 @@ import org.jdesktop.wonderland.modules.webcaster.common.WebcasterCellServerState
 @CellFactory
 public class WebcasterCellFactory implements CellFactorySPI {
     private static final ResourceBundle bundle = ResourceBundle.getBundle("org/jdesktop/wonderland/modules/webcaster/client/resources/Bundle");
-    private static int INSTANCE_COUNTER = 1;
 
     public String[] getExtensions() {
         return new String[]{};
@@ -45,10 +44,11 @@ public class WebcasterCellFactory implements CellFactorySPI {
 
     @SuppressWarnings("unchecked")
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
-        WebcasterCellServerState state = new WebcasterCellServerState(INSTANCE_COUNTER++);
+        WebcasterCellServerState state = new WebcasterCellServerState();
         state.setName(bundle.getString("WEBCASTER"));
         PhoneInfo phoneInfo = new PhoneInfo(false, String.valueOf(state.getStreamID()), "foo","Webcaster Phone", .2, .1, true, true);
         PhoneCellServerState phoneCellState = new PhoneCellServerState(phoneInfo);
+        phoneCellState.setName("Webcaster phone: " + state.getStreamID());
         state.setPhoneCellState(phoneCellState);
         return (T)state;
     }

@@ -44,6 +44,8 @@
         
         <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
                 moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="red5-server" majorversion="1" minorversion="1"/>
+            <requires name="red5-server" majorversion="0" minorversion="5"/>
                     
 	    <client>
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">

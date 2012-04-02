@@ -22,7 +22,8 @@
             html, body	{ height:100%; }
             body { margin:0; padding:0; overflow:auto; text-align:center;
                    background-color: #ffffff; }
-            #flashContent { display:none; }
+            #flashContent { float: left; display:none; }
+            #doddlephone { float: right;}
         </style>
 
         <script type="text/javascript" src="swfobject.js"></script>
@@ -36,7 +37,7 @@
             params.quality = "high";
             params.bgcolor = "#ffffff";
             params.allowscriptaccess = "sameDomain";
-            params.allowfullscreen = "true";
+            params.allowfullscreen = "false";
             var attributes = {};
             attributes.id = "WebcasterClient";
             attributes.name = "WebcasterClient";
@@ -80,8 +81,18 @@
                     + pageHost + "www.adobe.com/images/shared/download_buttons/get_flash_player.gif' alt='Get Adobe Flash player' /></a>" );
             </script>
         </div>
-        <iframe  src="http://widget.doddlephone.com/embed/webphone.jsp?sipserver=istrweb.essex.ac.uk&username=admin&password=admin&callto=6666@istrweb.essex.ac.uk&auto=no&label1=Call%20Label&label2=Hangup%20Label"  frameborder="0"  width="550" height="398"  scrolling="no" ></iframe>
-
+        
+        <div id="doddlephone">
+            <p>To connect audio,<br/>enter your username and password,<br/>then click on the login button.<br/>When you have registered,<br/>click the call button.</p>
+            <p>When prompted by the auto-attendant,<br/>use the keypad to enter the extension:</p>
+            <p><script type="text/javascript">
+                document.write('<big>' + gup('stream') + '#</big>');
+                </script></p>
+            <script type="text/javascript">
+                document.write('<iframe  src="http://widget.doddlephone.com/embed/webphone.jsp?sipserver=' + gup('server') + '&callto=6666&auto=no"  frameborder="0"  width="250" height="380"  scrolling="no" ></iframe>');
+            </script>
+        </div>
+        
        	<noscript>
             <object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%" id="WebcasterClient">
                 <param name="movie" value="WebcasterClient.swf" />
