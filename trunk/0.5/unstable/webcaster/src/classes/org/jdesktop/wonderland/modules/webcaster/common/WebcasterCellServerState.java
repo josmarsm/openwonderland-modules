@@ -32,19 +32,16 @@ import org.jdesktop.wonderland.modules.phone.common.PhoneCellServerState;
 @XmlRootElement(name="webcaster-cell")
 @ServerState
 public class WebcasterCellServerState extends CellServerState {
+    private static int INSTANCE_COUNTER = 1;
     private PhoneCellServerState phoneCellState;
 
     public WebcasterCellServerState() {
         super();
+        streamID = INSTANCE_COUNTER++;
     }
 
     @XmlElement(name = "stream-id")
     private int streamID;
-
-    public WebcasterCellServerState(int i) {
-        this();
-        streamID = i;
-    }
 
     @XmlTransient
     public int getStreamID() {

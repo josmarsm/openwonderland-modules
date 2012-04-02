@@ -17,6 +17,9 @@
  */
 package org.jdesktop.wonderland.modules.webcaster.client;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -166,10 +169,8 @@ public class WebcasterCell extends Cell {
                 if (increasing) {
                     if (mainHUD == null) {
                         mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-
                         try {
                             SwingUtilities.invokeLater(new Runnable() {
-
                                 public void run() {
                                     controlPanel = new WebcasterControlPanel(WebcasterCell.this, streamID);
                                     hudComponent = mainHUD.createComponent(controlPanel);
@@ -185,9 +186,9 @@ public class WebcasterCell extends Cell {
 
                     if (menuFactory == null) {
                         menuFactory = new ContextMenuFactorySPI() {
-
                             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
-                                return new ContextMenuItem[]{new SimpleContextMenuItem(bundle.getString("OPEN CONTROL PANEL"), new ContextMenuActionListener() {
+                                return new ContextMenuItem[]{
+                                    new SimpleContextMenuItem(bundle.getString("OPEN CONTROL PANEL"), new ContextMenuActionListener() {
 
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
@@ -202,8 +203,8 @@ public class WebcasterCell extends Cell {
                                             }
                                         }
                                     }),
+                                       new SimpleContextMenuItem(bundle.getString("OPEN BROWSER VIEWER"), new ContextMenuActionListener() {
 
-                                    new SimpleContextMenuItem(bundle.getString("OPEN BROWSER VIEWER"), new ContextMenuActionListener(){
                                         public void actionPerformed(ContextMenuItemEvent event) {
                                             try {
                                                 SwingUtilities.invokeLater(new Runnable() {
@@ -215,6 +216,25 @@ public class WebcasterCell extends Cell {
                                                         } catch (IOException e) {
                                                             throw new RuntimeException("Error opening browser", e);
                                                         }
+                                                    }
+                                                });
+                                            } catch (Exception x) {
+                                                throw new RuntimeException("Cannot find browser", x);
+                                            }
+                                        }
+                                    }),
+                                            new SimpleContextMenuItem(bundle.getString("COPY WEB URL"), new ContextMenuActionListener() {
+
+                                        public void actionPerformed(ContextMenuItemEvent event) {
+                                            try {
+                                                SwingUtilities.invokeLater(new Runnable() {
+
+                                                    public void run() {
+
+                                                        String selection = "http://" + SERVER_URL + ":8080/webcaster/webcaster/index.html?server=" + SERVER_URL + "&stream=" + streamID;
+                                                        StringSelection data = new StringSelection(selection);
+                                                        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                                                        clipboard.setContents(data, data);
                                                     }
                                                 });
                                             } catch (Exception x) {
