@@ -53,14 +53,14 @@ import org.jdesktop.wonderland.modules.userlist.client.UserListCellRenderer;
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  * @author JagWire
  */
-public class WonderlandUserList
+public class WonderlandUserListView
         extends javax.swing.JPanel implements UserListView
 {
 
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
     private static final Logger logger =
-            Logger.getLogger(WonderlandUserList.class.getName());
+            Logger.getLogger(WonderlandUserListView.class.getName());
 
     private DefaultListModel userListModel;
     private int outOfRangeIndex = 0;
@@ -72,7 +72,7 @@ public class WonderlandUserList
     private HUDComponent userListHUDComponent;
     private HUDComponent addHUDComponent;
 
-    public WonderlandUserList(UserListCellRenderer cellRenderer) {
+    public WonderlandUserListView(UserListCellRenderer cellRenderer) {
         initComponents();
 
         mutedIcon = new ImageIcon(getClass().getResource(
@@ -410,7 +410,7 @@ public class WonderlandUserList
                     .add(phoneButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(gotoUserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(editButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(volumeLabel)
                 .add(0, 0, 0)
                 .add(volumeSlider, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -454,7 +454,7 @@ public class WonderlandUserList
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+                .add(userListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 205, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(controlPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

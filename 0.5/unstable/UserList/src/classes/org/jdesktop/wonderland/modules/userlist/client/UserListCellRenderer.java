@@ -40,8 +40,8 @@ public class UserListCellRenderer implements ListCellRenderer {
         
         
         String name = (String)value;
-        PresenceInfo info = UserListManager.INSTANCE.getAliasInfo(name);
-        if(UserListManager.INSTANCE.isInRange(info)) {
+        PresenceInfo info = WonderlandUserList.INSTANCE.getAliasInfo(name);
+        if(WonderlandUserList.INSTANCE.isInRange(info)) {
             renderer.setFont(inRangeFont);
             renderer.setForeground(Color.BLUE);
         } else {

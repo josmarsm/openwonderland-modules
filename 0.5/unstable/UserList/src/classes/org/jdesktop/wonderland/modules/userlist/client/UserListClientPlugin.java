@@ -5,8 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
-import org.jdesktop.wonderland.modules.userlist.client.presenters.UserListPresenter;
-import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserList;
+import org.jdesktop.wonderland.modules.userlist.client.presenters.WonderlandUserListPresenter;
+import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
@@ -67,7 +67,7 @@ implements ViewCellConfiguredListener, SessionLifecycleListener {
      
     
     public void viewConfigured(LocalAvatar localAvatar) {
-        UserListManager.INSTANCE.initialize();
+        WonderlandUserList.INSTANCE.initialize();
         UserListPresenterManager.INSTANCE.intialize();
         UserListPresenterManager.INSTANCE.showActivePresenter();
         

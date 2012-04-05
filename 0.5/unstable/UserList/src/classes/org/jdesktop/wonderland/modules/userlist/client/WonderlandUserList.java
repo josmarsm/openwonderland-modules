@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
  * 
  * @author JagWire
  */
-public enum UserListManager implements PresenceManagerListener {
+public enum WonderlandUserList implements PresenceManagerListener {
     INSTANCE;
 
     private WonderlandSession session;    
@@ -43,7 +43,7 @@ public enum UserListManager implements PresenceManagerListener {
     private int lastPositionOfInRangeList = 0;
     private VolumeConverter converter;
     
-    private static final Logger logger = Logger.getLogger(UserListManager.class.getName());
+    private static final Logger logger = Logger.getLogger(WonderlandUserList.class.getName());
     
     public void initialize() { 
                            

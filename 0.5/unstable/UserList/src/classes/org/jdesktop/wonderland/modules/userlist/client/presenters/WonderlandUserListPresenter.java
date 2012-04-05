@@ -34,8 +34,8 @@ import org.jdesktop.wonderland.modules.audiomanager.client.voicechat.AddHUDPanel
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.userlist.client.PresenceControls;
-import org.jdesktop.wonderland.modules.userlist.client.UserListManager;
-import org.jdesktop.wonderland.modules.userlist.client.UserListManager.ModelChangedListener;
+import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
+import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList.ModelChangedListener;
 import org.jdesktop.wonderland.modules.userlist.client.views.ChangeNamePanel;
 import org.jdesktop.wonderland.modules.userlist.client.views.NamePropertiesPanel;
 import org.jdesktop.wonderland.modules.userlist.client.views.UserListView;
@@ -51,24 +51,24 @@ import org.jdesktop.wonderland.modules.userlist.client.views.UserListView;
  * 
  * @author JagWire
  */
-public class UserListPresenter implements SoftphoneListener, ModelChangedListener  {
+public class WonderlandUserListPresenter implements SoftphoneListener, ModelChangedListener  {
   
     
     protected UserListView view;
     private PresenceControls presenceControls;
     private PresenceInfo presenceInfo;
-    private UserListManager model;
+    private WonderlandUserList model;
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
     
     
-    private static final Logger logger = Logger.getLogger(UserListPresenter.class.getName());
+    private static final Logger logger = Logger.getLogger(WonderlandUserListPresenter.class.getName());
     private HUDComponent userListComponent = null;
     
-    public UserListPresenter(UserListView view, HUDComponent c) {
+    public WonderlandUserListPresenter(UserListView view, HUDComponent c) {
         this.view = view;
         this.userListComponent  = c;
-        model = UserListManager.INSTANCE;
+        model = WonderlandUserList.INSTANCE;
         
         model.setVolumeConverter(view.getVolumeSliderMaximum());
         model.addModelChangedListener(this);
@@ -129,7 +129,7 @@ public class UserListPresenter implements SoftphoneListener, ModelChangedListene
             
     }
     
-    private UserListPresenter getLocalPresenter() {
+    private WonderlandUserListPresenter getLocalPresenter() {
         return this;
     }
     private void handlePropertiesButtonPressed(ActionEvent e) {

@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.userlist.client.UserListManager;
+import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
 import org.jdesktop.wonderland.modules.userlist.client.views.ChangeNameView;
 
 /**
@@ -19,17 +19,17 @@ import org.jdesktop.wonderland.modules.userlist.client.views.ChangeNameView;
 public class ChangeNamePresenter {
     
     private ChangeNameView view;
-    private UserListManager model;
-    private UserListPresenter userListPresenter = null;
+    private WonderlandUserList model;
+    private WonderlandUserListPresenter userListPresenter = null;
     private HUDComponent hudComponent;
     private final static ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
     
     
     
-    public ChangeNamePresenter(UserListPresenter userListPresenter, ChangeNameView view, HUDComponent c) {
+    public ChangeNamePresenter(WonderlandUserListPresenter userListPresenter, ChangeNameView view, HUDComponent c) {
         this.view = view;
-        this.model = UserListManager.INSTANCE;
+        this.model = WonderlandUserList.INSTANCE;
         this.userListPresenter = userListPresenter;
         this.hudComponent = c;
         addListeners();
