@@ -14,8 +14,8 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.*;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.modules.userlist.client.presenters.UserListPresenter;
-import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserList;
+import org.jdesktop.wonderland.modules.userlist.client.presenters.WonderlandUserListPresenter;
+import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
 
 /**
  *
@@ -24,9 +24,9 @@ import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserList;
 public enum UserListPresenterManager implements HUDEventListener {
     INSTANCE;
     
-    private Map<String, UserListPresenter> presenters = new HashMap<String, UserListPresenter>();
+    private Map<String, WonderlandUserListPresenter> presenters = new HashMap<String, WonderlandUserListPresenter>();
     
-    private UserListPresenter defaultPresenter;
+    private WonderlandUserListPresenter defaultPresenter;
     private HUDComponent hudComponent;
     private String activePresenter = "default";
     private static final String DEFAULT = "default";
@@ -54,8 +54,8 @@ public enum UserListPresenterManager implements HUDEventListener {
 
 
             HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
-            WonderlandUserList view =
-                    new WonderlandUserList(new UserListCellRenderer());
+            WonderlandUserListView view =
+                    new WonderlandUserListView(new UserListCellRenderer());
 
             if (Boolean.parseBoolean(System.getProperty(TABBED_PANEL_PROP))) {
                 HUDTabbedPanel tabbedPanel = HUDTabbedPanel.getInstance();
@@ -72,7 +72,7 @@ public enum UserListPresenterManager implements HUDEventListener {
             hudComponent.addEventListener(this);
 
             main.addComponent(hudComponent);
-            defaultPresenter = new UserListPresenter(view,
+            defaultPresenter = new WonderlandUserListPresenter(view,
                     hudComponent);
 
             presenters.put("default", defaultPresenter);
@@ -93,11 +93,11 @@ public enum UserListPresenterManager implements HUDEventListener {
         }            
     }
     
-    public UserListPresenter getDefaultPresenter() {
+    public WonderlandUserListPresenter getDefaultPresenter() {
         return presenters.get(DEFAULT);
     }
     
-    public void addPresenter(String name, UserListPresenter presenter) {
+    public void addPresenter(String name, WonderlandUserListPresenter presenter) {
         if(name == null || name.equals(DEFAULT)) {
             logger.warning("CANNOT OVERWRITE DEFAULT PRESENTER.");
             return;
@@ -129,7 +129,7 @@ public enum UserListPresenterManager implements HUDEventListener {
             hideActivePresenter();
             activePresenter = name;
             
-            final UserListPresenter ulp = presenters.get(name);
+            final WonderlandUserListPresenter ulp = presenters.get(name);
             
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
@@ -150,7 +150,7 @@ public enum UserListPresenterManager implements HUDEventListener {
                 return;
             }
 
-            final UserListPresenter ulp = presenters.get(activePresenter);
+            final WonderlandUserListPresenter ulp = presenters.get(activePresenter);
 
             SwingUtilities.invokeLater(new Runnable() {
 
@@ -168,7 +168,7 @@ public enum UserListPresenterManager implements HUDEventListener {
                 return;
             }
             
-            UserListPresenter presenter = presenters.get(activePresenter);
+            WonderlandUserListPresenter presenter = presenters.get(activePresenter);
             presenter.setVisible(true);
             presenter.updateUserList();
         }

@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.modules.audiomanager.client.UserListHUDPanel;
 import org.jdesktop.wonderland.modules.audiomanager.client.UserListPanel;
-import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserList;
+import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
 
 /**
  *
@@ -36,7 +36,7 @@ public class HUDTabbedPanel extends javax.swing.JPanel
     /** Creates new form HUDTabbedPanel */
     private Cell cell;
     private HUDComponent hudComponent;
-    private WonderlandUserList userList;
+    private WonderlandUserListView userList;
     private static boolean configured = false;
     private static HUDTabbedPanel instance;
 
@@ -45,7 +45,7 @@ public class HUDTabbedPanel extends javax.swing.JPanel
     private HUDTabbedPanel() {
         initComponents();
     }
-    private HUDTabbedPanel(WonderlandUserList userList) {
+    private HUDTabbedPanel(WonderlandUserListView userList) {
         initComponents();
 
         this.userList = userList;
@@ -69,7 +69,7 @@ public class HUDTabbedPanel extends javax.swing.JPanel
         return instance;
     }
 
-    public WonderlandUserList getUserListHUDPanel() {
+    public WonderlandUserListView getUserListHUDPanel() {
         return this.userList;
     }
 

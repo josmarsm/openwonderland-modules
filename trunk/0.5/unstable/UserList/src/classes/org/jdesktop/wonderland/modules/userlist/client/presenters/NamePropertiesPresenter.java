@@ -14,7 +14,7 @@ import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.Avatar
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarNameEvent.EventType;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagComponent;
 import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
-import org.jdesktop.wonderland.modules.userlist.client.UserListManager;
+import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
 import org.jdesktop.wonderland.modules.userlist.client.views.NamePropertiesPanel.NameTagAttribute;
 import org.jdesktop.wonderland.modules.userlist.client.views.NamePropertiesView;
 
@@ -25,11 +25,11 @@ import org.jdesktop.wonderland.modules.userlist.client.views.NamePropertiesView;
 public class NamePropertiesPresenter {
     private NamePropertiesView view;
     private HUDComponent hudComponent;
-    private UserListManager model;
+    private WonderlandUserList model;
     public NamePropertiesPresenter(NamePropertiesView view, HUDComponent c) {
         this.view = view;
         this.hudComponent = c;
-        model = UserListManager.INSTANCE;
+        model = WonderlandUserList.INSTANCE;
         addListeners();
     }
     
