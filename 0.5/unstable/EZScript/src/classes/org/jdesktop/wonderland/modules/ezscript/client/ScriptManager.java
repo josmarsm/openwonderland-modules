@@ -25,9 +25,11 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventBridgeSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
@@ -110,6 +112,18 @@ public class ScriptManager {
             addFunctionBinding(method);
             panel.addLibraryEntry(method);
         }
+        
+        Iterator<EventBridgeSPI> bridges =
+                loader.getInstances(EventBridge.class, EventBridgeSPI.class);
+        
+        while(bridges.hasNext()) {
+            EventBridgeSPI bridge = bridges.next();
+            addBridgeBinding(bridge);
+            //we aren't ready to initialize this yet until I can figure out a 
+            //good way to enable/disable the bridges from ezscript land.
+//            bridge.initialize(scriptEngine, scriptBindings);
+        }
+        
     }
     public void evaluate(String script) {
         try {
@@ -204,6 +218,44 @@ public class ScriptManager {
         }
     }
 
+    private void addBridgeBinding(EventBridgeSPI bridge) {
+        String bridgeScript = ""
+                + "var " + bridge.getBridgeName() + " = ({\n" //create the object given the name from the bridge
+                + "     fs: new Array(),\n" //create an array of functions to be called for an event
+                + "     add: function(f) { this.fs.push(f); },\n" //create a method for the object to add a function to the array
+                + "     event: function(e) {\n" //create an event function to call each function in the array
+                + "         for(var i in this.fs) {\n" //for every function...
+                + "             this.fs[i](e);\n" //pass the 'e' argument through
+                + "         }\n"
+                + "     },\n";
+
+        //add other event names...
+        for (String name : bridge.getEventNames()) { //for every event name in the bridge...
+            bridgeScript += buildEventlet(name); //
+        }
+        bridgeScript +=
+                "     jagwire: \"isawesome\"\n" //easter egg :D, actually, I put this here so that we can add commas to the end of each event function definition. (see below);
+                + "});"; //end the object definition. Now we can use the bridge in javascript!
+
+        try {
+            scriptEngine.eval(bridgeScript, scriptBindings);
+        } catch (ScriptException e) {
+            processException(e);
+        }
+
+    }
+        
+    private String buildEventlet(String name) {
+        String stufflet = ""
+                + "" + name + ": function(e) {\n"
+                + "   for(var i in this.fs) {\n"
+                + "         this.fs[i](e);\n"
+                + "   }\n"
+                + "},\n"; //the comma here is what I'm talking about up there ^
+        return stufflet;
+    }
+    
+    
     public void addCell(Cell cell) {
         if(!stringToCellID.containsKey(cell.getName())) {
             stringToCellID.put(cell.getName(), cell.getCellID());

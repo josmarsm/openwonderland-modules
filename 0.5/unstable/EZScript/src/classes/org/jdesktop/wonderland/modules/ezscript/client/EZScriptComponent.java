@@ -288,14 +288,14 @@ public class EZScriptComponent extends CellComponent {
         this.addGetFunction();
         
         //grab all eventbridges
-        Iterator<EventBridgeSPI> bridges
-                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
-        while(bridges.hasNext()) {
-            EventBridgeSPI bridge = bridges.next();            
-            this.addBridgeBinding(bridge);
-            bridge.initialize(scriptEngine, scriptBindings);
+//        Iterator<EventBridgeSPI> bridges
+//                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
+//        while(bridges.hasNext()) {
+//            EventBridgeSPI bridge = bridges.next();            
+//            this.addBridgeBinding(bridge);
+//            bridge.initialize(scriptEngine, scriptBindings);
             
-        }
+//        }
         
     }
 
@@ -1220,29 +1220,29 @@ public class EZScriptComponent extends CellComponent {
     
     private void addBridgeBinding(EventBridgeSPI bridge) {
         String bridgeScript = ""
-                + "var "+bridge.getBridgeName()+" = ({\n" //create the object given the name from the bridge
+                + "var " + bridge.getBridgeName() + " = ({\n" //create the object given the name from the bridge
                 + "     fs: new Array(),\n" //create an array of functions to be called for an event
                 + "     add: function(f) { this.fs.push(f); },\n" //create a method for the object to add a function to the array
                 + "     event: function(e) {\n" //create an event function to call each function in the array
                 + "         for(var i in this.fs) {\n" //for every function...
-                + "             this.fs[i](e);\n"      //pass the 'e' argument through
+                + "             this.fs[i](e);\n" //pass the 'e' argument through
                 + "         }\n"
                 + "     },\n";
-                
-                //add other event names...
-                for(String name: bridge.getEventNames()) { //for every event name in the bridge...
-                    bridgeScript += buildEventlet(name); //
-                }
-                bridgeScript +=
+
+        //add other event names...
+        for (String name : bridge.getEventNames()) { //for every event name in the bridge...
+            bridgeScript += buildEventlet(name); //
+        }
+        bridgeScript +=
                 "     jagwire: \"isawesome\"\n" //easter egg :D, actually, I put this here so that we can add commas to the end of each event function definition. (see below);
                 + "});"; //end the object definition. Now we can use the bridge in javascript!
-            
-                try {
-                    scriptEngine.eval(bridgeScript, scriptBindings);
-                } catch(ScriptException e) {
-                    processException(e);
-                }
-        
+
+        try {
+            scriptEngine.eval(bridgeScript, scriptBindings);
+        } catch (ScriptException e) {
+            processException(e);
+        }
+
     }
     
     private String buildEventlet(String name) {
