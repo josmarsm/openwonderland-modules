@@ -67,6 +67,9 @@ import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableCompon
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
@@ -260,44 +263,12 @@ public class EZScriptComponent extends CellComponent {
         ScriptManager.getInstance().addCell(cell);
         dialog = new JDialog();
         panel = new ScriptEditorPanel(this, dialog);
-        ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
-        Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
-                                                        ScriptMethodSPI.class);
-        //grab all global void methods
-        while(iter.hasNext()) {
-            final ScriptMethodSPI method = iter.next();
-            this.addFunctionBinding(method);
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    panel.addLibraryEntry(method);
-                }
-            });
-        }
-
-        //grab all returnablesa
-        Iterator<ReturnableScriptMethodSPI> returnables 
-                            = loader.getInstances(ReturnableScriptMethod.class,
-                                               ReturnableScriptMethodSPI.class);
-        while(returnables.hasNext()) {
-            ReturnableScriptMethodSPI method = returnables.next();
-            this.addFunctionBinding(method);
-            panel.addLibraryEntry(method);
-        }
-
-        //add $() function to script bindings
-        this.addGetFunction();
         
-        //grab all eventbridges
-        Iterator<EventBridgeSPI> bridges
-                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
-        while(bridges.hasNext()) {
-            EventBridgeSPI bridge = bridges.next();            
-            this.addBridgeBinding(bridge);
-            bridge.initialize(scriptEngine, scriptBindings);
-            
-        }
+        generateBindings();
+
         
     }
+    
 
     @Override
     public void setClientState(CellComponentClientState clientState) {
@@ -424,6 +395,76 @@ public class EZScriptComponent extends CellComponent {
     }
 //</editor-fold>
 
+    //<editor-fold defaultstate="collapsed" desc="javascript generation methods">
+    private void generateBindings() {
+        ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
+        
+        generateVoidMethods(loader);
+        
+        generateNonVoidMethods(loader);
+        
+        generateBridges(loader);
+        
+        //add $() function to script bindings
+        addGetFunction();
+    }
+    
+    private void generateBridges(ScannedClassLoader loader) {
+        //grab all eventbridges
+        Iterator<EventBridgeSPI> bridges
+                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
+        BridgeGenerator bridgeGenerator = new BridgeGenerator();
+        
+        while(bridges.hasNext()) {
+            EventBridgeSPI bridge = bridges.next();
+            //            this.addBridgeBinding(bridge);
+            bridgeGenerator.setActiveBridge(bridge);
+            String s = bridgeGenerator.generateScriptBinding();
+            evaluateScript(s);
+            bridge.initialize(scriptEngine, scriptBindings);
+            
+        }
+    }
+    
+    private void generateNonVoidMethods(ScannedClassLoader loader) {
+        //grab all returnablesa
+        Iterator<ReturnableScriptMethodSPI> returnables
+                = loader.getInstances(ReturnableScriptMethod.class,
+                ReturnableScriptMethodSPI.class);
+        
+        ReturnableMethodGenerator returnableGenerator
+                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+        while(returnables.hasNext()) {
+            ReturnableScriptMethodSPI method = returnables.next();
+            //            this.addFunctionBinding(method);
+            returnableGenerator.setActiveMethod(method);
+            String s = returnableGenerator.generateScriptBinding();
+            evaluateScript(s);
+            panel.addLibraryEntry(method);
+        }
+    }
+    
+    private void generateVoidMethods(ScannedClassLoader loader) {
+        Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
+                ScriptMethodSPI.class);
+        //grab all global void methods
+        MethodGenerator methodGenerator
+                = new MethodGenerator(scriptEngine, scriptBindings);
+        while(iter.hasNext()) {
+            final ScriptMethodSPI method = iter.next();
+            //            this.addFunctionBinding(method);
+            methodGenerator.setActiveMethod(method);
+            String s = methodGenerator.generateScriptBinding();
+            evaluateScript(s);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.addLibraryEntry(method);
+                }
+            });
+        }
+    }
+    //</editor-fold>
+     
     public void handleStates(SharedMapCli states) {
 
         //Handle "bounds" first, since it is a dependency of "proximity".
@@ -1129,138 +1170,7 @@ public class EZScriptComponent extends CellComponent {
         }
     }
     //</editor-fold>
-
-    public void addFunctionBinding(ScriptMethodSPI method) {
-        scriptBindings.put("this"+method.getFunctionName(), method);
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\targs[i] = arguments[i];\n"
-            + "\t}\n"
-
-           // + "\targs = "+method.getFunctionName()+".arguments;\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
-            +"}";
-
-        try {
-            //System.out.println("evaluating script: \n"+scriptx);
-            scriptEngine.eval(scriptx, scriptBindings);            
-        } catch (ScriptException e) {
-            processException(e);
-        }
-    }
-    
-    public void addFunctionBinding(ReturnableScriptMethodSPI method) {
-        scriptBindings.put("this"+method.getFunctionName(), method);
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\t\targs[i] = arguments[i];\n"
-            + "\t}\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
-
-            + "\tvar tmp = this"+method.getFunctionName()+".returns();\n"
-            + "\treturn tmp\n;"
-            +"}";
-
-        try {
-           // System.out.println("evaluating script: \n"+scriptx);
-            scriptEngine.eval(scriptx, scriptBindings);
-        } catch (ScriptException e) {
-            processException(e);
-        }
-    }
-    //<editor-fold  desc="old bridge binding code">
-//    public void addBridgeBinding(EventBridgeSPI bridge) {
-////        scriptBindings.put(this)
-//        
-//        String bridgeScript = 
-//                "function this"+bridge.getBridgeName()+"() {\n"
-//                + "this.fs = new Array();\n"
-//                + "this.event = \"event\";\n"
-//                + "}\n"
-//                + "function add(f) { this.fs.push(f); }\n";
-////                + "function doNotify(event) {\n"
-////                + "    var i;\n"
-////                + "    for(i in this.fs) {\n"
-////                + "        this.fs[i](event);\n"
-////                + "    }\n"
-////                + "}\n"
-//                for(String s: bridge.getEventNames()) {
-//                    bridgeScript += buildEventlet("this"+bridge.getBridgeName(), s);
-//                }
-//        
-//                bridgeScript += "this"+bridge.getBridgeName()+".prototype.add = add;\n"
-//                + "var " +bridge.getBridgeName()+" = new this"+bridge.getBridgeName()+"();";
-//        
-//        try {
-//            scriptEngine.eval(bridgeScript, scriptBindings);
-//        } catch(ScriptException e) {
-//            processException(e);
-//        }
-//        //bridgeName.doNotify(event);
-//    }
-    
-
-//    private String buildEventlet(String prototype, String eventName) {
-//        String eventlet =
-//                "function "+prototype+eventName+"(event) {\n" //thisEventDispatcherNotify
-//                + "var i;\n"
-//                + "     for(i in this.fs) {\n"
-//                + "         this.fs[i](event);\n"
-//                + "     }\n"
-//                + "}"
-//                + prototype+".prototype."+eventName+"="+prototype+eventName+"\n"; //thisExampleEventBridge.prototype.notify = EventDispatcherNotify;
-//        
-//        return eventlet;
-//    }
-    //</editor-fold>
-    
-    private void addBridgeBinding(EventBridgeSPI bridge) {
-        String bridgeScript = ""
-                + "var " + bridge.getBridgeName() + " = ({\n" //create the object given the name from the bridge
-                + "     fs: new Array(),\n" //create an array of functions to be called for an event
-                + "     enabled: new Boolean(),\n" //create a boolean to enable/disable the bridge
-                + "     setEnabled: function(b) { this.enabled = b; },\n" //set whether or not the bridge is enabled
-                + "     add: function(f) { this.fs.push(f); },\n" //create a method for the object to add a function to the array
-                + "     event: function(e) {\n" //create an event function to call each function in the array
-                + "         if(this.enabled) {\n"
-                + "             for(var i in this.fs) {\n" //for every function...
-                + "                 this.fs[i](e);\n" //pass the 'e' argument through
-                + "             }\n"
-                + "         }\n"
-                + "     },\n";
-
-        //add other event names...
-        for (String name : bridge.getEventNames()) { //for every event name in the bridge...
-            bridgeScript += buildEventlet(name); //
-        }
-        bridgeScript +=
-                "     jagwire: \"isawesome\"\n" //easter egg :D, actually, I put this here so that we can add commas to the end of each event function definition. (see below);
-                + "});"; //end the object definition. Now we can use the bridge in javascript!
-
-        try {
-            scriptEngine.eval(bridgeScript, scriptBindings);
-        } catch (ScriptException e) {
-            processException(e);
-        }
-
-    }
-        
-    private String buildEventlet(String name) {
-        String stufflet = ""
-                + "" + name + ": function(e) {\n"
-                + "     if(this.enabled) {\n"
-                + "         for(var i in this.fs) {\n"
-                + "             this.fs[i](e);\n"
-                + "         }\n"
-                + "     }\n"
-                + "},\n"; //the comma here is what I'm talking about up there ^
-        return stufflet;
-    }
-    
+ 
     public void triggerLocalCell(CellID cellID, String label, Object[] args) {
         //obtain primary session so we can get the cell cache.
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
@@ -1347,9 +1257,10 @@ public class EZScriptComponent extends CellComponent {
     }
 
     public void addGetFunction() {
-        String scriptx = "function $(cellname) { " +
-                "\treturn Context.getCellIDByName(cellname);" +
-                "}";
+        String scriptx = 
+                "function $(cellname) { \n" +
+                "   return Context.getCellIDByName(cellname);\n" +
+                "}\n";
 
         try {            
             scriptEngine.eval(scriptx, scriptBindings);
