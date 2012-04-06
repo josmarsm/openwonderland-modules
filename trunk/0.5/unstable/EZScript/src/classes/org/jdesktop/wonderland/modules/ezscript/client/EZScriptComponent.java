@@ -288,14 +288,14 @@ public class EZScriptComponent extends CellComponent {
         this.addGetFunction();
         
         //grab all eventbridges
-//        Iterator<EventBridgeSPI> bridges
-//                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
-//        while(bridges.hasNext()) {
-//            EventBridgeSPI bridge = bridges.next();            
-//            this.addBridgeBinding(bridge);
-//            bridge.initialize(scriptEngine, scriptBindings);
+        Iterator<EventBridgeSPI> bridges
+                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
+        while(bridges.hasNext()) {
+            EventBridgeSPI bridge = bridges.next();            
+            this.addBridgeBinding(bridge);
+            bridge.initialize(scriptEngine, scriptBindings);
             
-//        }
+        }
         
     }
 
@@ -1222,10 +1222,14 @@ public class EZScriptComponent extends CellComponent {
         String bridgeScript = ""
                 + "var " + bridge.getBridgeName() + " = ({\n" //create the object given the name from the bridge
                 + "     fs: new Array(),\n" //create an array of functions to be called for an event
+                + "     enabled: new Boolean(),\n" //create a boolean to enable/disable the bridge
+                + "     setEnabled: function(b) { this.enabled = b; },\n" //set whether or not the bridge is enabled
                 + "     add: function(f) { this.fs.push(f); },\n" //create a method for the object to add a function to the array
                 + "     event: function(e) {\n" //create an event function to call each function in the array
-                + "         for(var i in this.fs) {\n" //for every function...
-                + "             this.fs[i](e);\n" //pass the 'e' argument through
+                + "         if(this.enabled) {\n"
+                + "             for(var i in this.fs) {\n" //for every function...
+                + "                 this.fs[i](e);\n" //pass the 'e' argument through
+                + "             }\n"
                 + "         }\n"
                 + "     },\n";
 
@@ -1244,13 +1248,15 @@ public class EZScriptComponent extends CellComponent {
         }
 
     }
-    
+        
     private String buildEventlet(String name) {
-        String stufflet =    ""
-                + ""+name+": function(e) {\n"
-                + "   for(var i in this.fs) {\n"
-                + "         this.fs[i](e);\n"
-                + "   }\n"
+        String stufflet = ""
+                + "" + name + ": function(e) {\n"
+                + "     if(this.enabled) {\n"
+                + "         for(var i in this.fs) {\n"
+                + "             this.fs[i](e);\n"
+                + "         }\n"
+                + "     }\n"
                 + "},\n"; //the comma here is what I'm talking about up there ^
         return stufflet;
     }
