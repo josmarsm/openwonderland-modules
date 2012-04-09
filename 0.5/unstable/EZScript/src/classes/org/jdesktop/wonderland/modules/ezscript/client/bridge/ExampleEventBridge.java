@@ -5,8 +5,6 @@
 package org.jdesktop.wonderland.modules.ezscript.client.bridge;
 
 //import java.awt.Event;
-import org.jdesktop.wonderland.modules.ezscript.client.bridge.AbstractEventBridge;
-import org.jdesktop.wonderland.modules.ezscript.client.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Bindings;
@@ -16,8 +14,7 @@ import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
 import org.jdesktop.wonderland.client.input.InputManager;
 import org.jdesktop.wonderland.client.jme.input.MouseButtonEvent3D;
-import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventBridgeSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventObjectSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
 
 /**
@@ -42,8 +39,20 @@ public class ExampleEventBridge extends AbstractEventBridge {
         InputManager.inputManager().addGlobalEventListener(new MyMouseListener());
     }
     
-    public String[] getEventNames() {
-        return new String[] { "mousePressed"};
+    public EventObjectSPI[] getEventObjects() {
+//        return new String[] { "mousePressed"};
+        
+        return new EventObjectSPI[] { new EventObjectSPI() {
+
+            public String getEventName() {
+                return "mousePressed";
+            }
+
+            public int getNumberOfArguments() {
+                return 1;
+            }
+        
+        }};
     }
     
     public void mousePressed(Event event) {

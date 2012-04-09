@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.bridge;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventBridgeSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventObjectSPI;
 
 /**
  *
@@ -18,7 +19,7 @@ public abstract class AbstractEventBridge implements EventBridgeSPI {
     
     public abstract String getBridgeName();
    
-    public abstract String[] getEventNames();
+    public abstract EventObjectSPI[] getEventObjects();
     /**
      * Extend this in subclasses to register the event handler.
      * @param engine the script engine to send wonderland events to javascript land

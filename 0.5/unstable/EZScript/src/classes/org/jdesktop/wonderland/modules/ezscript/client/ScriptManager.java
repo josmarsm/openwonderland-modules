@@ -234,9 +234,9 @@ public class ScriptManager {
                 + "     },\n";
 
         //add other event names...
-        for (String name : bridge.getEventNames()) { //for every event name in the bridge...
-            bridgeScript += buildEventlet(name); //
-        }
+//        for (String name : bridge.getEventObjects()) { //for every event name in the bridge...
+//            bridgeScript += buildEventlet(name); //
+//        }
         bridgeScript +=
                 "     jagwire: \"isawesome\"\n" //easter egg :D, actually, I put this here so that we can add commas to the end of each event function definition. (see below);
                 + "});"; //end the object definition. Now we can use the bridge in javascript!

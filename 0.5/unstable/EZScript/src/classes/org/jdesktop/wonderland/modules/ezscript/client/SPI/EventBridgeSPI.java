@@ -16,7 +16,7 @@ public interface EventBridgeSPI {
     /*
      * Returns a list of event names for the dispatcher to send. There should
      */
-    public String[] getEventNames();
+    public EventObjectSPI[] getEventObjects();
     public void initialize(ScriptEngine engine, Bindings bs);
     
 }
