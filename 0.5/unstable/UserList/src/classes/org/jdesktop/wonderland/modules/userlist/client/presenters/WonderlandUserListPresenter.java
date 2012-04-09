@@ -472,6 +472,10 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         });
     }
     
+    public void infoUpdated(PresenceInfo info) {
+        updateUserList();
+    }
+    
     private void doUpdateList() {
         //<editor-fold defaultstate="collapsed" desc="legacy list code">
 //        PresenceInfo[] presenceInfoList = model.getAllUsers();
@@ -598,8 +602,13 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         //add my name to the top
         String myName = model.getMyDisplayName();
         PresenceInfo me = model.getLocalPresenceInfo();
-        NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
-        view.addEntryToView(myName, 0);
+        
+        logger.warning(""
+                + "\nNAME: "+myName+""
+                + "\nIs-Speaking: "+me.isSpeaking()+""
+                + "\nIs-Muted: "+me.isMuted());
+        String userName = NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
+        view.addEntryToView(userName, 0);
         
 //        synchronized (model.getUsersInRange()) {
             //add all users in range

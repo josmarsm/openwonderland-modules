@@ -17,6 +17,7 @@ import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
 import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerListener;
@@ -59,6 +60,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
 //        usersInRange.add(localPresenceInfo);
         
         manager.addPresenceManagerListener(this);
+        usersInRange.add(localPresenceInfo);
         
     }
     
@@ -131,6 +133,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
         switch(ct) {
             case UPDATED:
 //                logger.warning("INFO CHANGED: UPDATED: "+pi.getUsernameAlias());
+                listener.infoUpdated(pi);
                 break;
             case USER_ADDED:
                 logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
@@ -263,6 +266,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
     }
     
     public PresenceInfo getAliasInfo(String s) {
+        s = NameTagNode.getUsername(s);
         return manager.getAliasPresenceInfo(s);
     }
     
@@ -290,6 +294,8 @@ public enum WonderlandUserList implements PresenceManagerListener {
         
         public void userMovedOutOfRange(PresenceInfo info);
         
-        public void aliasChanged(PresenceInfo info);                    
+        public void aliasChanged(PresenceInfo info);
+
+        public void infoUpdated(PresenceInfo pi);
     }
 }
