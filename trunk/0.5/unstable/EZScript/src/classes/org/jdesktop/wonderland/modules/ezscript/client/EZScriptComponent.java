@@ -582,7 +582,7 @@ public class EZScriptComponent extends CellComponent {
         }
         proximityComponent.addProximityListener(proximityListener,
                                                 new BoundingVolume[] {
-                                                    cell.getLocalBounds()
+                                                    cell.getLocalBounds()                                                     
                                                 });
         proximityEventsEnabled = true;
         initiatesProximityEvents = true;

@@ -74,7 +74,7 @@ public class ScriptedCameraController  implements EventBridgeSPI {
         try {
             
             logger.warning("UPDATE - POSITION: "+position+""
-                    + "\nUPDATE - DIRECTIN: "+direction);
+                    + "\nUPDATE - DIRECTION: "+direction);
             long time = System.currentTimeMillis();
             String positionID = "position"+time;
             String directionID = "direction"+time;
