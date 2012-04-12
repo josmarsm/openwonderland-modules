@@ -22,7 +22,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
  * or mouse releases). 
  * @author JagWire
  */
-@EventBridge
+//@EventBridge
 public class ExampleEventBridge extends AbstractEventBridge {
 
     private static final Logger logger = Logger.getLogger(ExampleEventBridge.class.getName());

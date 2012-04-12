@@ -2,4 +2,12 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <data xmlns="http://www.netbeans.org/ns/profiler/1" profile-file-target="build" profile-target="" version="0.4"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/SPI/EventBridgeSPI.java</file>
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/SPI/EventObjectSPI.java</file>
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/bridge/AbstractEventBridge.java</file>
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/bridge/ExampleEventBridge.java</file>
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/camera/ScriptedCameraController.java</file>
+        <file>file:/Users/Ryan/wonderland-modules/unstable/EZScript/src/classes/org/jdesktop/wonderland/modules/ezscript/client/generators/javascript/BridgeGenerator.java</file>
+    </open-files>
 </project-private>
