@@ -7,8 +7,11 @@ package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.utils.CellCreationException;
 import org.jdesktop.wonderland.client.cell.utils.CellUtils;
+import org.jdesktop.wonderland.client.comms.WonderlandSession;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.ezscript.client.EZScriptComponentFactory;
@@ -22,22 +25,25 @@ import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerStat
  * @author JagWire
  */
 @ReturnableScriptMethod
-public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
+public class CreateEmptyCellMethod implements ReturnableScriptMethodSPI {
 
     private CellID cellID;
     private String name;
+    
+    private CellID resultingCellID;
+    private static final Logger logger = Logger.getLogger(CreateEmptyCellMethod.class.getName());
     public String getDescription() {
         return "Creates a cell with no renderable geometry. Used for purposes of" +
                 "grouping cells together and creating multiple transformable composites.\n" +
-                "-- usage: CreateCommonCell();\n" +
-                "-- usage: CreateCommonCell(aCellID);\n" +
-                "-- usage: CreateCommonCell('mycell');\n" +
-                "-- usage: CreateCommonCell(aCellID,'mycell);\n" +                
+                "-- usage: Cell();\n" +
+                "-- usage: Cell(aCellID);\n" +
+                "-- usage: Cell(\"mycell\");\n" +
+                "-- usage: Cell(aCellID,\"mycell\");\n" +                
                 "-- automatically adds the EZScript capability to the cell.";
     }
 
     public String getFunctionName() {
-        return "CreateCommonCell";
+        return "Cell";
     }
 
     public String getCategory() {
@@ -64,10 +70,23 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
      * This should return the resulting CellID of the cell that gets created.
      * Unsure if the core changes have been incorporated yet.
      * 
-     * @return null
+     * @return The resulting cell object
      */
     public Object returns() {
-        return null;
+        if (resultingCellID == null) {
+            logger.warning("RESULTING CELLID IS NULL, RETURNING NULL!");
+            return null;
+        }
+
+        //get wonderland session
+        WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
+    
+        //use session to get cell cache
+        CellCache cellCache = ClientContextJME.getCellCache(session);
+        
+        //use cell cache to get cell from resultingCellID
+        return cellCache.getCell(resultingCellID);
+        
     }
 
     public void run() {
@@ -82,14 +101,14 @@ public class CreateCommonCellMethod implements ReturnableScriptMethodSPI {
                 
         try {
             if(cellID == null) {
-                CellUtils.createCell(state);
+               resultingCellID = CellUtils.createCell(state);
             } else {
-                CellUtils.createCell(state, cellID);
+                resultingCellID = CellUtils.createCell(state, cellID);
             }
             
             
         } catch (CellCreationException ex) {
-            Logger.getLogger(CreateCommonCellMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CreateEmptyCellMethod.class.getName()).log(Level.SEVERE, null, ex);
         }
 
     }

@@ -55,7 +55,7 @@ import org.jdesktop.wonderland.common.cell.state.BoundingVolumeHint;
 import org.jdesktop.wonderland.modules.ezscript.client.EZScriptComponentFactory;
 import org.jdesktop.wonderland.modules.ezscript.client.ScriptManager;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.CommonCellFactory;
-import org.jdesktop.wonderland.modules.ezscript.client.methods.CreateCommonCellMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.methods.CreateEmptyCellMethod;
 import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerState;
 
 /**
@@ -273,7 +273,7 @@ public enum SimplePhysicsManager implements MouseMovedListener {
             return srbc;
             
         } catch (CellCreationException ex) {
-            Logger.getLogger(CreateCommonCellMethod.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CreateEmptyCellMethod.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         } catch(InterruptedException ie) {
           logger.warning(ie.getMessage());
