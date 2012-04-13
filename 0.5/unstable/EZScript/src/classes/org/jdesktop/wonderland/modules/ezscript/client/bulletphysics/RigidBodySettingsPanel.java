@@ -3,7 +3,7 @@
  *
  * Created on Aug 5, 2011, 9:50:47 AM
  */
-package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
+package org.jdesktop.wonderland.modules.ezscript.client.bulletphysics;
 
 import com.jme.bounding.BoundingSphere;
 import org.jdesktop.wonderland.client.hud.HUDComponent;

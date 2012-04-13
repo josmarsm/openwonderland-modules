@@ -106,6 +106,7 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
         Transform groundTransform = new Transform();
 
         groundTransform.setIdentity();
+
         groundTransform.origin.set(new Vector3f(0.f, -5.0f, 0.f));
         groundNode.setLocalTranslation(0, -5.0f, 0);
         Quaternion pitch90 = new Quaternion();
@@ -221,14 +222,12 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
         return "simulation";
     }
 
-
-        class JBulletProcessor extends ProcessorComponent {
+    class JBulletProcessor extends ProcessorComponent {
 
         /**
          * A name
          */
         private String name = null;
-
         /**
          * The constructor
          */
@@ -239,7 +238,7 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
             setArmingCondition(new NewFrameCondition(this));
         }
 
-            @Override
+        @Override
         public String toString() {
             return (name);
         }
@@ -255,15 +254,15 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
          * The Calculate method
          */
         public void compute(ProcessorArmingCollection collection) {
-            if(frameIndex > (30*seconds)) {
+            if (frameIndex > (30 * seconds)) {
 
                 ClientContextJME.getWorldManager().removeEntity(this.getEntity());
                 this.getEntity().removeComponent(JBulletProcessor.class);
             }
-            world.stepSimulation(1/60f, 10);
+            world.stepSimulation(1 / 60f, 10);
 
-            frameIndex +=1;
-                               
+            frameIndex += 1;
+
         }
 
         /**
@@ -271,19 +270,21 @@ public class JBulletDemoMethod implements ScriptMethodSPI {
          */
         public void commit(ProcessorArmingCollection collection) {
 
-            for(CollisionObject obj : world.getCollisionObjectArray()) {
+            for (CollisionObject obj : world.getCollisionObjectArray()) {
                 RigidBody body = RigidBody.upcast(obj);
                 if (body != null && body.getMotionState() != null) {
-                        Transform trans = new Transform();
-                        body.getMotionState().getWorldTransform(trans);
-                        Node n = bodiesToNodes.get(obj);
-                        n.setLocalTranslation(trans.origin.x, trans.origin.y, trans.origin.z);
-                        
-                        ClientContextJME.getWorldManager().addToUpdateList(n);
-                       /* System.out.printf("world pos = %f,%f,%f\n", trans.origin.x,
-                                        trans.origin.y, trans.origin.z);*/
+                    Transform trans = new Transform();
+                    body.getMotionState().getWorldTransform(trans);
+                    Node n = bodiesToNodes.get(obj);
+                    n.setLocalTranslation(trans.origin.x, trans.origin.y, trans.origin.z);
+
+                    ClientContextJME.getWorldManager().addToUpdateList(n);
+                    /*
+                     * System.out.printf("world pos = %f,%f,%f\n",
+                     * trans.origin.x, trans.origin.y, trans.origin.z);
+                     */
                 }
-            }    
+            }
         }
     }
 

@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
+package org.jdesktop.wonderland.modules.ezscript.client.bulletphysics;
 
 import com.bulletphysics.collision.broadphase.AxisSweep3;
 import com.bulletphysics.collision.dispatch.CollisionConfiguration;
