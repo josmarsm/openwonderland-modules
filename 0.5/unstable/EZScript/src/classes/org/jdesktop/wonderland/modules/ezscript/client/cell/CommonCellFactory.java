@@ -3,6 +3,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.cell;
 
 import java.awt.Image;
 import java.util.Properties;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
 import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerState;
@@ -13,7 +14,7 @@ import org.jdesktop.wonderland.modules.ezscript.common.cell.CommonCellServerStat
  * function.
  * @author JagWire
  */
-
+@CellFactory
 public class CommonCellFactory implements CellFactorySPI {
 
     public String[] getExtensions() {
@@ -25,7 +26,7 @@ public class CommonCellFactory implements CellFactorySPI {
     }
 
     public String getDisplayName() {
-       return "Common Cell";
+       return "Empty Cell";
     }
 
     public Image getPreviewImage() {
