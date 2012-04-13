@@ -33,7 +33,7 @@
  * exception as provided by Sun in the License file that accompanied 
  * this code.
  */
-package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
+package org.jdesktop.wonderland.modules.ezscript.client.bulletphysics;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;

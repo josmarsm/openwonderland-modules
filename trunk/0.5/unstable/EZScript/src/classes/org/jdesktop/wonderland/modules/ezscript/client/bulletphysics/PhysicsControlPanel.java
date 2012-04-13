@@ -1,5 +1,5 @@
 
-package org.jdesktop.wonderland.modules.ezscript.client.simplephysics;
+package org.jdesktop.wonderland.modules.ezscript.client.bulletphysics;
 
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
