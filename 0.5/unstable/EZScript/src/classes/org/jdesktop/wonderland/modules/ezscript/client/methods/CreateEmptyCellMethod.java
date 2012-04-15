@@ -53,6 +53,7 @@ public class CreateEmptyCellMethod implements ReturnableScriptMethodSPI {
     public void setArguments(Object[] args) {
         if(args.length == 0)
             return;
+        
         if(args.length >= 1) {
             
             if(!(args[0] instanceof String)) 
