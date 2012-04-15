@@ -30,6 +30,8 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.cell.ProximityComponent;
 import org.jdesktop.wonderland.client.cell.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -67,6 +69,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableCompon
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
@@ -403,6 +406,8 @@ public class EZScriptComponent extends CellComponent {
         
         generateNonVoidMethods(loader);
         
+        generateCellFactories(loader);
+        
         generateBridges(loader);
         
         //add $() function to script bindings
@@ -441,6 +446,21 @@ public class EZScriptComponent extends CellComponent {
             String s = returnableGenerator.generateScriptBinding();
             evaluateScript(s);
             panel.addLibraryEntry(method);
+        }
+    }
+    
+    private void generateCellFactories(ScannedClassLoader loader) {
+        Iterator<CellFactorySPI> factories =
+                loader.getInstances(CellFactory.class, CellFactorySPI.class);
+        
+        ReturnableMethodGenerator generator
+                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+        
+        while(factories.hasNext()) {
+           ReturnableScriptMethodSPI method
+                   = new GeneratedCellMethod(factories.next());
+           generator.setActiveMethod(method);
+           generator.generateScriptBinding();
         }
     }
     
