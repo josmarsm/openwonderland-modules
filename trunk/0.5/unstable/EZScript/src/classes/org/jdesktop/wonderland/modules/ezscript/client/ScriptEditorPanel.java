@@ -198,7 +198,12 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
                     
                 } else {
                     //client execute
-                    ScriptManager.getInstance().evaluate(script);
+                    new Thread(new Runnable() { 
+                        public void run() {
+                            ScriptManager.getInstance().evaluate(script);
+                        }
+                    }).start();
+                    
                 }
                         
             }
