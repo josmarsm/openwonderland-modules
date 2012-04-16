@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -398,6 +399,13 @@ public class EZScriptComponent extends CellComponent {
     }
 //</editor-fold>
 
+    private ScriptedObjectDataSource dao() {
+        
+        ScriptedObjectDataSource.INSTANCE.initialize();
+        
+        return ScriptedObjectDataSource.INSTANCE;
+    }
+    
     //<editor-fold defaultstate="collapsed" desc="javascript generation methods">
     private void generateBindings() {
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
@@ -417,7 +425,7 @@ public class EZScriptComponent extends CellComponent {
     private void generateBridges(ScannedClassLoader loader) {
         //grab all eventbridges
         Iterator<EventBridgeSPI> bridges
-                = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
+                = dao().getBridges();
         BridgeGenerator bridgeGenerator = new BridgeGenerator();
         
         while(bridges.hasNext()) {
@@ -425,7 +433,7 @@ public class EZScriptComponent extends CellComponent {
             //            this.addBridgeBinding(bridge);
             bridgeGenerator.setActiveBridge(bridge);
             String s = bridgeGenerator.generateScriptBinding();
-            evaluateScript(s);
+            bindScript(s);
             bridge.initialize(scriptEngine, scriptBindings);
             
         }
@@ -433,9 +441,7 @@ public class EZScriptComponent extends CellComponent {
     
     private void generateNonVoidMethods(ScannedClassLoader loader) {
         //grab all returnablesa
-        Iterator<ReturnableScriptMethodSPI> returnables
-                = loader.getInstances(ReturnableScriptMethod.class,
-                ReturnableScriptMethodSPI.class);
+        Iterator<ReturnableScriptMethodSPI> returnables = dao().getReturnables();
         
         ReturnableMethodGenerator returnableGenerator
                 = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
@@ -444,29 +450,36 @@ public class EZScriptComponent extends CellComponent {
             //            this.addFunctionBinding(method);
             returnableGenerator.setActiveMethod(method);
             String s = returnableGenerator.generateScriptBinding();
-            evaluateScript(s);
+            bindScript(s);
             panel.addLibraryEntry(method);
         }
     }
     
     private void generateCellFactories(ScannedClassLoader loader) {
-        Iterator<CellFactorySPI> factories =
-                loader.getInstances(CellFactory.class, CellFactorySPI.class);
-        
+        Iterator<CellFactorySPI> factories = dao().getCellFactories();
+                
         ReturnableMethodGenerator generator
                 = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
         
         while(factories.hasNext()) {
-           ReturnableScriptMethodSPI method
+           final ReturnableScriptMethodSPI method
                    = new GeneratedCellMethod(factories.next());
            generator.setActiveMethod(method);
-           generator.generateScriptBinding();
+           String s = generator.generateScriptBinding();
+           bindScript(s);
+           SwingUtilities.invokeLater(new Runnable() { 
+           
+               public void run() {
+                   panel.addLibraryEntry(method);
+               }
+           });
+           
         }
     }
     
     private void generateVoidMethods(ScannedClassLoader loader) {
-        Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
-                ScriptMethodSPI.class);
+        Iterator<ScriptMethodSPI> iter = dao().getVoids();
+        
         //grab all global void methods
         MethodGenerator methodGenerator
                 = new MethodGenerator(scriptEngine, scriptBindings);
@@ -475,7 +488,7 @@ public class EZScriptComponent extends CellComponent {
             //            this.addFunctionBinding(method);
             methodGenerator.setActiveMethod(method);
             String s = methodGenerator.generateScriptBinding();
-            evaluateScript(s);
+            bindScript(s);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     panel.addLibraryEntry(method);
@@ -922,6 +935,15 @@ public class EZScriptComponent extends CellComponent {
         m.clear();
     }
 
+    
+    private void bindScript(final String script) {
+        try {
+            scriptEngine.eval(script, scriptBindings);
+        } catch (ScriptException ex) {
+            Logger.getLogger(EZScriptComponent.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public void evaluateScript(final String script) {
 
         try {
@@ -1073,14 +1095,20 @@ public class EZScriptComponent extends CellComponent {
             //scripts are most likely to be called second most frequently
             if(name.equals("scripts")) {
                 if(property.equals("editor")) {
-                    SharedString script = (SharedString)event.getNewValue();
+                    final SharedString script = (SharedString)event.getNewValue();
                     try {
                         //execute script typed in Scripting Editor
                         System.out.println("executing script...");
                         //scriptEngine.eval(script.getValue(), scriptBindings);
                         //Need to add this script to the script editor panel.
                         clearCallbacks();
-                        evaluateScript(script.getValue());
+                        new Thread(new Runnable() {
+                        
+                            public void run() {
+                               evaluateScript(script.getValue()); 
+                            }
+                        }).start();
+                        
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
