@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
@@ -17,6 +18,7 @@ import javax.script.ScriptException;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
@@ -35,6 +37,10 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
 
 /**
  *
@@ -85,46 +91,113 @@ public class ScriptManager {
 
 
         stringToCellID = new HashMap<String, CellID>();
-
         
+        generateVoids();
+
+        generateReturnables();
+        
+        generateBridges();
+        
+        generateFactories();
+        
+    }
+    
+    private void generateFactories() {
+        Iterator<CellFactorySPI> factories = dao().getCellFactories();
+        
+        while(factories.hasNext()) {
+            final ReturnableScriptMethodSPI method
+                    = new GeneratedCellMethod(factories.next());
+            ReturnableMethodGenerator generator =
+                    new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+            
+            generator.setActiveMethod(method);
+            bindScript(generator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    panel.addLibraryEntry(method);
+                }
+            
+            });
+            
+           
+        }
+    }
+
+    private void generateBridges() {
+        Iterator<EventBridgeSPI> bridges = dao().getBridges();
+                
+        while(bridges.hasNext()) {
+            EventBridgeSPI bridge = bridges.next();
+
+            BridgeGenerator generator = new BridgeGenerator();
+            generator.setActiveBridge(bridge);
+            
+            bindScript(generator.generateScriptBinding());
+            
+            
+            //we aren't ready to initialize this yet until I can figure out a 
+            //good way to enable/disable the bridges from ezscript land.
+//            bridge.initialize(scriptEngine, scriptBindings);
+        }
+    }
+
+    private void generateReturnables() {
+        //grab all returnablesa
+        Iterator<ReturnableScriptMethodSPI> returnables = dao().getReturnables();
+        
+        ReturnableMethodGenerator generator = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+        while(returnables.hasNext()) {
+            final ReturnableScriptMethodSPI method = returnables.next();
+            generator.setActiveMethod(method);
+            bindScript(generator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    panel.addLibraryEntry(method);
+                }
+            
+            });
+
+        }
+    }
+
+    private void generateVoids() {
         //Load the methods into the library
-        ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
-        Iterator<ScriptMethodSPI> iter = loader.getInstances(ScriptMethod.class,
-                                                        ScriptMethodSPI.class);
+        Iterator<ScriptMethodSPI> iter = dao().getVoids();
+        
+        MethodGenerator generator = new MethodGenerator(scriptEngine, scriptBindings);
         
         //grab all global void methods
         while(iter.hasNext()) {
             final ScriptMethodSPI method = iter.next();
-            addFunctionBinding(method);
+            generator.setActiveMethod(method);
+            bindScript(generator.generateScriptBinding());
+            
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     panel.addLibraryEntry(method);
                 }
             });
         }
+    }
 
-        //grab all returnablesa
-        Iterator<ReturnableScriptMethodSPI> returnables
-                            = loader.getInstances(ReturnableScriptMethod.class,
-                                               ReturnableScriptMethodSPI.class);
-        while(returnables.hasNext()) {
-            ReturnableScriptMethodSPI method = returnables.next();
-            addFunctionBinding(method);
-            panel.addLibraryEntry(method);
-        }
+    private ScriptedObjectDataSource dao() {
+        ScriptedObjectDataSource.INSTANCE.initialize();
         
-        Iterator<EventBridgeSPI> bridges =
-                loader.getInstances(EventBridge.class, EventBridgeSPI.class);
-        
-        while(bridges.hasNext()) {
-            EventBridgeSPI bridge = bridges.next();
-            addBridgeBinding(bridge);
-            //we aren't ready to initialize this yet until I can figure out a 
-            //good way to enable/disable the bridges from ezscript land.
-//            bridge.initialize(scriptEngine, scriptBindings);
+        return ScriptedObjectDataSource.INSTANCE;
+    }
+    
+    private void bindScript(String script) {
+        try {
+            scriptEngine.eval(script, scriptBindings);
+        } catch (ScriptException ex) {
+            Logger.getLogger(ScriptManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
+    
     public void evaluate(String script) {
         try {
             scriptEngine.eval(script, scriptBindings);
