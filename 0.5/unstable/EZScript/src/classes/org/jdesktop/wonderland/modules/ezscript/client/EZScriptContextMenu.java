@@ -64,12 +64,12 @@ public class EZScriptContextMenu implements ContextMenuFactorySPI {
         } else {
 
             while(cell.getComponent(EZScriptComponent.class) == null) {
-                try {
-                    //spin wheels
-                    Thread.currentThread().wait(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(EZScriptContextMenu.class.getName()).log(Level.SEVERE, null, ex);
-                }
+//                try {
+//                    //spin wheels
+////                    wait(500);
+//                } catch (InterruptedException ex) {
+//                    Logger.getLogger(EZScriptContextMenu.class.getName()).log(Level.SEVERE, null, ex);
+//                }
             }
             
             EZScriptComponent c = cell.getComponent(EZScriptComponent.class);
