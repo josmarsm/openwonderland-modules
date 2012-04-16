@@ -4,6 +4,7 @@
  */
 package org.jdesktop.wonderland.modules.ezscript.client.generators;
 
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.CellCache;
@@ -32,17 +33,30 @@ public class GeneratedCellMethod implements ReturnableScriptMethodSPI {
     private CellID generatedCellID = null;
     private static final Logger logger = Logger.getLogger(GeneratedCellMethod.class.getName());
     
+//    private Semaphore lock = new Semaphore(0);
+    
     public GeneratedCellMethod(CellFactorySPI factory) {
         this.factory = factory;
     }
     
     public String getDescription() {
+        
+        if(factory.getDisplayName() == null) {
+            return "Create "+factory.getClass().getName().replace("class", "").replace(".","_")+" cell.\n"
+                + "-- usage: var c = "+getFunctionName()+"();\n"
+                + "-- automatically adds EZScriptComponent to cell.";
+        }
+        
         return "Create "+factory.getDisplayName()+" cell.\n"
                 + "-- usage: var c = "+getFunctionName()+"();\n"
                 + "-- automatically adds EZScriptComponent to cell.";
     }
 
     public String getFunctionName() {
+        if(factory.getDisplayName() == null) {
+            return factory.getClass().getName().replace("class", "")
+                                               .replace(".", "_");
+        }
         return factory.getDisplayName().replace(' ', '_')
                                        .replace('(','_')
                                        .replace(')', '_');
@@ -79,6 +93,8 @@ public class GeneratedCellMethod implements ReturnableScriptMethodSPI {
     }
 
     public Object returns() {
+        CellCache cellCache = null;
+
         if (generatedCellID == null) {
             logger.warning("RESULTING CELLID IS NULL, RETURNING NULL!");
             return null;
@@ -88,31 +104,38 @@ public class GeneratedCellMethod implements ReturnableScriptMethodSPI {
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
 
         //use session to get cell cache
-        CellCache cellCache = ClientContextJME.getCellCache(session);
+        cellCache = ClientContextJME.getCellCache(session);
 
         //use cell cache to get cell from resultingCellID
+
+
         return cellCache.getCell(generatedCellID);
+
     }
 
     public void run() {
+
         CellServerState state = factory.getDefaultCellServerState(null);
-        
+
         EZScriptComponentFactory ezFactory = new EZScriptComponentFactory();
-        if(givenCellName != null)
+        if (givenCellName != null) {
             state.setName(givenCellName);
-        
+        }
+
         state.addComponentServerState(ezFactory.getDefaultCellComponentServerState());
-                
+
         try {
-            if(givenCellID == null) {
-               generatedCellID = CellUtils.createCell(state);
+            if (givenCellID == null) {
+                generatedCellID = CellUtils.createCell(state);
             } else {
                 generatedCellID = CellUtils.createCell(state, givenCellID);
             }
-            
-            
+
+
         } catch (CellCreationException ex) {
             Logger.getLogger(GeneratedCellMethod.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+//            lock.release();
         }
 
     }

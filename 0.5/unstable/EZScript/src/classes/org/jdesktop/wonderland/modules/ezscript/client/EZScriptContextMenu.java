@@ -58,13 +58,18 @@ public class EZScriptContextMenu implements ContextMenuFactorySPI {
 
          if(response instanceof ErrorMessage) {
             //something else went wrong.
-             logger.warning("Received error message when trying to add EZScriptComponent.");
-             logger.warning("Error: "+((ErrorMessage)response).getErrorMessage()
+             logger.warning("Received error message when trying to add EZScriptComponent.\n"
+                     +"Error: "+((ErrorMessage)response).getErrorMessage()
                      +"\nCause: "+((ErrorMessage)response).getErrorCause());
         } else {
 
             while(cell.getComponent(EZScriptComponent.class) == null) {
-                //spin wheels
+                try {
+                    //spin wheels
+                    Thread.currentThread().wait(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(EZScriptContextMenu.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             
             EZScriptComponent c = cell.getComponent(EZScriptComponent.class);
