@@ -92,90 +92,73 @@ public class ScriptManager {
 
         stringToCellID = new HashMap<String, CellID>();
         
-        generateVoids();
+        generateVoidMethods();
 
-        generateReturnables();
+        generateNonVoidMethods();
         
         generateBridges();
         
-        generateFactories();
+        generateCellFactories();
         
     }
     
-    private void generateFactories() {
-        Iterator<CellFactorySPI> factories = dao().getCellFactories();
-        
-        while(factories.hasNext()) {
-            final ReturnableScriptMethodSPI method
-                    = new GeneratedCellMethod(factories.next());
-            ReturnableMethodGenerator generator =
-                    new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-            
-            generator.setActiveMethod(method);
-            bindScript(generator.generateScriptBinding());
-            
-            SwingUtilities.invokeLater(new Runnable() { 
-                public void run() {
-                    panel.addLibraryEntry(method);
-                }
-            
-            });
-            
-           
-        }
-    }
-
     private void generateBridges() {
-        Iterator<EventBridgeSPI> bridges = dao().getBridges();
-                
-        while(bridges.hasNext()) {
-            EventBridgeSPI bridge = bridges.next();
 
-            BridgeGenerator generator = new BridgeGenerator();
-            generator.setActiveBridge(bridge);
-            
-            bindScript(generator.generateScriptBinding());
-            
-            
-            //we aren't ready to initialize this yet until I can figure out a 
-            //good way to enable/disable the bridges from ezscript land.
-//            bridge.initialize(scriptEngine, scriptBindings);
+        BridgeGenerator bridgeGenerator = new BridgeGenerator();
+        
+        for(EventBridgeSPI bridge: dao().getBridges()) {
+            bridgeGenerator.setActiveBridge(bridge);
+            bindScript(bridgeGenerator.generateScriptBinding());
+            bridge.initialize(scriptEngine, scriptBindings);
         }
     }
-
-    private void generateReturnables() {
+    
+    private void generateNonVoidMethods() {
         //grab all returnablesa
-        Iterator<ReturnableScriptMethodSPI> returnables = dao().getReturnables();
+        ReturnableMethodGenerator returnableGenerator
+                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+
         
-        ReturnableMethodGenerator generator = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-        while(returnables.hasNext()) {
-            final ReturnableScriptMethodSPI method = returnables.next();
-            generator.setActiveMethod(method);
+        for(final ReturnableScriptMethodSPI returnable: dao().getReturnables()) {
+            returnableGenerator.setActiveMethod(returnable);
+            bindScript(returnableGenerator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    panel.addLibraryEntry(returnable);
+                }
+            });
+        }
+    }
+    
+    private void generateCellFactories() {                
+        ReturnableMethodGenerator generator
+                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+        
+        for( CellFactorySPI factory: dao().getCellFactories()) {
+            final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
+            generator.setActiveMethod(returnable);
             bindScript(generator.generateScriptBinding());
             
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
-                    panel.addLibraryEntry(method);
+                    panel.addLibraryEntry(returnable);
                 }
-            
             });
-
         }
     }
-
-    private void generateVoids() {
-        //Load the methods into the library
-        Iterator<ScriptMethodSPI> iter = dao().getVoids();
-        
-        MethodGenerator generator = new MethodGenerator(scriptEngine, scriptBindings);
+    
+    private void generateVoidMethods() {
         
         //grab all global void methods
-        while(iter.hasNext()) {
-            final ScriptMethodSPI method = iter.next();
-            generator.setActiveMethod(method);
-            bindScript(generator.generateScriptBinding());
+        MethodGenerator methodGenerator
+                = new MethodGenerator(scriptEngine, scriptBindings);
+        
+        for(final ScriptMethodSPI method: dao().getVoids()) {
+            methodGenerator.setActiveMethod(method);
+            bindScript(methodGenerator.generateScriptBinding());
             
-            SwingUtilities.invokeLater(new Runnable() {
+            SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
                     panel.addLibraryEntry(method);
                 }

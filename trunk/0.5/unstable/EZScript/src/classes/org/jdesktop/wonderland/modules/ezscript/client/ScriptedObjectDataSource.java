@@ -4,6 +4,7 @@
  */
 package org.jdesktop.wonderland.modules.ezscript.client;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -29,10 +30,10 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.Ret
 public enum ScriptedObjectDataSource {
    INSTANCE;
    
-   private Iterator<EventBridgeSPI> bridges;
-   private Iterator<ReturnableScriptMethodSPI> returnables;
-   private Iterator<ScriptMethodSPI> voids;
-   private Iterator<CellFactorySPI> cellFactories;
+   private ArrayList<EventBridgeSPI> bridges;
+   private ArrayList<ReturnableScriptMethodSPI> returnables;
+   private ArrayList<ScriptMethodSPI> voids;
+   private ArrayList<CellFactorySPI> cellFactories;
    
    private static final Logger logger = Logger.getLogger(ScriptedObjectDataSource.class.getName());
    
@@ -50,29 +51,42 @@ public enum ScriptedObjectDataSource {
         logger.warning("OBTAINING SCRIPTED OBJECT DATA!");
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
 
-        bridges = loader.getInstances(EventBridge.class, EventBridgeSPI.class);
-        returnables = loader.getInstances(ReturnableScriptMethod.class,
-                ReturnableScriptMethodSPI.class);
-        voids = loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class);
-        cellFactories = loader.getInstances(CellFactory.class, CellFactorySPI.class);
+        bridges = listFromIterator(loader.getInstances(EventBridge.class, EventBridgeSPI.class));
+        returnables = listFromIterator(loader.getInstances(ReturnableScriptMethod.class,
+                ReturnableScriptMethodSPI.class));
+        voids = listFromIterator(loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class));
+        cellFactories = listFromIterator(loader.getInstances(CellFactory.class, CellFactorySPI.class));
         
         initialized = true;
     }
    
-    public Iterator<EventBridgeSPI> getBridges() {
+    public ArrayList<EventBridgeSPI> getBridges() {
         return bridges;
     }
 
-    public Iterator<CellFactorySPI> getCellFactories() {
+    public ArrayList<CellFactorySPI> getCellFactories() {
         return cellFactories;
     }
 
-    public Iterator<ReturnableScriptMethodSPI> getReturnables() {
+    public ArrayList<ReturnableScriptMethodSPI> getReturnables() {
         return returnables;
     }
 
-    public Iterator<ScriptMethodSPI> getVoids() {
+    public ArrayList<ScriptMethodSPI> getVoids() {
         return voids;
+    }
+    
+    private <T> ArrayList listFromIterator(Iterator<T> iter) {
+        ArrayList<T> list = new ArrayList<T>();
+        
+        while(iter.hasNext()) {
+            list.add(iter.next());
+        }
+        
+        
+        return list;
+        
+        
     }
    
 }

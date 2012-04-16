@@ -408,88 +408,76 @@ public class EZScriptComponent extends CellComponent {
     
     //<editor-fold defaultstate="collapsed" desc="javascript generation methods">
     private void generateBindings() {
-        ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
         
-        generateVoidMethods(loader);
+        generateVoidMethods();
         
-        generateNonVoidMethods(loader);
+        generateNonVoidMethods();
         
-        generateCellFactories(loader);
+        generateCellFactories();
         
-        generateBridges(loader);
+        generateBridges();
         
         //add $() function to script bindings
         addGetFunction();
     }
     
-    private void generateBridges(ScannedClassLoader loader) {
-        //grab all eventbridges
-        Iterator<EventBridgeSPI> bridges
-                = dao().getBridges();
+    private void generateBridges() {
+
         BridgeGenerator bridgeGenerator = new BridgeGenerator();
         
-        while(bridges.hasNext()) {
-            EventBridgeSPI bridge = bridges.next();
-            //            this.addBridgeBinding(bridge);
+        for(EventBridgeSPI bridge: dao().getBridges()) {
             bridgeGenerator.setActiveBridge(bridge);
-            String s = bridgeGenerator.generateScriptBinding();
-            bindScript(s);
+            bindScript(bridgeGenerator.generateScriptBinding());
             bridge.initialize(scriptEngine, scriptBindings);
-            
         }
     }
     
-    private void generateNonVoidMethods(ScannedClassLoader loader) {
+    private void generateNonVoidMethods() {
         //grab all returnablesa
-        Iterator<ReturnableScriptMethodSPI> returnables = dao().getReturnables();
-        
         ReturnableMethodGenerator returnableGenerator
                 = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-        while(returnables.hasNext()) {
-            ReturnableScriptMethodSPI method = returnables.next();
-            //            this.addFunctionBinding(method);
-            returnableGenerator.setActiveMethod(method);
-            String s = returnableGenerator.generateScriptBinding();
-            bindScript(s);
-            panel.addLibraryEntry(method);
+
+        
+        for(final ReturnableScriptMethodSPI returnable: dao().getReturnables()) {
+            returnableGenerator.setActiveMethod(returnable);
+            bindScript(returnableGenerator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    panel.addLibraryEntry(returnable);
+                }
+            });
         }
     }
     
-    private void generateCellFactories(ScannedClassLoader loader) {
-        Iterator<CellFactorySPI> factories = dao().getCellFactories();
-                
+    private void generateCellFactories() {                
         ReturnableMethodGenerator generator
                 = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
         
-        while(factories.hasNext()) {
-           final ReturnableScriptMethodSPI method
-                   = new GeneratedCellMethod(factories.next());
-           generator.setActiveMethod(method);
-           String s = generator.generateScriptBinding();
-           bindScript(s);
-           SwingUtilities.invokeLater(new Runnable() { 
-           
-               public void run() {
-                   panel.addLibraryEntry(method);
-               }
-           });
-           
+        for( CellFactorySPI factory: dao().getCellFactories()) {
+            final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
+            generator.setActiveMethod(returnable);
+            bindScript(generator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
+                public void run() {
+                    panel.addLibraryEntry(returnable);
+                }
+            });
         }
     }
     
-    private void generateVoidMethods(ScannedClassLoader loader) {
-        Iterator<ScriptMethodSPI> iter = dao().getVoids();
+    private void generateVoidMethods() {
         
         //grab all global void methods
         MethodGenerator methodGenerator
                 = new MethodGenerator(scriptEngine, scriptBindings);
-        while(iter.hasNext()) {
-            final ScriptMethodSPI method = iter.next();
-            //            this.addFunctionBinding(method);
+        
+        for(final ScriptMethodSPI method: dao().getVoids()) {
             methodGenerator.setActiveMethod(method);
-            String s = methodGenerator.generateScriptBinding();
-            bindScript(s);
-            SwingUtilities.invokeLater(new Runnable() {
+            bindScript(methodGenerator.generateScriptBinding());
+            
+            SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
                     panel.addLibraryEntry(method);
                 }
