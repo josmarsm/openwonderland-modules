@@ -11,10 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.script.Bindings;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import javax.script.*;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -89,39 +86,26 @@ public class ScriptManager {
         //Add the necessary script bindings
         scriptBindings.put("Client", ClientContextJME.getClientMain());
 
-
         stringToCellID = new HashMap<String, CellID>();
         
-        generateVoidMethods();
-
-        generateNonVoidMethods();
+        scriptBindings.putAll(dao().getClientBindings());
         
-        generateBridges();
-        
-        generateCellFactories();
-        
+//        scriptEngine = dao().getClientScriptEngine();
+//        scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
+        logger.warning("manager bindings size: "+scriptBindings.size());
+        generateDocumentation();
     }
     
-    private void generateBridges() {
-
-        BridgeGenerator bridgeGenerator = new BridgeGenerator();
-        
-        for(EventBridgeSPI bridge: dao().getBridges()) {
-            bridgeGenerator.setActiveBridge(bridge);
-            bindScript(bridgeGenerator.generateScriptBinding());
-            bridge.initialize(scriptEngine, scriptBindings);
-        }
+    private void generateDocumentation() {
+        generateNonVoidDocumentation();
+        generateVoidDocumentation();
+        generateCellFactoryDocumentation();
     }
     
-    private void generateNonVoidMethods() {
-        //grab all returnablesa
-        ReturnableMethodGenerator returnableGenerator
-                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-
+    
+    private void generateNonVoidDocumentation() {
         
         for(final ReturnableScriptMethodSPI returnable: dao().getReturnables()) {
-            returnableGenerator.setActiveMethod(returnable);
-            bindScript(returnableGenerator.generateScriptBinding());
             
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
@@ -131,14 +115,10 @@ public class ScriptManager {
         }
     }
     
-    private void generateCellFactories() {                
-        ReturnableMethodGenerator generator
-                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
+    private void generateCellFactoryDocumentation() {                
         
         for( CellFactorySPI factory: dao().getCellFactories()) {
             final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
-            generator.setActiveMethod(returnable);
-            bindScript(generator.generateScriptBinding());
             
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
@@ -148,16 +128,10 @@ public class ScriptManager {
         }
     }
     
-    private void generateVoidMethods() {
-        
-        //grab all global void methods
-        MethodGenerator methodGenerator
-                = new MethodGenerator(scriptEngine, scriptBindings);
+    private void generateVoidDocumentation() {
         
         for(final ScriptMethodSPI method: dao().getVoids()) {
-            methodGenerator.setActiveMethod(method);
-            bindScript(methodGenerator.generateScriptBinding());
-            
+
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
                     panel.addLibraryEntry(method);
@@ -223,101 +197,12 @@ public class ScriptManager {
             }
          });
          logger.warning("Error in evaluation()!");
-      
-
     }
 
     public void showScriptEditor() {
         dialog.setVisible(true);
     }
-
-    public void addFunctionBinding(ScriptMethodSPI method) {
-        scriptBindings.put("this"+method.getFunctionName(), method);
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\targs[i] = arguments[i];\n"
-            + "\t}\n"
-
-           // + "\targs = "+method.getFunctionName()+".arguments;\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
-            +"}";
-
-        try {
-            //System.out.println("evaluating script: \n"+scriptx);
-            scriptEngine.eval(scriptx, scriptBindings);
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void addFunctionBinding(ReturnableScriptMethodSPI method) {
-        scriptBindings.put("this"+method.getFunctionName(), method);
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\t\targs[i] = arguments[i];\n"
-            + "\t}\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
-
-            + "\tvar tmp = this"+method.getFunctionName()+".returns();\n"
-            + "\treturn tmp\n;"
-            +"}";
-
-        try {
-           // System.out.println("evaluating script: \n"+scriptx);
-            scriptEngine.eval(scriptx, scriptBindings);
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void addBridgeBinding(EventBridgeSPI bridge) {
-        String bridgeScript = ""
-                + "var " + bridge.getBridgeName() + " = ({\n" //create the object given the name from the bridge
-                + "     fs: new Array(),\n" //create an array of functions to be called for an event
-                + "     enabled: new Boolean(),\n" //create a boolean to enable/disable the bridge
-                + "     setEnabled: function(b) { this.enabled = b; },\n" //set whether or not the bridge is enabled
-                + "     add: function(f) { this.fs.push(f); },\n" //create a method for the object to add a function to the array
-                + "     event: function(e) {\n" //create an event function to call each function in the array
-                + "         if(this.enabled) {\n"
-                + "             for(var i in this.fs) {\n" //for every function...
-                + "                 this.fs[i](e);\n" //pass the 'e' argument through
-                + "             }\n"
-                + "         }\n"
-                + "     },\n";
-
-        //add other event names...
-//        for (String name : bridge.getEventObjects()) { //for every event name in the bridge...
-//            bridgeScript += buildEventlet(name); //
-//        }
-        bridgeScript +=
-                "     jagwire: \"isawesome\"\n" //easter egg :D, actually, I put this here so that we can add commas to the end of each event function definition. (see below);
-                + "});"; //end the object definition. Now we can use the bridge in javascript!
-
-        try {
-            scriptEngine.eval(bridgeScript, scriptBindings);
-        } catch (ScriptException e) {
-            processException(e);
-        }
-
-    }
         
-    private String buildEventlet(String name) {
-        String stufflet = ""
-                + "" + name + ": function(e) {\n"
-                + "     if(this.enabled) {\n"
-                + "         for(var i in this.fs) {\n"
-                + "             this.fs[i](e);\n"
-                + "         }\n"
-                + "     }\n"
-                + "},\n"; //the comma here is what I'm talking about up there ^
-        return stufflet;
-    }
-    
-    
     public void addCell(Cell cell) {
         if(!stringToCellID.containsKey(cell.getName())) {
             stringToCellID.put(cell.getName(), cell.getCellID());
