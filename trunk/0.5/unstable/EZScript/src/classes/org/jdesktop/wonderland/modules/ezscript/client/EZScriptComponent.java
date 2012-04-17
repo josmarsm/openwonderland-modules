@@ -268,7 +268,8 @@ public class EZScriptComponent extends CellComponent {
         dialog = new JDialog();
         panel = new ScriptEditorPanel(this, dialog);
         
-        generateBindings();
+        scriptBindings.putAll(dao().getCellBindings());
+        generateDocumentation();
 
         
     }
@@ -407,41 +408,24 @@ public class EZScriptComponent extends CellComponent {
     }
     
     //<editor-fold defaultstate="collapsed" desc="javascript generation methods">
-    private void generateBindings() {
+    private void generateDocumentation() {
         
-        generateVoidMethods();
+        generateVoidDocumentation();
         
-        generateNonVoidMethods();
+        generateNonVoidDocumentation();
         
-        generateCellFactories();
+        generateCellFactoryDocumentation();
         
-        generateBridges();
         
         //add $() function to script bindings
         addGetFunction();
     }
+   
     
-    private void generateBridges() {
+    private void generateNonVoidDocumentation() {
 
-        BridgeGenerator bridgeGenerator = new BridgeGenerator();
-        
-        for(EventBridgeSPI bridge: dao().getBridges()) {
-            bridgeGenerator.setActiveBridge(bridge);
-            bindScript(bridgeGenerator.generateScriptBinding());
-            bridge.initialize(scriptEngine, scriptBindings);
-        }
-    }
-    
-    private void generateNonVoidMethods() {
-        //grab all returnablesa
-        ReturnableMethodGenerator returnableGenerator
-                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-
-        
         for(final ReturnableScriptMethodSPI returnable: dao().getReturnables()) {
-            returnableGenerator.setActiveMethod(returnable);
-            bindScript(returnableGenerator.generateScriptBinding());
-            
+
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
                     panel.addLibraryEntry(returnable);
@@ -450,15 +434,11 @@ public class EZScriptComponent extends CellComponent {
         }
     }
     
-    private void generateCellFactories() {                
-        ReturnableMethodGenerator generator
-                = new ReturnableMethodGenerator(scriptEngine, scriptBindings);
-        
+    private void generateCellFactoryDocumentation() {                
+
         for( CellFactorySPI factory: dao().getCellFactories()) {
             final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
-            generator.setActiveMethod(returnable);
-            bindScript(generator.generateScriptBinding());
-            
+
             SwingUtilities.invokeLater(new Runnable() { 
                 public void run() {
                     panel.addLibraryEntry(returnable);
@@ -467,17 +447,11 @@ public class EZScriptComponent extends CellComponent {
         }
     }
     
-    private void generateVoidMethods() {
-        
-        //grab all global void methods
-        MethodGenerator methodGenerator
-                = new MethodGenerator(scriptEngine, scriptBindings);
-        
-        for(final ScriptMethodSPI method: dao().getVoids()) {
-            methodGenerator.setActiveMethod(method);
-            bindScript(methodGenerator.generateScriptBinding());
-            
-            SwingUtilities.invokeLater(new Runnable() { 
+    private void generateVoidDocumentation() {
+        for (final ScriptMethodSPI method : dao().getVoids()) {
+
+            SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     panel.addLibraryEntry(method);
                 }

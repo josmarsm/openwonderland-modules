@@ -6,7 +6,12 @@ package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.script.Bindings;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -35,6 +40,11 @@ public enum ScriptedObjectDataSource {
    private ArrayList<ScriptMethodSPI> voids;
    private ArrayList<CellFactorySPI> cellFactories;
    
+   private ScriptEngineManager manager = null;
+   private ScriptEngine engine = null;
+   private Bindings clientBindings = null;
+   private Bindings cellBindings = null;
+   
    private static final Logger logger = Logger.getLogger(ScriptedObjectDataSource.class.getName());
    
    private boolean initialized = false;
@@ -48,7 +58,7 @@ public enum ScriptedObjectDataSource {
         if(initialized)
             return;
         
-        logger.warning("OBTAINING SCRIPTED OBJECT DATA!");
+        
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
 
         bridges = listFromIterator(loader.getInstances(EventBridge.class, EventBridgeSPI.class));
@@ -56,10 +66,35 @@ public enum ScriptedObjectDataSource {
                 ReturnableScriptMethodSPI.class));
         voids = listFromIterator(loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class));
         cellFactories = listFromIterator(loader.getInstances(CellFactory.class, CellFactorySPI.class));
+        logger.warning("OBTAINED SCRIPTED OBJECT DATA!");
+        
+        manager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
+        engine = manager.getEngineByName("JavaScript");
+        clientBindings = engine.createBindings();
+        cellBindings = engine.createBindings();
+        
+        clientBindings.putAll(generateBindings());
+        logger.warning("CLIENT BINDINGS SIZE: "+clientBindings.size());
+        cellBindings.putAll(cloneBindings(clientBindings));
+        logger.warning("CELL BINDINGS SIZE: "+cellBindings.size());
+        
         
         initialized = true;
     }
    
+    public Bindings getClientBindings() {
+        Bindings bindings = engine.createBindings();
+        bindings.putAll(clientBindings);
+        
+        return bindings;
+    }
+    
+    public Bindings getCellBindings() {
+        Bindings bindings = engine.createBindings();
+        bindings.putAll(cellBindings);
+        
+        return bindings;
+    }
     public ArrayList<EventBridgeSPI> getBridges() {
         return bridges;
     }
@@ -82,11 +117,90 @@ public enum ScriptedObjectDataSource {
         while(iter.hasNext()) {
             list.add(iter.next());
         }
+                
+        return list;                
+    }
+    
+    private void bindScript(String script, Bindings bindings) {
+        try {
+            engine.eval(script, bindings);
+        } catch (ScriptException ex) {
+            Logger.getLogger(ScriptedObjectDataSource.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    
+    public ScriptEngine getClientScriptEngine() {
+        return engine;
+    }
+    private Bindings cloneBindings(Bindings bs) {
+        Bindings bindings = engine.createBindings();
+        bindings.putAll(bs);
         
+        return bindings;
+    }
+    
+    private Bindings generateBindings() {
+        Bindings bindings = engine.createBindings();
         
-        return list;
+        generateVoidMethods(bindings);
+        generateNonVoidMethods(bindings);
+        generateCellFactories(bindings);
+        generateBridges(bindings);
         
+        return bindings;
+    }
+    
+    private void generateBridges(Bindings scriptBindings) {
+
+        BridgeGenerator bridgeGenerator = new BridgeGenerator();
         
+        for(EventBridgeSPI bridge:  getBridges()) {
+            bridgeGenerator.setActiveBridge(bridge);
+            bindScript(bridgeGenerator.generateScriptBinding(),
+                       scriptBindings);
+            bridge.initialize(engine, scriptBindings);
+        }
+    }
+    
+    private void generateNonVoidMethods(Bindings scriptBindings) {
+        //grab all returnablesa
+        ReturnableMethodGenerator returnableGenerator
+                = new ReturnableMethodGenerator(engine, scriptBindings);
+
+        
+        for(final ReturnableScriptMethodSPI returnable:  getReturnables()) {
+            returnableGenerator.setActiveMethod(returnable);
+            bindScript(returnableGenerator.generateScriptBinding(),
+                       scriptBindings);
+        }
+    }
+    
+    private void generateCellFactories(Bindings scriptBindings) {                
+        ReturnableMethodGenerator generator
+                = new ReturnableMethodGenerator(engine, scriptBindings);
+        
+        for( CellFactorySPI factory:  getCellFactories()) {
+            final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
+            generator.setActiveMethod(returnable);
+            bindScript(generator.generateScriptBinding(),
+                       scriptBindings);
+
+        }
+    }
+    
+    private void generateVoidMethods(Bindings scriptBindings) {
+        
+        //grab all global void methods
+        MethodGenerator methodGenerator
+                = new MethodGenerator(engine, scriptBindings);
+        
+        for(final ScriptMethodSPI method:  getVoids()) {
+            methodGenerator.setActiveMethod(method);
+            bindScript(methodGenerator.generateScriptBinding(),
+                      scriptBindings);
+
+        }
     }
    
 }
