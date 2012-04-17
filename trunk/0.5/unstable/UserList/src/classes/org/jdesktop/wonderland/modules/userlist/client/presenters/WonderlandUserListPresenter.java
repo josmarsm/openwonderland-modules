@@ -2,6 +2,8 @@
 package org.jdesktop.wonderland.modules.userlist.client.presenters;
 
 
+import com.jme.math.FastMath;
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,11 +21,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.*;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
@@ -299,15 +304,21 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         if (position == null) {
             logger.warning("unable to find location of " + info.getCellID());
         }
-
+        
+        CellCache cache = ClientContextJME.getViewManager().getPrimaryViewCell().getCellCache();
+        
+        Cell cell = cache.getCell(info.getCellID());
+        CellTransform avatarTransform = cell.getWorldTransform();
+        CellTransform desiredTransform = generateGoToPosition(avatarTransform);
+        
         // get the current look direction of the avatar
-        ViewCell viewCell = ViewManager.getViewManager().getPrimaryViewCell();
-        CellTransform viewTransform = viewCell.getWorldTransform();
-
+  
         // go to the new location
         try {
-            ClientContextJME.getClientMain().gotoLocation(null, position,
-                    viewTransform.getRotation(null));
+            ClientContextJME.getClientMain()
+                            .gotoLocation(null,
+                                         desiredTransform.getTranslation(null),
+                                         desiredTransform.getRotation(null));
         } catch (IOException ioe) {
             logger.log(Level.WARNING, "Error going to location", ioe);
         }
@@ -602,11 +613,11 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         //add my name to the top
         String myName = model.getMyDisplayName();
         PresenceInfo me = model.getLocalPresenceInfo();
-        
-        logger.warning(""
-                + "\nNAME: "+myName+""
-                + "\nIs-Speaking: "+me.isSpeaking()+""
-                + "\nIs-Muted: "+me.isMuted());
+//        
+//        logger.warning(""
+//                + "\nNAME: "+myName+""
+//                + "\nIs-Speaking: "+me.isSpeaking()+""
+//                + "\nIs-Muted: "+me.isMuted());
         String userName = NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
         view.addEntryToView(userName, 0);
         
@@ -645,6 +656,48 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         return NameTagNode.getDisplayName(info.getUsernameAlias(),
                            info.isSpeaking(),
                            info.isMuted());
+    }
+    
+    
+    private CellTransform generateGoToPosition(CellTransform transform) {
+        //get the original position
+
+        Vector3f originalPosition = new Vector3f();
+        Vector3f originalLook = new Vector3f();
+        //get the original look direction
+        transform.getLookAt(originalPosition, originalLook);
+
+
+        //normalize look direction
+
+        //new position = add look direction to position
+        Vector3f desiredPosition = originalPosition.add(originalLook.normalize().mult(3.0f));
+
+        //create a 180 quaternion around Y axis
+        Quaternion y180 = new Quaternion();
+        float pi = FastMath.PI;
+        y180.fromAngleAxis(pi, new Vector3f(0, 1, 0));
+
+        //new look direction = quaternion * previous look direction
+        Vector3f desiredLook = y180.mult(originalLook);
+        y180.lookAt(desiredLook, new Vector3f(0, 1, 0));
+        CellTransform generated = new CellTransform(y180, desiredPosition);
+        logger.warning("ORIGINAL:\n" + logTransform(transform) + "\n"
+                + "GENERATED:\n" + logTransform(generated));
+
+        return generated;
+
+    }
+    
+    
+    private String logTransform(CellTransform transform) {
+        
+        Vector3f position = new Vector3f();
+        Vector3f look = new Vector3f();
+        
+        transform.getLookAt(position, look);
+        return "Position: "+position+"\n"
+                +      "Look: "+look;
     }
     
 }

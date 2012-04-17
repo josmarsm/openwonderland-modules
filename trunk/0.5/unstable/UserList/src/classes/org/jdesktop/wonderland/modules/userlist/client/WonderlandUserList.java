@@ -271,6 +271,8 @@ public enum WonderlandUserList implements PresenceManagerListener {
     }
     
     public BigInteger getSessionIDFromName(String name) {
+        
+        name = NameTagNode.getUsername(name);
         PresenceInfo info = manager.getUserPresenceInfo(name);
         
         
