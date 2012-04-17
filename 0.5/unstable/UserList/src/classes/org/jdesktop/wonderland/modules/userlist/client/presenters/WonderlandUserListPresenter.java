@@ -2,6 +2,8 @@
 package org.jdesktop.wonderland.modules.userlist.client.presenters;
 
 
+import com.jme.bounding.BoundingSphere;
+import com.jme.bounding.BoundingVolume;
 import com.jme.math.FastMath;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
@@ -23,12 +25,14 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
 import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.*;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
@@ -659,30 +663,33 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
     }
     
     
-    private CellTransform generateGoToPosition(CellTransform transform) {
+    private CellTransform generateGoToPosition(CellTransform viewTransform) {
         //get the original position
-
-        Vector3f originalPosition = new Vector3f();
-        Vector3f originalLook = new Vector3f();
-        //get the original look direction
-        transform.getLookAt(originalPosition, originalLook);
-
-
-        //normalize look direction
-
-        //new position = add look direction to position
-        Vector3f desiredPosition = originalPosition.add(originalLook.normalize().mult(3.0f));
-
-        //create a 180 quaternion around Y axis
-        Quaternion y180 = new Quaternion();
-        float pi = FastMath.PI;
-        y180.fromAngleAxis(pi, new Vector3f(0, 1, 0));
-
-        //new look direction = quaternion * previous look direction
-        Vector3f desiredLook = y180.mult(originalLook);
-        y180.lookAt(desiredLook, new Vector3f(0, 1, 0));
-        CellTransform generated = new CellTransform(y180, desiredPosition);
-        logger.warning("ORIGINAL:\n" + logTransform(transform) + "\n"
+//        Quaternion originalRotation = transform.getRotation(null);
+//        Vector3f originalPosition = new Vector3f();
+//        Vector3f originalLook = new Vector3f();
+//        //get the original look direction
+//        transform.getLookAt(originalPosition, originalLook);
+//        originalLook.y = 0.0f;
+//
+//        //normalize look direction
+//
+//        //new position = add look direction to position
+//        Vector3f desiredPosition = originalPosition.add(originalLook.normalize().mult(3.0f));
+//
+//        //create a 180 quaternion around Y axis
+//        Quaternion y180 = new Quaternion();
+//        y180 = y180.fromAngleAxis(FastMath.PI, new Vector3f(0, 1, 0));
+//
+//        //new look direction = quaternion * previous look direction
+//        Vector3f desiredLook = y180.mult(originalLook);
+//        y180.lookAt(desiredLook, new Vector3f(0, 1, 0));
+//        CellTransform generated = new CellTransform(y180, desiredPosition);
+        ServerSessionManager manager = LoginManager.getPrimary();
+        BoundingVolume boundsHint = new BoundingSphere(1.0f, Vector3f.ZERO);
+            CellTransform generated = CellPlacementUtils.getCellTransform(manager, boundsHint,
+                    viewTransform);
+        logger.warning("ORIGINAL:\n" + logTransform(viewTransform) + "\n"
                 + "GENERATED:\n" + logTransform(generated));
 
         return generated;
