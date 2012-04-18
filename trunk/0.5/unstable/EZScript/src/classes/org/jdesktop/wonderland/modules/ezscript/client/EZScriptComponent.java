@@ -67,6 +67,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
+import org.jdesktop.wonderland.modules.ezscript.client.cell.EZCellWrapper;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
@@ -1269,7 +1270,7 @@ public class EZScriptComponent extends CellComponent {
     public void addGetFunction() {
         String scriptx = 
                 "function $(cellname) { \n" +
-                "   return Context.getCellIDByName(cellname);\n" +
+                "   return Context.getCellByName(cellname);\n" +
                 "}\n";
 
         try {            
@@ -1277,6 +1278,16 @@ public class EZScriptComponent extends CellComponent {
         } catch(ScriptException e) {
             processException(e);
         }
+    }
+    
+    public EZCellWrapper getCellByName(String name) {
+        CellID cellID = getCellIDByName(name);
+        Cell cell = ClientContextJME
+                .getViewManager() //get View Manager
+                .getPrimaryViewCell() //get View Manager's primary view
+                .getCellCache() // get primary view's cell cache 
+                .getCell(cellID); //get cell cache's cell
+        return new EZCellWrapper(cell);
     }
     
     private void processException(Exception e) {
