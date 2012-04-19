@@ -305,16 +305,6 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
             return;
         }
 
-        // get the position of the other user based on their cellID
-        Vector3f position = model.getCellPositionForCellID(info.getCellID());
-        if (position == null) {
-            logger.warning("unable to find location of " + info.getCellID());
-        }
-        
-        CellCache cache = ClientContextJME.getViewManager().getPrimaryViewCell().getCellCache();
-        
-        Cell cell = cache.getCell(info.getCellID());
-//        CellTransform avatarTransform = cell.getWorldTransform();
         CellTransform desiredTransform = generateGoToPosition(info.getCellID());
         
         // get the current look direction of the avatar
@@ -667,16 +657,9 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
     
     
     private CellTransform generateGoToPosition(CellID cellID) {
-        //retrieve position from server via presence manager
-        Vector3f position = model.getCellPositionForCellID(cellID);
-        
-        //retrieve rotation from server via presence manager
-        Quaternion rotation = model.getCellRotationForCellID(cellID);
-        
-        //form cell transform from position and rotation for use in 
-        //CellPlacementUtils.
-        CellTransform viewTransform = new CellTransform(rotation, position);
 
+        CellTransform viewTransform = model.getCellTransformForCellID(cellID);
+        
         ServerSessionManager manager = LoginManager.getPrimary();
         BoundingVolume boundsHint = new BoundingSphere(1.0f, Vector3f.ZERO);
             CellTransform generated = CellPlacementUtils.getCellTransform(manager, boundsHint,
