@@ -1,6 +1,7 @@
 
 package org.jdesktop.wonderland.modules.userlist.client;
 
+import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -289,6 +290,10 @@ public enum WonderlandUserList implements PresenceManagerListener {
     
     public WonderlandSession getSession() {
         return session;
+    }
+
+    public Quaternion getCellRotationForCellID(CellID cellID) {
+        return manager.getCellRotation(cellID);
     }
     
     public static interface ModelChangedListener {

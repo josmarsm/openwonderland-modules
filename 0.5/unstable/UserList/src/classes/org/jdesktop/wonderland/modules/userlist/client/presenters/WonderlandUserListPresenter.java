@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -36,6 +37,7 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
 import org.jdesktop.wonderland.client.softphone.SoftphoneListener;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
+import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
@@ -312,8 +314,8 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         CellCache cache = ClientContextJME.getViewManager().getPrimaryViewCell().getCellCache();
         
         Cell cell = cache.getCell(info.getCellID());
-        CellTransform avatarTransform = cell.getWorldTransform();
-        CellTransform desiredTransform = generateGoToPosition(avatarTransform);
+//        CellTransform avatarTransform = cell.getWorldTransform();
+        CellTransform desiredTransform = generateGoToPosition(info.getCellID());
         
         // get the current look direction of the avatar
   
@@ -625,9 +627,10 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         String userName = NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
         view.addEntryToView(userName, 0);
         
-//        synchronized (model.getUsersInRange()) {
+        Set<PresenceInfo> infos = model.getUsersInRange();
+        synchronized (model.getUsersInRange()) {
             //add all users in range
-            for (PresenceInfo info : model.getUsersInRange()) {
+            for (PresenceInfo info : infos) {
                 //we've already added me at the top, skip over if found here.
                 if (model.isMe(info)) {
                     continue;
@@ -636,7 +639,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
                 String display = getDisplayName(info);
                 view.addEntryToView(display);
             }
-//        }
+        }
         
 //        synchronized (model.getUsersNotInRange()) {
             //add all users not in range
@@ -663,28 +666,17 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
     }
     
     
-    private CellTransform generateGoToPosition(CellTransform viewTransform) {
-        //get the original position
-//        Quaternion originalRotation = transform.getRotation(null);
-//        Vector3f originalPosition = new Vector3f();
-//        Vector3f originalLook = new Vector3f();
-//        //get the original look direction
-//        transform.getLookAt(originalPosition, originalLook);
-//        originalLook.y = 0.0f;
-//
-//        //normalize look direction
-//
-//        //new position = add look direction to position
-//        Vector3f desiredPosition = originalPosition.add(originalLook.normalize().mult(3.0f));
-//
-//        //create a 180 quaternion around Y axis
-//        Quaternion y180 = new Quaternion();
-//        y180 = y180.fromAngleAxis(FastMath.PI, new Vector3f(0, 1, 0));
-//
-//        //new look direction = quaternion * previous look direction
-//        Vector3f desiredLook = y180.mult(originalLook);
-//        y180.lookAt(desiredLook, new Vector3f(0, 1, 0));
-//        CellTransform generated = new CellTransform(y180, desiredPosition);
+    private CellTransform generateGoToPosition(CellID cellID) {
+        //retrieve position from server via presence manager
+        Vector3f position = model.getCellPositionForCellID(cellID);
+        
+        //retrieve rotation from server via presence manager
+        Quaternion rotation = model.getCellRotationForCellID(cellID);
+        
+        //form cell transform from position and rotation for use in 
+        //CellPlacementUtils.
+        CellTransform viewTransform = new CellTransform(rotation, position);
+
         ServerSessionManager manager = LoginManager.getPrimary();
         BoundingVolume boundsHint = new BoundingSphere(1.0f, Vector3f.ZERO);
             CellTransform generated = CellPlacementUtils.getCellTransform(manager, boundsHint,
