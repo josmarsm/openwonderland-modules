@@ -16,6 +16,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.auth.WonderlandIdentity;
 import org.jdesktop.wonderland.common.cell.CellID;
+import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClientPlugin;
 import org.jdesktop.wonderland.modules.audiomanager.common.messages.ChangeUsernameAliasMessage;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.NameTagNode;
@@ -279,10 +280,6 @@ public enum WonderlandUserList implements PresenceManagerListener {
         
         return info.getClientID();
     }
-
-    public Vector3f getCellPositionForCellID(CellID cellID) {
-        return manager.getCellPosition(cellID);
-    }
     
     public void requestChangeUsernameAlias(String alias) {
         manager.requestChangeUsernameAlias(alias);
@@ -291,9 +288,9 @@ public enum WonderlandUserList implements PresenceManagerListener {
     public WonderlandSession getSession() {
         return session;
     }
-
-    public Quaternion getCellRotationForCellID(CellID cellID) {
-        return manager.getCellRotation(cellID);
+    
+    public CellTransform getCellTransformForCellID(CellID cellID) {
+        return manager.getCellTransform(cellID);
     }
     
     public static interface ModelChangedListener {
