@@ -69,9 +69,9 @@ public class HUDTabbedPanel extends javax.swing.JPanel
         return instance;
     }
 
-    public WonderlandUserListView getUserListHUDPanel() {
-        return this.userList;
-    }
+//    public WonderlandUserListView getUserListHUDPanel() {
+//        return this.userList;
+//    }
 
 
     /** This method is called from within the constructor to
