@@ -617,10 +617,11 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         String userName = NameTagNode.getDisplayName(myName, me.isSpeaking(), me.isMuted());
         view.addEntryToView(userName, 0);
         
-        Set<PresenceInfo> infos = model.getUsersInRange();
+        
         synchronized (model.getUsersInRange()) {
+//            Set<PresenceInfo> infos = model.getUsersInRange();
             //add all users in range
-            for (PresenceInfo info : infos) {
+            for (PresenceInfo info : model.getUsersInRange()) {
                 //we've already added me at the top, skip over if found here.
                 if (model.isMe(info)) {
                     continue;
@@ -631,7 +632,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
             }
         }
         
-//        synchronized (model.getUsersNotInRange()) {
+        synchronized (model.getUsersNotInRange()) {
             //add all users not in range
             for (PresenceInfo info : model.getUsersNotInRange()) {
 
@@ -643,7 +644,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
                 String display = getDisplayName(info);
                 view.addEntryToView(display);
             }
-//        }
+        }
         //update the title of the view
         
         userListComponent.setName(BUNDLE.getString("Users") + " (" + view.getNumberOfElements() + ") ");

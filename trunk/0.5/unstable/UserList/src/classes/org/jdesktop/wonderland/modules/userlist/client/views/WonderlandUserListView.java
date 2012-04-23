@@ -161,7 +161,8 @@ public class WonderlandUserListView
     }
 
     public void removeAllEntries() {
-        getListModel().removeAllElements();
+//        getListModel().removeAllElements();
+        getListModel().clear();
     }
     
     public void addEntryToView(String username, int position) {
