@@ -19,6 +19,10 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 public class RotateMethod implements ScriptMethodSPI {
 
     private Cell cell;
+    private float x;
+    private float y;
+    private float z;
+    
     private Quaternion rotation;
     
     public String getFunctionName() {
@@ -27,7 +31,16 @@ public class RotateMethod implements ScriptMethodSPI {
 
     public void setArguments(Object[] args) {
         cell = (Cell)args[0];
-        rotation = (Quaternion)args[1];
+        x = ((Double)args[1]).floatValue();
+        y = ((Double)args[2]).floatValue();
+        z = ((Double)args[3]).floatValue();
+        
+        x = (float)Math.toRadians(x);
+        y = (float)Math.toRadians(y);
+        z = (float)Math.toRadians(z);
+        
+        
+        rotation = new Quaternion(new float[] {x, y, z});
     }
 
     public String getDescription() {
