@@ -602,7 +602,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
 //        }
 //</editor-fold>
         
-        
+        int selectedIndex = view.getIndexForName((String)view.getSelectedEntry());
         //remove all entries
         view.removeAllEntries();
         
@@ -648,6 +648,13 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         //update the title of the view
         
         userListComponent.setName(BUNDLE.getString("Users") + " (" + view.getNumberOfElements() + ") ");
+        
+        //force panel open
+        view.toggleControlPanel();
+        
+        //maintain selection over updates to the list
+        view.setSelectedIndex(selectedIndex);
+        
     }  
     
     public String getDisplayName(PresenceInfo info) {
