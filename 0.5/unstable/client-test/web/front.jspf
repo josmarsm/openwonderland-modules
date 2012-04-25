@@ -1,0 +1,11 @@
+
+<div id="admin">
+    <h2>Client Test</h2>
+    <div class="btn">
+        <a href="../client-test/client-test/app/ClientTest.jnlp">
+            <img alt="Client Test." src="../client-test/client-test/images/TestClient.png"/>
+        </a>
+    </div>
+    
+    To see if your computer can run the Open Wonderland software, click on the "Test Client" button. The wizard that opens walks you through a series of steps that check your network connection, your computer's graphics capability, and your audio setup. If all the tests pass, it's likely that your computer will run Wonderland well. 
+</div>
