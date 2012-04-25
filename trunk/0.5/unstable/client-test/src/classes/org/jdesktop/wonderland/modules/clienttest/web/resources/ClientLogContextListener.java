@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,6 +21,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
+import org.jdesktop.wonderland.front.admin.FrontPageRegistration;
 
 /**
  *
@@ -28,6 +29,7 @@ import org.jdesktop.wonderland.front.admin.AdminRegistration;
  */
 public class ClientLogContextListener implements ServletContextListener {
     private static final String CLIENT_TEST_LOG_REG_KEY = "__clientTestLogRegistration";
+    private static final String CLIENT_TEST_FPR_KEY = "__clientTestFrontPageRegistration";
 
     private ServletContext context;
 
@@ -40,6 +42,11 @@ public class ClientLogContextListener implements ServletContextListener {
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
         context.setAttribute(CLIENT_TEST_LOG_REG_KEY, ar);
+        
+        
+        FrontPageRegistration fpr = new FrontPageRegistration("/client-test/client-test", "/front.jspf");
+        FrontPageRegistration.register(fpr, context);
+        context.setAttribute(CLIENT_TEST_FPR_KEY, fpr);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
@@ -47,5 +54,10 @@ public class ClientLogContextListener implements ServletContextListener {
         if (ar != null) {
             AdminRegistration.unregister(ar, context);
         }
+
+        FrontPageRegistration fpr = (FrontPageRegistration) context.getAttribute(CLIENT_TEST_FPR_KEY);
+        if (fpr != null) {
+            FrontPageRegistration.unregister(fpr, context);
+        } 
     }
 }
