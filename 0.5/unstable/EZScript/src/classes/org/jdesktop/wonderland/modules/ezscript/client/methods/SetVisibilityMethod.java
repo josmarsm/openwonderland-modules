@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.scene.Node;
 import com.jme.scene.Spatial.CullHint;
+import org.jdesktop.mtgame.WorldManager;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
@@ -51,10 +52,11 @@ public class SetVisibilityMethod implements ScriptMethodSPI {
                 renderer = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
                 node = renderer.getSceneRoot();
                 if(visible) {
-                    node.setCullHint(CullHint.Inherit);
+                    node.setCullHint(CullHint.Never);
                 } else {
                     node.setCullHint(CullHint.Always);
                 }               
+                WorldManager.getDefaultWorldManager().addToUpdateList(node);
             }
 
         });

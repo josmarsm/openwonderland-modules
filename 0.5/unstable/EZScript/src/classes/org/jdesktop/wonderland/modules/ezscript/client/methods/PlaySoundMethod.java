@@ -53,14 +53,14 @@ public class PlaySoundMethod implements ScriptMethodSPI {
         try {
             cacheFilePath = audioCacheHandler.cacheURL(new URL(audioSource));
             SoftphoneControlImpl.getInstance().sendCommandToSoftphone("playFile="
-		+ cacheFilePath + "=" + volumeConverter.getVolume(50));
+		+ cacheFilePath + "=" + volumeConverter.getVolume(volume));
 	} catch (Exception e) {
 	    e.printStackTrace();
 	}
     }
 
     public String getDescription() {
-        return "usage: PlaySound(stringURL, volume)\n\n"
+        return "usage: PlaySound(\"www.mydomain.com/myfile.au\", volume)\n\n"
                 +"-plays a sound file from the specified file URL.";
     }
 
