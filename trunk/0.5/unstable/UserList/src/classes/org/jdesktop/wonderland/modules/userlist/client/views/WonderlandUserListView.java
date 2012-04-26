@@ -53,7 +53,7 @@ import org.jdesktop.wonderland.modules.userlist.client.UserListCellRenderer;
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  * @author JagWire
  */
-public class WonderlandUserListView
+public class WonderlandUserListView 
         extends javax.swing.JPanel implements UserListView
 {
 
@@ -479,4 +479,19 @@ public class WonderlandUserListView
     private javax.swing.JLabel volumeLabel;
     private javax.swing.JSlider volumeSlider;
     // End of variables declaration//GEN-END:variables
+
+    public void setPanelVisible(boolean viewPanelVisibility) {
+        controlPanel.setVisible(viewPanelVisibility);
+        
+        if(viewPanelVisibility) {
+            panelToggleButton.setIcon(downIcon);
+        } else {
+            panelToggleButton.setIcon(upIcon);
+        }
+        
+    }
+
+    public boolean isPanelVisible() {
+        return controlPanel.isVisible();
+    }
 }

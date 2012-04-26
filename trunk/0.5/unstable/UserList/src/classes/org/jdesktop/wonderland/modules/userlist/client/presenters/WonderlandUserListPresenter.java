@@ -603,6 +603,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
 //</editor-fold>
         
         int selectedIndex = view.getIndexForName((String)view.getSelectedEntry());
+        boolean viewPanelVisibility = view.isPanelVisible();
         //remove all entries
         view.removeAllEntries();
         
@@ -650,7 +651,8 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         userListComponent.setName(BUNDLE.getString("Users") + " (" + view.getNumberOfElements() + ") ");
         
         //force panel open
-        view.toggleControlPanel();
+        view.setPanelVisible(viewPanelVisibility);
+        
         
         //maintain selection over updates to the list
         view.setSelectedIndex(selectedIndex);

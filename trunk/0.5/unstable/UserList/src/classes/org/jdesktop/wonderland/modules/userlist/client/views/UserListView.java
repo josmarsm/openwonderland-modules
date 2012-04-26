@@ -73,6 +73,10 @@ public interface UserListView {
     public void addPanelToggleButtonActionListener(ActionListener listener);
     
     public void addVolumeSliderChangeListener(ChangeListener listener);
+
+    public void setPanelVisible(boolean viewPanelVisibility);
+
+    public boolean isPanelVisible();
     
     /** Proposed User List Buttons **/
     
