@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010 - 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -177,7 +177,7 @@ public class SittingCellComponent extends CellComponent
         float zSittingInc = (float)Math.cos(angle + ((heading / 180) * 3.14159)) * offset;
 
 //        SittingChair ac = new SittingChair(new Vector3f(v3f.x + xSittingInc, 0.0f, v3f.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
-        SittingChair ac = new SittingChair(new Vector3f(v3fa.x + xSittingInc, 0.0f, v3fa.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
+        SittingChair ac = new SittingChair(new Vector3f(v3fa.x + xSittingInc, v3fa.y, v3fa.z + zSittingInc), new Vector3f(xRotationInc, 0.0f, zRotationInc));
 
         Cell avatarCell = ClientContextJME.getViewManager().getPrimaryViewCell();
         CellRenderer rend = avatarCell.getCellRenderer(Cell.RendererType.RENDERER_JME);
