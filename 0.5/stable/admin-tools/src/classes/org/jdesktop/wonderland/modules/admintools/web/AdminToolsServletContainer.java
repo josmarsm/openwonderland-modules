@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -31,6 +31,7 @@ import org.jdesktop.wonderland.client.comms.WonderlandSessionImpl;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionCreator;
 import org.jdesktop.wonderland.front.admin.AdminRegistration;
+import org.jdesktop.wonderland.front.admin.StatusPageRegistration;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarRunner;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLogin.DarkstarServerListener;
 import org.jdesktop.wonderland.modules.darkstar.api.weblib.DarkstarWebLoginFactory;
@@ -48,7 +49,8 @@ public class AdminToolsServletContainer extends ServletContainer
     public static final String SESSION_KEY = "__adminToolsSession";
     public static final String CONNECTION_KEY = "__adminToolsConnection";
     private static final String ADMIN_REG_KEY = "__adminToolsAdminRegistration";
-
+    private static final String STATUS_REG_KEY = "__adminToolsStatusRegistration";
+    
     private ServletContext context;
 
     public void contextInitialized(ServletContextEvent sce) {
@@ -61,6 +63,12 @@ public class AdminToolsServletContainer extends ServletContainer
         ar.setFilter(AdminRegistration.ADMIN_FILTER);
         AdminRegistration.register(ar, context);
         context.setAttribute(ADMIN_REG_KEY, ar);
+        
+        StatusPageRegistration spr =
+                new StatusPageRegistration("/admin-tools/admin-tools",
+                                           "/status.jspf");
+        StatusPageRegistration.register(spr, sce.getServletContext());
+        context.setAttribute(STATUS_REG_KEY, spr);
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
@@ -75,6 +83,11 @@ public class AdminToolsServletContainer extends ServletContainer
         AdminRegistration ar = (AdminRegistration) context.getAttribute(ADMIN_REG_KEY);
         if (ar != null) {
             AdminRegistration.unregister(ar, context);
+        }
+        
+        StatusPageRegistration spr = (StatusPageRegistration) context.getAttribute(STATUS_REG_KEY);
+        if (spr != null) {
+            StatusPageRegistration.unregister(spr, context);
         }
     }
 
