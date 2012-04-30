@@ -1,8 +1,22 @@
-
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
 package org.jdesktop.wonderland.modules.userlist.client;
 
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -46,11 +60,11 @@ public enum WonderlandUserList implements PresenceManagerListener {
     private int lastPositionOfInRangeList = 0;
     private VolumeConverter converter;
     
-    private static final Logger logger = Logger.getLogger(WonderlandUserList.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WonderlandUserList.class.getName());
     
     public void initialize() { 
                            
-        logger.warning("inside initialize!");
+        LOGGER.warning("inside initialize!");
         this.session = LoginManager.getPrimary().getPrimarySession();
         this.manager = PresenceManagerFactory.getPresenceManager(session);
         this.cell = ClientContextJME.getViewManager().getPrimaryViewCell();
@@ -138,7 +152,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
                 listener.infoUpdated(pi);
                 break;
             case USER_ADDED:
-                logger.warning("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
+                LOGGER.fine("INFO CHANGED: ADDED: "+pi.getUsernameAlias());
                 usersNotInRange.add(pi);
                 
                 if(listener != null) {
@@ -146,7 +160,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
                 }
                 break;
             case USER_IN_RANGE:
-                logger.warning("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
+                LOGGER.fine("INFO CHANGED: MOVED_IN_RANGE: "+pi.getUsernameAlias());
                 
                 //remove user from "out of range" list, if it exists in that set
                 usersNotInRange.remove(pi);
@@ -158,7 +172,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
                 listener.userMovedInRange(pi);
                 break;
             case USER_OUT_OF_RANGE:
-                logger.warning("INFO CHANGED: MOVED_OUT_OF_RANGE: "+pi.getUsernameAlias());
+                LOGGER.fine("INFO CHANGED: MOVED_OUT_OF_RANGE: "+pi.getUsernameAlias());
                 
                 if(usersInRange.contains(pi)) {
                     usersInRange.remove(pi);
@@ -174,7 +188,7 @@ public enum WonderlandUserList implements PresenceManagerListener {
                 listener.userMovedOutOfRange(pi);
                 break;
             case USER_REMOVED:
-                logger.warning("INFO CHANGED: REMOVED: "+pi.getUsernameAlias());
+                LOGGER.fine("INFO CHANGED: REMOVED: "+pi.getUsernameAlias());
                 
                 listener.userMovedOutOfRange(pi);
                 

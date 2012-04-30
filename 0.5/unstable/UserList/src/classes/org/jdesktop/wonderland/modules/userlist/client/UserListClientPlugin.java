@@ -1,24 +1,27 @@
-
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
 package org.jdesktop.wonderland.modules.userlist.client;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ResourceBundle;
-import javax.swing.ImageIcon;
-import org.jdesktop.wonderland.modules.userlist.client.presenters.WonderlandUserListPresenter;
-import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar;
 import org.jdesktop.wonderland.client.cell.view.LocalAvatar.ViewCellConfiguredListener;
 import org.jdesktop.wonderland.client.comms.CellClientSession;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
-import org.jdesktop.wonderland.client.hud.*;
-import org.jdesktop.wonderland.client.hud.HUDEvent.HUDEventType;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
@@ -29,42 +32,28 @@ import org.jdesktop.wonderland.common.annotation.Plugin;
  */
 @Plugin
 public class UserListClientPlugin extends BaseClientPlugin 
-implements ViewCellConfiguredListener, SessionLifecycleListener {
-    
+    implements ViewCellConfiguredListener, SessionLifecycleListener 
+{
+    private ServerSessionManager session;
 
     public UserListClientPlugin() {
-        
-        
     }
     
-        @Override
+    @Override
     public void initialize(ServerSessionManager loginManager) {
-        loginManager.addLifecycleListener(this);
-        super.initialize(loginManager);
-    }
-    
-
-
-    
-    @Override
-    public void activate() {
+        this.session = loginManager;
+        session.addLifecycleListener(this);
         
-    }
-    
-    
-    @Override
-    public void deactivate() {
-//        JmeClientMain.getFrame().removeFromWindowMenu(userListMenuItem);
-//        if(component != null) {
-//            presenter.setVisible(false);
-//            HUD main = HUDManagerFactory.getHUDManager().getHUD("main");
-//            main.removeComponent(component);
-//            component = null;
-//        }
-        
+        super.initialize(session);
     }
 
-     
+    @Override
+    public void cleanup() {
+        session.removeLifecycleListener(this);
+        session = null;
+        
+        super.cleanup();
+    }
     
     public void viewConfigured(LocalAvatar localAvatar) {
         WonderlandUserList.INSTANCE.initialize();
@@ -85,8 +74,6 @@ implements ViewCellConfiguredListener, SessionLifecycleListener {
 
     public void primarySession(WonderlandSession session) {
         LocalAvatar avatar = ((CellClientSession) session).getLocalAvatar();        
-
         avatar.addViewCellConfiguredListener(this);
-
     }
 }
