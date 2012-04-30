@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,8 +21,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.modules.audiomanager.client.UserListHUDPanel;
-import org.jdesktop.wonderland.modules.audiomanager.client.UserListPanel;
 import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
 
 /**

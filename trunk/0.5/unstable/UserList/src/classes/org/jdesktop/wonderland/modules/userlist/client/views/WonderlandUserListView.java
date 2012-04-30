@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -37,14 +37,13 @@ package org.jdesktop.wonderland.modules.userlist.client.views;
 
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import java.util.logging.Logger;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.modules.audiomanager.common.VolumeConverter;
 import org.jdesktop.wonderland.modules.userlist.client.UserListCellRenderer;
 
 /**

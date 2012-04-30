@@ -1,18 +1,40 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.modules.userlist.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.hud.*;
+import org.jdesktop.wonderland.client.hud.CompassLayout;
+import org.jdesktop.wonderland.client.hud.HUD;
+import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.hud.HUDEvent;
+import org.jdesktop.wonderland.client.hud.HUDEventListener;
+import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.modules.userlist.client.presenters.WonderlandUserListPresenter;
 import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListView;
@@ -24,7 +46,8 @@ import org.jdesktop.wonderland.modules.userlist.client.views.WonderlandUserListV
 public enum UserListPresenterManager implements HUDEventListener {
     INSTANCE;
     
-    private Map<String, WonderlandUserListPresenter> presenters = new HashMap<String, WonderlandUserListPresenter>();
+    private final Map<String, WonderlandUserListPresenter> presenters = 
+            new HashMap<String, WonderlandUserListPresenter>();
     
     private WonderlandUserListPresenter defaultPresenter;
     private HUDComponent hudComponent;
@@ -33,7 +56,9 @@ public enum UserListPresenterManager implements HUDEventListener {
     private ImageIcon userListIcon = null;
     private JMenuItem userListMenuItem = null;
     private boolean initialized = false;
-    private List<DefaultUserListListener> listeners = new ArrayList<DefaultUserListListener>();
+    
+    private final List<DefaultUserListListener> listeners = 
+            new CopyOnWriteArrayList<DefaultUserListListener>();
     
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle(
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
@@ -43,8 +68,8 @@ public enum UserListPresenterManager implements HUDEventListener {
     
     
     public void intialize() {
-        if (!initialized) {
-            logger.warning("INITIALIZING PRESENTER MANAGER");
+        if (!isInitialized()) {
+            logger.fine("INITIALIZING PRESENTER MANAGER");
                     
             initializeMenuItem();
             
@@ -62,7 +87,6 @@ public enum UserListPresenterManager implements HUDEventListener {
                 hudComponent = main.createComponent(tabbedPanel);
                 tabbedPanel.addTab("Users", view);
                 tabbedPanel.getTabbedPanel().setSelectedIndex(0);
-                
             } else {
                 hudComponent = main.createComponent(view);
             }
@@ -79,7 +103,9 @@ public enum UserListPresenterManager implements HUDEventListener {
 
             presenters.put("default", defaultPresenter);
 
-            initialized = true;
+            synchronized (this) {
+                initialized = true;
+            }
             notifyListeners();
         }
     }
@@ -193,42 +219,37 @@ public enum UserListPresenterManager implements HUDEventListener {
                         
     }
     
+    private synchronized boolean isInitialized() {
+        return initialized;
+    }
+    
     private void handleMenuItemPress(ActionEvent event) {
         if(userListMenuItem.isSelected()) {
             showActivePresenter();
         } else {
             hideActivePresenter();
         }
-        
-
     }
     
     public void addUserListListener(DefaultUserListListener l) {
-        synchronized(listeners) {
-            listeners.add(l);
-            
-            //if our listener has registered after we've been initialized, 
-            //go ahead and notify it of activation.
-            if(initialized) {
-                l.listActivated();
-            }
+        listeners.add(l);
+
+        //if our listener has registered after we've been initialized, 
+        //go ahead and notify it of activation.
+        if(isInitialized()) {
+            l.listActivated();
         }
     }
     
     public void removeUserListListener(DefaultUserListListener l) {
-        synchronized(listeners) {
-            if(listeners.contains(l)) {
-                listeners.remove(l);
-            }
+        if(listeners.contains(l)) {
+            listeners.remove(l);
         }
     }
     
     public void notifyListeners() {
-        synchronized(listeners) {
-            for(DefaultUserListListener l: listeners) {
-                l.listActivated();
-            }
+        for(DefaultUserListListener l: listeners) {
+            l.listActivated();
         }
-    }
-            
+    }  
 }

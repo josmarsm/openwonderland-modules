@@ -1,3 +1,21 @@
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
 /*
  * Project Wonderland
  * 
@@ -18,13 +36,8 @@
 package org.jdesktop.wonderland.modules.userlist.client.views;
 
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
-import org.jdesktop.wonderland.client.hud.HUDComponent;
-import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManager;
-import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 
 /**
  * A panel for changing the displayed alias for a user.
@@ -139,28 +152,22 @@ public class ChangeNamePanel extends javax.swing.JPanel implements ChangeNameVie
 
 
     public void setStatusLabel(String text) {
-//        throw new UnsupportedOperationException("Not supported yet.");
         statusLabel.setText(text);
     }
 
     public String getAliasFieldText() {
-//        throw new UnsupportedOperationException("Not supported yet.");
         return usernameAliasTextField.getText();
     }
 
     public void addOKButtonActionListener(ActionListener listener) {
-//        throw new UnsupportedOperationException(
-//        "Not supported yet.");
         okButton.addActionListener(listener);
     }
 
     public void addCancelButtonActionListener(ActionListener listener) {
-//        throw new UnsupportedOperationException("Not supported yet.");
         cancelButton.addActionListener(listener);
     }
 
     public void addAliasTextFormActionListener(ActionListener listener) {
-//        throw new UnsupportedOperationException("Not supported yet.");
         usernameAliasTextField.addActionListener(listener);
     }
 }

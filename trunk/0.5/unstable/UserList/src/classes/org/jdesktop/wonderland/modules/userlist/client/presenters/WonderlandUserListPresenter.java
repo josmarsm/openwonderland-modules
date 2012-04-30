@@ -1,11 +1,24 @@
-
+/**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
 package org.jdesktop.wonderland.modules.userlist.client.presenters;
-
 
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
-import com.jme.math.FastMath;
-import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,9 +26,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -24,14 +35,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
 import org.jdesktop.wonderland.client.cell.utils.CellPlacementUtils;
-import org.jdesktop.wonderland.client.cell.view.ViewCell;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.hud.*;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
-import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.softphone.SoftphoneControlImpl;
@@ -73,7 +80,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
             "org/jdesktop/wonderland/modules/userlist/client/resources/Bundle");
     
     
-    private static final Logger logger = Logger.getLogger(WonderlandUserListPresenter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(WonderlandUserListPresenter.class.getName());
     private HUDComponent userListComponent = null;
     
     public WonderlandUserListPresenter(UserListView view, HUDComponent c) {
@@ -201,16 +208,16 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         // be one. Start a chat with that person, if one does not already exist
         String selectedUser = (String) view.getSelectedEntry();
         if (selectedUser == null) {
-            logger.warning("No user selected on chat window");
+            LOGGER.warning("No user selected on chat window");
             return;
         }
 
-        logger.warning("Selected user is " + selectedUser);
+        LOGGER.fine("Selected user is " + selectedUser);
         String userName = NameTagNode.getUsername(selectedUser);
         WonderlandIdentity id = model.getIDForAlias(userName);
 
         if (id == null) {
-            logger.warning("No ID found for user " + selectedUser);
+            LOGGER.warning("No ID found for user " + selectedUser);
             return;
         }
 
@@ -226,7 +233,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
             PresenceInfo info = model.getAliasInfo(username);
 
             if (info == null) {
-                logger.warning("no PresenceInfo for " + username);
+                LOGGER.warning("no PresenceInfo for " + username);
                 continue;
             }
 
@@ -292,33 +299,32 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
     }
     
     private void handleGoToButtonPressed(ActionEvent e) {
-            Object[] selectedValues = view.getSelectedEntries();
+        Object[] selectedValues = view.getSelectedEntries();
 
-    if (selectedValues.length == 1) {
-        String username =
-                NameTagNode.getUsername((String) selectedValues[0]);
+        if (selectedValues.length == 1) {
+            String username =
+                    NameTagNode.getUsername((String) selectedValues[0]);
 
-        // map the user to a presence info
-        PresenceInfo info = model.getAliasInfo(username);
-        if (info == null) {
-            logger.warning("no PresenceInfo for " + username);
-            return;
+            // map the user to a presence info
+            PresenceInfo info = model.getAliasInfo(username);
+            if (info == null) {
+                LOGGER.warning("no PresenceInfo for " + username);
+                return;
+            }
+
+            CellTransform desiredTransform = generateGoToPosition(info.getCellID());
+
+            // get the current look direction of the avatar
+
+            // go to the new location
+            try {
+                ClientContextJME.getClientMain().gotoLocation(null,
+                        desiredTransform.getTranslation(null),
+                        desiredTransform.getRotation(null));
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, "Error going to location", ioe);
+            }
         }
-
-        CellTransform desiredTransform = generateGoToPosition(info.getCellID());
-        
-        // get the current look direction of the avatar
-  
-        // go to the new location
-        try {
-            ClientContextJME.getClientMain()
-                            .gotoLocation(null,
-                                         desiredTransform.getTranslation(null),
-                                         desiredTransform.getRotation(null));
-        } catch (IOException ioe) {
-            logger.log(Level.WARNING, "Error going to location", ioe);
-        }
-    }
     }
     
     private void handlePanelToggleButtonPressed(ActionEvent e) {
@@ -341,7 +347,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
                 PresenceInfo info = model.getAliasInfo(username);
 
                 if (info == null) {
-                    logger.warning("no PresenceInfo for " + username);
+                    LOGGER.warning("no PresenceInfo for " + username);
                     continue;
                 }
 
@@ -674,7 +680,7 @@ public class WonderlandUserListPresenter implements SoftphoneListener, ModelChan
         BoundingVolume boundsHint = new BoundingSphere(1.0f, Vector3f.ZERO);
             CellTransform generated = CellPlacementUtils.getCellTransform(manager, boundsHint,
                     viewTransform);
-        logger.warning("ORIGINAL:\n" + logTransform(viewTransform) + "\n"
+        LOGGER.fine("ORIGINAL:\n" + logTransform(viewTransform) + "\n"
                 + "GENERATED:\n" + logTransform(generated));
 
         return generated;
