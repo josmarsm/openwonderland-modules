@@ -285,7 +285,7 @@ public class EZScriptComponent extends CellComponent {
                     executor.submit(new Runnable() {
 
                         public void run() {
-                            logger.warning("ACQUIRING EZSCRIPT MAPS FOR OBJECT: "+cell.getName());
+                            
                             //grab the "callbacks" map in order to hopefully
                             //use an additional map for "state" if needed
                             synchronized (sharedStateComponent) {
@@ -511,6 +511,7 @@ public class EZScriptComponent extends CellComponent {
             
             executor.submit(new Runnable() { 
                 public void run() {
+                    logger.warning("EXECUTING LOADED SCRIPT FOR CELL: "+cell.getName());
                     evaluateScript(script.getValue());
                 }
             });
@@ -956,14 +957,17 @@ public class EZScriptComponent extends CellComponent {
 //                    if (m.isClicked() && m.getButton() == ButtonId.BUTTON1) {
                     //FIX FOR EZMOVE
                     InputEvent awtEvent = m.getAwtEvent();
-                    if (awtEvent.getID() == MouseEvent.MOUSE_PRESSED
-                            && awtEvent.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+                    if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
+//                            && awtEvent.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+                            && awtEvent.getModifiersEx() == 0
+                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
                         if (respondsToMouseEvents) {
                             executeOnClick("none", true);
                         }
                         callbacksMap.put("onClick", new SharedString().valueOf("none"));
-                    } else if (awtEvent.getID() == MouseEvent.MOUSE_PRESSED
-                            && awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.ALT_DOWN_MASK)) {
+                    } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
+                            && awtEvent.getModifiersEx() ==  MouseEvent.ALT_DOWN_MASK
+                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
                         //alt events
                         if (respondsToMouseEvents) {
                             executeOnClick("alt", true);
@@ -972,8 +976,9 @@ public class EZScriptComponent extends CellComponent {
 
 
 
-                    } else if (awtEvent.getID() == MouseEvent.MOUSE_PRESSED
-                            && awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.CTRL_DOWN_MASK)) {
+                    } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
+                            && awtEvent.getModifiersEx() == MouseEvent.CTRL_DOWN_MASK
+                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
                         //ctrl events
                         if (respondsToMouseEvents) {
                             executeOnClick("ctrl", true);
@@ -983,8 +988,9 @@ public class EZScriptComponent extends CellComponent {
 
 
 
-                    } else if (awtEvent.getID() == MouseEvent.MOUSE_PRESSED
-                            && awtEvent.getModifiersEx() == (MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.SHIFT_DOWN_MASK)) {
+                    } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
+                            && awtEvent.getModifiersEx() == MouseEvent.SHIFT_DOWN_MASK
+                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
                         //shift events
                         if (respondsToMouseEvents) {
                             executeOnClick("shift", true);
@@ -1321,14 +1327,14 @@ public class EZScriptComponent extends CellComponent {
         FriendlyErrorInfoSPI info = null;
         if (e.getMessage().contains("WrappedException")) {
             //add default friendly java
-            info = new DefaultFriendlyJavaErrorInfo();
+            info = new DefaultFriendlyJavaErrorInfo(cell.getName());
 
         } else if (e.getMessage().contains("EcmaError")) {
             //add default friendly javascript
-            info = new DefaultFriendlyJavascriptErrorInfo();
+            info = new DefaultFriendlyJavascriptErrorInfo(cell.getName());
         } else {
             //add default friendly
-            info = new DefaultFriendlyErrorInfo();
+            info = new DefaultFriendlyErrorInfo(cell.getName());
         }
 
         window = new ErrorWindow(info.getSummary(), info.getSolutions());
