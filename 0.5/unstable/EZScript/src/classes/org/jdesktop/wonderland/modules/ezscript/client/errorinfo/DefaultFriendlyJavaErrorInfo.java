@@ -14,9 +14,14 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
  * @author JagWire
  */
 public class DefaultFriendlyJavaErrorInfo implements FriendlyErrorInfoSPI {
+    private final String name;
+
+    public DefaultFriendlyJavaErrorInfo(String name) {
+        this.name = name;
+    }
 
     public String getSummary() {
-        return "EZScript had a problem executing a script command you used.";
+        return "EZScript had a problem executing a script command you used for object: "+name+".";
     }
 
     public List<String> getSolutions() {

@@ -171,12 +171,12 @@ public class ScriptManager {
         if (e.getMessage().contains("WrappedException")) {
             //WrappedException we = (WrappedException) e.getCause();
             //java issue
-            info = new DefaultFriendlyJavaErrorInfo();
+            info = new DefaultFriendlyJavaErrorInfo("Wonderland Client");
 
         } else if (e.getMessage().contains("EcmaError")) {
-            info = new DefaultFriendlyJavascriptErrorInfo();
+            info = new DefaultFriendlyJavascriptErrorInfo("Wonderland Client");
         } else {
-            info = new DefaultFriendlyErrorInfo();
+            info = new DefaultFriendlyErrorInfo("Wonderland Client");
         }
          window = new ErrorWindow(info.getSummary(), info.getSolutions());
          TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());

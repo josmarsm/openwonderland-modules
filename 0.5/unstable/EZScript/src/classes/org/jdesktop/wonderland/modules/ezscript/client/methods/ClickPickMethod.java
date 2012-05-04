@@ -2,9 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
-
 
 import com.jme.math.Vector3f;
 import java.util.concurrent.Semaphore;
@@ -30,9 +28,10 @@ public class ClickPickMethod implements ReturnableScriptMethodSPI {
     private Vector3f pickPosition;
     private Semaphore lock = new Semaphore(0);
     private static final Logger logger = Logger.getLogger(ClickPickMethod.class.getName());
+
     public String getDescription() {
-        return "Returns the position (Vector3f) of the object the mouse clicked on.\n" +
-                "-- Usage: var vec3 = ClickPick();";
+        return "Returns the position (Vector3f) of the object the mouse clicked on.\n"
+                + "-- Usage: var vec3 = ClickPick();";
     }
 
     public String getFunctionName() {
@@ -59,7 +58,7 @@ public class ClickPickMethod implements ReturnableScriptMethodSPI {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         return pickPosition;
     }
 
@@ -75,54 +74,51 @@ public class ClickPickMethod implements ReturnableScriptMethodSPI {
     }
 
     class MouseClickPickEventListener extends EventClassListener {
+
         @Override
-        public Class[] eventClassesToConsume () {
-            return new Class[] { MouseEvent3D.class };
+        public Class[] eventClassesToConsume() {
+            return new Class[]{MouseButtonEvent3D.class};
         }
 
         @Override
-        public void commitEvent (Event event) {
-            if(event instanceof MouseButtonEvent3D) {
-              MouseButtonEvent3D mbe = (MouseButtonEvent3D)event;
-                if(mbe.isClicked()) {
+        public void commitEvent(Event event) {
+            MouseButtonEvent3D mbe = (MouseButtonEvent3D) event;
+            if (mbe.isClicked()) {
 
-                    if(mbe.getPickDetails() == null) {
-                        lock.release();
-                        logger.warning("Pick(): received null pick details!");
-                        return;
-                    }
-
-                    pickPosition = mbe.getPickDetails().getPosition();
-                                       
-                    logger.warning("Pick(): received pickPosition "+pickPosition);
+                if (mbe.getPickDetails() == null) {
                     lock.release();
+                    logger.warning("Pick(): received null pick details!");
+                    return;
                 }
+
+                pickPosition = mbe.getPickDetails().getPosition();
+
+                logger.warning("Pick(): received pickPosition " + pickPosition);
+                lock.release();
             }
         }
     }
 
     class MouseMovePickEventListener extends EventClassFocusListener {
+
         @Override
         public Class[] eventClassesToConsume() {
-            return new Class[] { MouseMovedEvent3D.class };
+            return new Class[]{MouseMovedEvent3D.class};
         }
 
         @Override
         public void commitEvent(Event event) {
 
-            MouseMovedEvent3D m = (MouseMovedEvent3D)event;
-            if(m.getPickDetails() == null) {
+            MouseMovedEvent3D m = (MouseMovedEvent3D) event;
+            if (m.getPickDetails() == null) {
                 lock.release();
                 logger.warning("Pick(): received null pick details!");
                 return;
             }
-            
+
             pickPosition = m.getPickDetails().getPosition();
-            logger.warning("Pick(): received pickPosition "+pickPosition);
+            logger.warning("Pick(): received pickPosition " + pickPosition);
             lock.release();
         }
     }
-
-
-
 }
