@@ -297,7 +297,14 @@ public class ScriptingComponent extends CellComponent
 
     @UsesCellComponent private ContextMenuComponent contextComp = null;
     private ContextMenuFactorySPI menuFactory = null;
+    
+    ProximityComponent comp = null;
+    ProximityListener proxListener = null;
 
+    PresenceManagerListener presenceListener = null;
+
+    private int presenceListSize = 0;
+    private String presenceListItem = null;
 
     /**
      * The ScriptingComponent constructor
@@ -1520,6 +1527,11 @@ public class ScriptingComponent extends CellComponent
             {
             System.out.println("Enter yat");
             }
+        if(pm == null)
+            {
+            System.out.println("Enter yat with pm null - should call getYat() first");
+            return;
+            }
         if(presenceList != null)
             {
             presenceList.clear();
@@ -1556,6 +1568,7 @@ public class ScriptingComponent extends CellComponent
                 System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
                 }
             }
+        presenceListSize = presenceList.size();
         }
     /**
      * unrollYatsForIncoming - take the results from the last yat and send them one at a time out the incoming socket connection
@@ -1570,65 +1583,93 @@ public class ScriptingComponent extends CellComponent
             sendIncomingMessage(msg);
             }
         }
+    
+    public void getPresenceItem(int i)
+        {
+        if(i > presenceList.size() - 1)
+            {
+            presenceListItem = "Sorry - item " + i + " does not exist in list of size " + presenceList.size();
+            }
+        else
+            {
+            PresenceItem pi = (PresenceItem)presenceList.get(i);
+            presenceListItem = String.format("%s,%d,%f,%f,%f", pi.name, pi.clientID, pi.x, pi.y, pi.z);
+            }
+        }
+
+    class myPresenceListener implements PresenceManagerListener
+        {
+        public void presenceInfoChanged(PresenceInfo pi, ChangeType arg1)
+            {
+            if(presenceList != null)
+                {
+                presenceList.clear();
+                }
+            else
+                {
+                presenceList = new ArrayList();
+                }
+
+            Cell myCell = ClientContext.getCellCache(clientSession).getCell(pi.getCellID());
+            CellTransform pos = myCell.getWorldTransform();
+
+            Vector3f v3f = new Vector3f();
+            pos.getTranslation(v3f);
+
+            PresenceItem presenceItem = new PresenceItem();
+            presenceItem.x = v3f.x;
+            presenceItem.y = v3f.y;
+            presenceItem.z = v3f.z;
+            String[] result = pi.getUserID().toString().split("=");
+            String[] piTokens = result[1].split(" ");
+
+            presenceItem.name = piTokens[0];
+            presenceItem.clientID = pi.getClientID();
+            presenceList.add(presenceItem);
+            if(traceLevel > 4)
+                {
+                System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
+                }
+
+            executeScript(PRESENCE_EVENT, null);
+            if(traceLevel > 4)
+                {
+                System.out.println("presenceInfoChanged - " + v3f + "Change type = " + arg1);
+                }
+            }
+
+        public void aliasChanged(String arg0, PresenceInfo arg1)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("presence aliasChanged");
+                }
+            }
+        }
+
     /**
-     * getYat - extablist a connection to the presence interface and a listener for presence events - script call method
+     * getYat - extablish a connection to the presence interface and a listener for presence events - script call method
      *
      */
     public  void    getYat()
         {
         clientSession = LoginManager.getPrimary().getPrimarySession();
         pm = PresenceManagerFactory.getPresenceManager(clientSession);
-        pm.addPresenceManagerListener(new PresenceManagerListener()
+        if(presenceListener == null)
             {
+            presenceListener = new myPresenceListener();
+            pm.addPresenceManagerListener(presenceListener);
+            }
+        }
 
-            public void presenceInfoChanged(PresenceInfo pi, ChangeType arg1)
-                {
-                if(presenceList != null)
-                    {
-                    presenceList.clear();
-                    }
-                else
-                    {
-                    presenceList = new ArrayList();
-                    }
-
-                Cell myCell = ClientContext.getCellCache(clientSession).getCell(pi.getCellID());
-                CellTransform pos = myCell.getWorldTransform();
-
-                Vector3f v3f = new Vector3f();
-                pos.getTranslation(v3f);
-
-                PresenceItem presenceItem = new PresenceItem();
-                presenceItem.x = v3f.x;
-                presenceItem.y = v3f.y;
-                presenceItem.z = v3f.z;
-                String[] result = pi.getUserID().toString().split("=");
-                String[] piTokens = result[1].split(" ");
-
-                presenceItem.name = piTokens[0];
-                presenceItem.clientID = pi.getClientID();
-                presenceList.add(presenceItem);
-                if(traceLevel > 4)
-                    {
-                    System.out.println("In yat - set item - x = " + presenceItem.x + " z = " + presenceItem.z);
-                    }
-
-                executeScript(PRESENCE_EVENT, null);
-                if(traceLevel > 4)
-                    {
-                    System.out.println("presenceInfoChanged - " + v3f + "Change type = " + arg1);
-                    }
-                }
-
-            public void aliasChanged(String arg0, PresenceInfo arg1)
-                {
-                if(traceLevel > 4)
-                    {
-                    System.out.println("presence aliasChanged");
-                    }
-                }
-
-            });
+    public void releaseYat()
+        {
+        if(pm != null)
+            {
+            if(presenceListener != null)
+                pm.removePresenceManagerListener(presenceListener);
+            pm = null;
+            }
         }
 
     /**
@@ -2162,7 +2203,29 @@ public class ScriptingComponent extends CellComponent
             }
         watchMessages.clear();
         }
-    
+
+    class myProximityListener implements ProximityListener
+        {
+        public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex)
+            {
+            if(traceLevel > 4)
+                {
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
+                System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
+                }
+            AvatarCell ac = (AvatarCell)cell.getCellCache().getCell(viewCellID);
+            String uName = ac.getIdentity().getUsername();
+            if(traceLevel > 4)
+                {
+                System.out.println("Proximity - CellID = " + viewCellID + " - user = " + uName);
+                }
+            proximityBounds = proximityIndex;
+            proximityDir = entered;
+            proximityUserName = uName;
+            executeScript(PROXIMITY_EVENT, null);
+            }
+        }  // , new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
+
     /**
      * establishProximity - connect to the proximity interface and establish a proximity listener with three radii - script method
      *
@@ -2176,40 +2239,27 @@ public class ScriptingComponent extends CellComponent
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : establishProximity - outer, middle, inner = " + outer + ", " + middle + ", " + inner);
             }
-        ProximityComponent comp = new ProximityComponent(cell);
-        comp.addProximityListener(new ProximityListener() 
-            {
-            public void viewEnterExit(boolean entered, Cell cell, CellID viewCellID, BoundingVolume proximityVolume, int proximityIndex) 
-                {
-                if(traceLevel > 4)
-                    {
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - entered = "+ entered + " - index = " + proximityIndex);
-                    System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : proximity listener - proximityVolume = "+ proximityVolume);
-                    }
-                AvatarCell ac = (AvatarCell)cell.getCellCache().getCell(viewCellID);
-                String uName = ac.getIdentity().getUsername();
-                if(traceLevel > 4)
-                    {
-                    System.out.println("Proximity - CellID = " + viewCellID + " - user = " + uName);
-                    }
-                proximityBounds = proximityIndex;
-                proximityDir = entered;
-                proximityUserName = uName;
-                executeScript(PROXIMITY_EVENT, null);
-                }
-            }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
-/*            }, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()),
-                                      new BoundingSphere((float)outer - .2f, new Vector3f()),
-                                      new BoundingSphere((float)middle, new Vector3f()),
-                                      new BoundingSphere((float)middle - .2f, new Vector3f()),
-                                      new BoundingSphere((float)inner, new Vector3f()),
-                                      new BoundingSphere((float)inner - .2f, new Vector3f())
-                                    }
-                                        ); */
+        if(comp != null)
+            comp = null;
+
+        comp = new ProximityComponent(cell);
+        proxListener = new myProximityListener();
+        comp.addProximityListener(proxListener, new BoundingVolume[] { new BoundingSphere((float)outer, new Vector3f()), new BoundingSphere((float)middle, new Vector3f()), new BoundingSphere((float)inner, new Vector3f())});
         cell.addComponent(comp);
         if(traceLevel > 3)
             {
             System.out.println("ScriptingComponent : Cell " + cell.getCellID() + " : In establishProximity : Prox class = " + cell.getComponent(ProximityComponent.class));
+            }
+        }
+
+    public void removeProximity()
+        {
+        if(comp != null)
+            {
+            comp.removeProximityListener(proxListener);
+            proxListener = null;
+            cell.removeComponent(ProximityComponent.class);
+            comp = null;
             }
         }
 
@@ -2585,7 +2635,9 @@ public class ScriptingComponent extends CellComponent
             bindings.put("avatarEventType", avatarEventType);
             bindings.put("avatarEventSource", avatarEventSource);
             bindings.put("avatarEventAnimation", avatarEventAnimation);
-
+            bindings.put("presenceListSize", presenceListSize);
+            bindings.put("presenceListItem", presenceListItem);
+            
             try
                 {
                 if(jsEngine instanceof Compilable)
