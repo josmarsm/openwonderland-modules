@@ -14,14 +14,13 @@ import com.jme.scene.state.RenderState.StateType;
 import com.jme.scene.state.ZBufferState;
 import java.awt.Color;
 import java.awt.Font;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.mtgame.RenderComponent;
-import org.jdesktop.mtgame.RenderManager;
-import org.jdesktop.mtgame.WorldManager;
+import org.jdesktop.mtgame.*;
 import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.utils.TextLabel2D;
+import org.jdesktop.wonderland.client.login.LoginManager;
+import org.jdesktop.wonderland.client.login.ServerSessionManager;
 
 /**
  *
@@ -58,29 +57,16 @@ public class ShapeViewerEntity extends Entity {
         this.label = label;
         showShape(shapeType);
     }
-    
-    public void showShape(String shapeType) {
-        if(rootNode != null) {
-            dispose();
-        }
-        
-        rootNode = new Node("Shape Viewer Node");
+
+    private void generateAppearance(Node node) {
         RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
-        RenderComponent rc = rm.createRenderComponent(rootNode);
-        this.addComponent(RenderComponent.class, rc);
-        
-        //Set the z-buffer state on the root node
-        ZBufferState zState = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
-        zState.setEnabled(true);
-        zState.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
-        rootNode.setRenderState(zState);
         
         MaterialState ms = (MaterialState)rm.createRendererState(StateType.Material);
         ms.setAmbient(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
         ms.setDiffuse(new ColorRGBA(0.25f, 0, 0.5f, 0.40f));
         ms.setMaterialFace(MaterialState.MaterialFace.FrontAndBack);
         ms.setEnabled(true);
-        rootNode.setRenderState(ms);
+        node.setRenderState(ms);
         
         BlendState bs = (BlendState)rm.createRendererState(StateType.Blend);
         bs.setEnabled(true);
@@ -89,7 +75,54 @@ public class ShapeViewerEntity extends Entity {
         bs.setDestinationFunction(BlendState.DestinationFunction.OneMinusSourceAlpha);
         bs.setTestEnabled(true);
         bs.setTestFunction(BlendState.TestFunction.GreaterThan);
-        rootNode.setRenderState(bs);
+        node.setRenderState(bs);
+    }
+    
+    private void generateZBufferState(Node node) {
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        
+        ZBufferState zState = (ZBufferState)rm.createRendererState(StateType.ZBuffer);
+        zState.setEnabled(true);
+        zState.setFunction(ZBufferState.TestFunction.LessThanOrEqualTo);
+        node.setRenderState(zState);
+    }
+    
+    
+    private void generateCollisionComponent(Node node) {
+        ServerSessionManager manager = LoginManager.getPrimary();
+        CollisionSystem collisionSystem = ClientContextJME.getCollisionSystem(manager, "Default");
+        
+        CollisionComponent cc = ((JMECollisionSystem)collisionSystem).createCollisionComponent(node);
+        cc.setCollidable(true);
+        cc.setPickable(true);
+        collisionSystem.addCollisionComponent(cc);
+        this.addComponent(CollisionComponent.class, cc);
+        
+        
+        
+    }
+    
+    public void showShape(String shapeType) {
+        if(rootNode != null) {
+            dispose();
+        }
+       
+        rootNode = new Node("Shape Viewer Node");
+        RenderManager rm = ClientContextJME.getWorldManager().getRenderManager();
+        RenderComponent rc = rm.createRenderComponent(rootNode);
+       
+        this.addComponent(RenderComponent.class, rc);
+        
+        //Set the z-buffer state on the root node
+        generateZBufferState(rootNode);
+        
+        //Set the material state and the blend state
+        generateAppearance(rootNode);
+        
+        //set collision
+        generateCollisionComponent(rootNode);
+        
+        
 
         if(labeled) {
             TextLabel2D label2D = new TextLabel2D(label,
