@@ -22,6 +22,8 @@
     <!-- this module depends on the content repository module -->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+	<path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
     </pathconvert>
 
     <target name="build" depends="-module-init, -module-compile-common,
