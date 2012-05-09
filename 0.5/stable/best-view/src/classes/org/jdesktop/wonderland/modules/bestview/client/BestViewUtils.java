@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -21,13 +21,16 @@ package org.jdesktop.wonderland.modules.bestview.client;
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
+import com.jme.math.Matrix4f;
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
 import com.jme.scene.Geometry;
+import com.jme.scene.MatrixGeometry;
 import com.jme.scene.Node;
 import com.jme.scene.Spatial;
 import java.awt.Canvas;
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
@@ -126,10 +129,12 @@ public class BestViewUtils {
             z = bb.zExtent;
         }
 
-        LOGGER.fine("Calculated distance to " + bounds + " is: " +
-                    " x: " + getDistance(xRadius, z, fovX) + " for fov " + fovX +
-                    " y: " + getDistance(yRadius, z, fovY) + " for fov " + fovY);
-
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.fine("Calculated distance to " + bounds + " is: " +
+                        " x: " + getDistance(xRadius, z, fovX) + " for fov " + fovX +
+                        " y: " + getDistance(yRadius, z, fovY) + " for fov " + fovY);
+        }
+        
         // find the X and Y distances
         return Math.max(getDistance(xRadius, z, fovX),
                         getDistance(yRadius, z, fovY));
@@ -159,7 +164,7 @@ public class BestViewUtils {
         }
 
         // calculate the bounds from the root of the scene graph
-        return getModelBounds(rc.getSceneRoot());
+        return getModelBounds(rc.getSceneRoot(), new Matrix4f(), false);
     }
 
     /**
@@ -169,23 +174,40 @@ public class BestViewUtils {
      * makes a significant difference in the calculated size.
      *
      * @param node the node to calculate the bounds of
+     * @param transform the transform of the parent
+     * @param updateTransform if true, update the transform based on the full
+     * content of the given node. If false, only update the transform based
+     * on the node's scale.
      * @return the calculated bounds
      */
-    private static BoundingVolume getModelBounds(Node node) {
+    private static BoundingVolume getModelBounds(Node node, Matrix4f transform,
+                                                 boolean updateTransform) 
+    {
         BoundingVolume out = null;
 
         Collection<Spatial> children = node.getChildren();
         if (children == null) {
             return out;
         }
-
+        
+        if (updateTransform) {
+            // transform the matrix
+            transform = transform(transform, node);
+        } else {
+            // if we aren't applying the full transform, still apply the
+            // scale -- since this only happens for the sceneroot, we
+            // don't need to worry about matrix geometry
+            transform = transform.clone();
+            transform.scale(node.getLocalScale());
+        }
+        
         // caclulate the bounds by merging the bounds of all children
         for (Spatial s : children) {
             BoundingVolume childBounds = null;
             if (s instanceof Geometry) {
-                childBounds = getModelBounds((Geometry) s);
+                childBounds = getModelBounds((Geometry) s, transform);
             } else if (s instanceof Node) {
-                childBounds = getModelBounds((Node) s);
+                childBounds = getModelBounds((Node) s, transform, true);
             }
 
             if (out == null) {
@@ -201,16 +223,39 @@ public class BestViewUtils {
     /**
      * Get the model bounds of a piece of geometry. This returns the properly
      * scaled bounds, but with no rotation or offset.
-     * @param g the object to caculate the bounds of
+     * @param g the object to calculate the bounds of
+     * @param transform the transform to apply
      * @return the scaled bounds
      */
-    private static BoundingVolume getModelBounds(Geometry g) {
+    private static BoundingVolume getModelBounds(Geometry g, Matrix4f transform) {
+        transform = transform(transform, g);
         BoundingVolume clone = g.getModelBound().clone(null);
-        clone = clone.transform(new Quaternion(), Vector3f.ZERO,
-                                g.getWorldScale(), clone);
-        return clone;
+        return clone.transform(transform);
     }
 
+    /**
+     * Transform a matrix based on the transform in the given spatial.
+     * @param matrix the matrix to transform
+     * @param spatial the spatial to transform it by
+     * @return a clone of the matrix transformed based on the given spatial
+     */
+    private static Matrix4f transform(Matrix4f matrix, Spatial spatial) {
+        Matrix4f out = matrix.clone();
+        
+        if (spatial instanceof MatrixGeometry) {
+            out.multLocal(((MatrixGeometry) spatial).getLocalTransform());
+        } else {
+            out.scale(spatial.getLocalScale());
+            out.multLocal(spatial.getLocalRotation());
+            
+            Matrix4f translate = new Matrix4f();
+            translate.setTranslation(spatial.getLocalTranslation());
+            out.multLocal(translate);
+        }
+        
+        return out;
+    }
+    
     /**
      * Find the optimal distance for the given radius and field-of-view
      *
