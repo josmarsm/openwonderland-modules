@@ -6,6 +6,7 @@ package org.jdesktop.wonderland.modules.bindings.client;
 
 import imi.character.avatar.AvatarContext;
 import imi.character.avatar.AvatarContext.TriggerNames;
+import imi.character.statemachine.GameContext;
 import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 import javax.swing.KeyStroke;
@@ -23,6 +24,7 @@ import org.jdesktop.wonderland.client.jme.input.bindings.spi.ActionSPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.AvatarImiJME;
+import org.jdesktop.wonderland.modules.avatarbase.client.jme.cellrenderer.WlAvatarContext;
 
 /**
  *
@@ -77,9 +79,8 @@ public class BindingsPlugin extends BaseClientPlugin {
 
             public <T extends InputEvent3D> void performAction(T event) {
                 logger.warning("starting to move forward!");
-                ViewCell cell = ViewManager.getViewManager().getPrimaryViewCell();
-                AvatarImiJME r = (AvatarImiJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                r.getAvatarCharacter().getContext().triggerPressed(TriggerNames.Move_Forward.ordinal());
+               
+                getAvatarContext().triggerPressed(TriggerNames.Move_Forward.ordinal());
 
             }
         });
@@ -94,14 +95,55 @@ public class BindingsPlugin extends BaseClientPlugin {
 
             public <T extends InputEvent3D> void performAction(T event) {
                 logger.warning("stopping forward movement");
-                ViewCell cell = ViewManager.getViewManager().getPrimaryViewCell();
-                AvatarImiJME r = (AvatarImiJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                r.getAvatarCharacter().getContext().triggerReleased(TriggerNames.Move_Forward.ordinal());
+                
+                getAvatarContext().triggerReleased(TriggerNames.Move_Forward.ordinal());
             }
         });
+        
+        binder.bindKeyStroke(KeyStroke.getKeyStroke("pressed 1"), "start wave");
+        binder.bindAction("start wave", new ActionSPI() {
+
+            public String getName() {
+                return "start waving";
+            }
+
+            public <T extends InputEvent3D> void performAction(T event) {
+                logger.warning("started waving!");
+                getAvatarContext().setMiscAnimation("Male_Wave");
+                getAvatarContext().triggerPressed(TriggerNames.MiscAction.ordinal());
+            }
+            
+        });
+        
+        binder.bindKeyStroke(KeyStroke.getKeyStroke("released 1"), "stop wave");
+        binder.bindAction("stop wave", new ActionSPI() {
+
+            public String getName() {
+                return "stop waving";
+            }
+
+            public <T extends InputEvent3D> void performAction(T event) {
+                logger.warning("stopped waving");
+                getAvatarContext().setMiscAnimation("Male_Wave");
+                getAvatarContext().triggerReleased(TriggerNames.MiscAction.ordinal());
+                
+            }
+        
+        
+        });
+        
+        
+        
 
     }
 
+    public WlAvatarContext getAvatarContext() {
+        ViewCell cell = ViewManager.getViewManager().getPrimaryViewCell();
+        AvatarImiJME r = (AvatarImiJME)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        return (WlAvatarContext)r.getAvatarCharacter().getContext();
+    }
+    
+    
     @Override
     public void deactivate() {
     }
