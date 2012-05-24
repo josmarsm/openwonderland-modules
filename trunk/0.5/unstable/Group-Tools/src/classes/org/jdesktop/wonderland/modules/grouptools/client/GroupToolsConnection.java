@@ -44,6 +44,7 @@ import org.jdesktop.wonderland.modules.presencemanager.common.PresenceInfo;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupDTO;
 import org.jdesktop.wonderland.modules.securitygroups.common.GroupUtils;
 import org.jdesktop.wonderland.modules.textchat.client.ChatManager;
+import org.jdesktop.wonderland.modules.userlist.client.HUDTabbedPanel;
 
 /**
  *
@@ -334,7 +335,7 @@ public class GroupToolsConnection extends BaseConnection {
         }
     }
 
-    public void initiateVoiceChat(String groupName, PresenceControls pControls, HUDComponent parent) {
+    public void initiateVoiceChat(String groupName, PresenceControls pControls) {
 
         try {
             UsersInGroupMessage msg = (UsersInGroupMessage)this.sendAndWait(
@@ -348,7 +349,7 @@ public class GroupToolsConnection extends BaseConnection {
                     infos.add(pControls.getPresenceManager().getPresenceInfo(id));
                 }
         
-                pControls.startVoiceChat(infos, parent);
+                pControls.startVoiceChat(infos, HUDTabbedPanel.getInstance().getHUDComponent());
             }
             else {
                 System.out.println("Error occured");

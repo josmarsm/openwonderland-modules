@@ -26,6 +26,7 @@
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar" />
         <path location="${modules.dir}/tools/security-group/build/lib/client/securitygroups-client.jar" />
         <path location="${modules.dir}/tools/text-chat/build/client/textchat-client.jar" />
+	<path location="${modules.dir}/tools/user-list/build/client/user-list-client.jar" />
     </pathconvert>
 
     <pathconvert property="module-common.classpath">

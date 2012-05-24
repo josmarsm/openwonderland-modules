@@ -19,11 +19,16 @@ package org.jdesktop.wonderland.modules.grouptools.client;
 
 import javax.swing.JMenuItem;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.HUDComponent;
+import org.jdesktop.wonderland.client.jme.ViewManager;
+import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 import org.jdesktop.wonderland.modules.audiomanager.client.AudioManagerClient;
-import org.jdesktop.wonderland.modules.audiomanager.client.HUDTabbedPanel;
+import org.jdesktop.wonderland.modules.presencemanager.client.PresenceManagerFactory;
+import org.jdesktop.wonderland.modules.userlist.client.HUDTabbedPanel;
+import org.jdesktop.wonderland.modules.userlist.client.WonderlandUserList;
 
 /**
  *
@@ -70,15 +75,13 @@ public class GroupToolsClientPlugin extends BaseClientPlugin {
     @Override
     protected void activate() {
         groupPanel = new GroupListHUDPanel();
+        WonderlandUserList list = WonderlandUserList.INSTANCE;
+        Cell cell = ViewManager.getViewManager().getPrimaryViewCell();
+       
+        groupPanel.setControls(list.getPresenceControls(),cell);
         
-        groupPanel.setControls(HUDTabbedPanel.getInstance().getPresenceControls(),
-                HUDTabbedPanel.getInstance().getCell());
 
         HUDTabbedPanel.getInstance().addTab("groups", groupPanel);
-        
-        groupPanel.setHUDComponent(
-                HUDTabbedPanel.getInstance().getHUDComponent()
-                );
 
         chatManager = new GroupChatManager(getSessionManager(), groupPanel);
        // JmeClientMain.getFrame().addToToolsMenu(testMenuItem);
