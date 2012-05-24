@@ -160,7 +160,8 @@ public class GroupChatManager implements GroupChatConnectionListener {
         synchronized(groupChatPanelMap) {
 
             if(group.equals("All")) {
-                ChatManager.getChatManager().showTextChatAll();
+//                ChatManager.getChatManager().showTextChatAll();
+                ChatManager.getChatManager().startChat("");
                 return;
             }
            GroupChatJPanel panel = groupChatPanelMap.get(group);

@@ -18,11 +18,8 @@
 
 package org.jdesktop.wonderland.modules.grouptools.client;
 
-import java.util.HashMap;
-import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.modules.audiomanager.client.PresenceControls;
-import org.jdesktop.wonderland.modules.audiomanager.client.UserListHUDPanel;
 
 /**
  *
@@ -34,7 +31,7 @@ public class UserHUDPanel extends javax.swing.JPanel {
     private PresenceControls pc;
     private Cell cell;
   //  private HashMap<String, JPanel> stringToPanel;
-    private UserListHUDPanel userListHUDPanel;
+//    private UserListHUDPanel userListHUDPanel;
     private GroupListHUDPanel groupListHUDPanel;
     private TestPanel testPanel;
     public UserHUDPanel() {

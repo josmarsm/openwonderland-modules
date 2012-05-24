@@ -50,7 +50,7 @@ GroupChatConnectionListener {
     private PresenceControls controls = null;
     private Cell cell = null;
     private DefaultListModel listModel = null; // = new DefaultListModel();
-    private HUDComponent hudComponent = null;
+//    private HUDComponent hudComponent = null;
     private GroupToolsConnection connection = null;
     private Set<GroupDTO> myGroups = new HashSet();
     public GroupListHUDPanel() {
@@ -138,9 +138,6 @@ GroupChatConnectionListener {
     public void setConnection(GroupToolsConnection connection) {
         this.connection = connection;
         connection.addGroupChatConnectionListener(this);
-    }
-    public void setHUDComponent(HUDComponent c) {
-        this.hudComponent = c;
     }
 
     public void populateList() {
@@ -283,7 +280,7 @@ GroupChatConnectionListener {
     private void voiceChatButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_voiceChatButtonActionPerformed
 
         String group = (String)listModel.getElementAt(jList1.getSelectedIndex());
-        connection.initiateVoiceChat(group, controls, hudComponent);
+        connection.initiateVoiceChat(group, controls);
     }//GEN-LAST:event_voiceChatButtonActionPerformed
 
     private void textButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textButtonActionPerformed
