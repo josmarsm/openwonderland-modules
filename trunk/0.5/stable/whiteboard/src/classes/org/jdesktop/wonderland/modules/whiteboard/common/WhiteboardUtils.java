@@ -1,4 +1,22 @@
 /**
+ * Open Wonderland
+ *
+ * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -33,6 +51,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 import org.apache.batik.dom.svg.SVGDOMImplementation;
 import org.apache.batik.dom.util.DOMUtilities;
@@ -49,22 +69,28 @@ import org.w3c.dom.Element;
  * @author jbarratt
  */
 public class WhiteboardUtils {
-
+    private static final Logger LOGGER =
+            Logger.getLogger(WhiteboardUtils.class.getName());
+    
     public static final String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
     public static final DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
     public static final SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
 
     public static Document newDocument() {
-        return impl.createDocument(svgNS, "svg", null);
+        synchronized (impl) {
+            return impl.createDocument(svgNS, "svg", null);
+        }
     }
 
     public static Document openDocument(String uri) {
         Document doc = null;
 
         try {
-            doc = factory.createDocument(uri);
+            synchronized (factory) {
+                doc = factory.createDocument(uri);
+            }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error creating document for " + uri, ioe);
         }
         return doc;
     }
@@ -77,7 +103,7 @@ public class WhiteboardUtils {
             DOMUtilities.writeDocument(doc, svgOut);
             docString = svgOut.toString();
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error getting XML for document", ioe);
         }
 
         return docString;
@@ -89,9 +115,12 @@ public class WhiteboardUtils {
         try {
             byte[] bArray = xmlString.getBytes("UTF-8");
             InputStream inStream = new ByteArrayInputStream(bArray);
-            result = factory.createDocument(null, inStream);
+            
+            synchronized (factory) {
+                result = factory.createDocument(null, inStream);
+            }
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            LOGGER.log(Level.WARNING, "Error creating document from string", ioe);
         }
 
         return result;
