@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -20,13 +20,13 @@ package org.jdesktop.wonderland.modules.poster.client;
 import com.jme.math.Vector2f;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
-import org.jdesktop.wonderland.client.jme.JmeClientMain;
-import org.jdesktop.wonderland.modules.appbase.client.App2D;
-import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassListener;
+import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.input.MouseEvent3D;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
 import org.jdesktop.wonderland.modules.appbase.client.view.View2D;
 
 /**
@@ -74,14 +74,14 @@ public class PosterWindow extends WindowSwing {
                 public void run () {
                     // This must be invoked on the AWT Event Dispatch Thread
                     posterPanel = new PosterPanel(cell);
+                    
+                    // Parent to Wonderland main window for proper focus handling
+                    JmeClientMain.getFrame().getCanvas3DPanel().add(posterPanel);
                 }
             });
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-
-        // Parent to Wonderland main window for proper focus handling
-        JmeClientMain.getFrame().getCanvas3DPanel().add(posterPanel);
 
         setComponent(posterPanel);
     }
