@@ -1,7 +1,7 @@
 /**
  * Open Wonderland
  *
- * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
+ * Copyright (c) 2010 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
  * Redistributions in source code form must reproduce the above
  * copyright and this condition.
@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderComponent;
 import org.jdesktop.mtgame.StatisticsComponent;
@@ -45,6 +46,9 @@ import org.jdesktop.wonderland.client.jme.utils.traverser.TreeScan;
  * @author Jonathan Kaplan <jonathankap@gmail.com>
  */
 class GeometryStatsGenerator {
+    private static final Logger LOGGER =
+            Logger.getLogger(GeometryStatsGenerator.class.getName());
+    
     private final Cell cell;
     private final CountDownLatch done;
 
@@ -57,7 +61,7 @@ class GeometryStatsGenerator {
     private final SizeCellStat textureSize;
 
     private final TimeCellStat renderTime;
-
+    
     public GeometryStatsGenerator(Cell cell) {
         this.cell = cell;
 
@@ -96,6 +100,8 @@ class GeometryStatsGenerator {
         private final Set<Spatial> processedNodes = new HashSet<Spatial>();
         private final Set<Integer> processedTextures = new HashSet<Integer>();
 
+        //private final StringBuilder output = new StringBuilder();
+
         public void commit() {
             try {
                 // find the renderer
@@ -119,12 +125,16 @@ class GeometryStatsGenerator {
                 stats.add(cell, textureSize);
 
                 stats.add(cell, renderTime);
+                
+                //LOGGER.warning(output.toString());
             } finally {
                 done.countDown();
             }
         }
 
         private void processEntity(Entity e) {
+            //output.append("Process entity ").append(e.getName()).append("\n");
+            
             entityCount.changeValue(1l);
 
             // figure out the most recent render time
@@ -132,10 +142,14 @@ class GeometryStatsGenerator {
             if (sc != null) {
                 renderTime.changeValue(sc.getLastRenderTime());
             }
-
+            
             RenderComponent rc = e.getComponent(RenderComponent.class);
             if (rc != null) {
                 TreeScan.findNode(rc.getSceneRoot(), this);
+
+                // triangles are aggregated for all children of a node, so
+                // only process nodes once
+                triangleCount.changeValue((long) rc.getSceneRoot().getTriangleCount());
             }
 
             for (int i = 0; i < e.numEntities(); i++) {
@@ -147,10 +161,15 @@ class GeometryStatsGenerator {
             if (processedNodes.contains(node)) {
                 return false;
             }
+            
+            if (node instanceof RenderComponent.AttachPointNode) {
+                return false;
+            }
 
+            //output.append("Process node ").append(node.getName()).append("\n");
+            
             // count it
             nodeCount.changeValue(1l);
-            triangleCount.changeValue((long) node.getTriangleCount());
 
             // calculate buffer sizes
             if (node instanceof Geometry) {
@@ -183,6 +202,9 @@ class GeometryStatsGenerator {
 
                     // make sure not to double count shared textures
                     if (!processedTextures.contains(t.getTextureId())) {
+                        //output.append("Process texture ").append(t.getTextureId()).
+                        //       append(" image size ").append(t.getMemoryReq()).append("\n");
+                        
                         processedTextures.add(t.getTextureId());
                         textureCount.changeValue(1l);
                         textureSize.changeValue((long) t.getMemoryReq());
