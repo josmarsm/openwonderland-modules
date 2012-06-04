@@ -34,6 +34,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
     private JDialog dialog;
     private boolean isGlobal = false;
     private ScriptLibraryPanel library;
+    private RegisteredCellsListPanel cellList;
     private CommandPanel commandPanel;
     private static final Logger logger = Logger.getLogger(ScriptEditorPanel.class.getName());
     
@@ -60,6 +61,7 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
             + "Context.onLeave(exit, false);\n";
     private static final String KEY_EVENT_TEMPLATE = "";
     private static final String TRIGGER_EVENT_TEMPLATE = "";
+    private TriggerQueryPanel triggerPanel = null;
     
     public ScriptEditorPanel(EZScriptComponent component, JDialog dialog) {
         initComponents();
@@ -94,7 +96,11 @@ public class ScriptEditorPanel extends javax.swing.JPanel {
         initComponents();
         isGlobal = true;
         library = new ScriptLibraryPanel();
+        cellList = new RegisteredCellsListPanel();
+        triggerPanel = new TriggerQueryPanel();
         jTabbedPane1.addTab("Library", library);
+        jTabbedPane1.addTab("Registered Cells", cellList);
+        jTabbedPane1.addTab("Trigger Utilities", triggerPanel);
 //        commandPanel = new CommandPanel();
 //        jTabbedPane1.addTab("Command Line", commandPanel);
         this.dialog = dialog;

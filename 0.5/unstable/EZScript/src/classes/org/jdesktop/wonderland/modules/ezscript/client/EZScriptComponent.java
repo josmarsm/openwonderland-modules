@@ -7,10 +7,7 @@ import com.jme.math.Vector3f;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
@@ -1202,6 +1199,9 @@ public class EZScriptComponent extends CellComponent {
                 String name = eventMessage.getEventName();
 
                 if (triggerCellEvents.containsKey(name)) {
+                    
+                    logger.warning(cell.getName() + " RECEIVED TRIGGER: "+eventMessage.getEventName());
+                    
                     threadedExecute(triggerCellEvents.get(name));
                     //triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
                     //triggerCellEvents.get(name).run();
@@ -1214,6 +1214,9 @@ public class EZScriptComponent extends CellComponent {
     //</editor-fold>
 
     public void triggerLocalCell(CellID cellID, String label, Object[] args) {
+        
+        logger.warning(this.cell.getName()+" IS LOCALLY TRIGGERING: "+label);
+        
         //obtain primary session so we can get the cell cache.
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
 
@@ -1221,10 +1224,10 @@ public class EZScriptComponent extends CellComponent {
         CellCache cache = ClientContextJME.getCellCache(session);
 
         //get the cell we're looking for from the cell cache.
-        Cell cell = cache.getCell(cellID);
+        Cell tmpCell = cache.getCell(cellID);
 
         //grab the ezscript component from the cell we're looking for.
-        EZScriptComponent ez = cell.getComponent(EZScriptComponent.class);
+        EZScriptComponent ez = tmpCell.getComponent(EZScriptComponent.class);
         if (ez == null) {
             //oh noes!
             //fail gracefully
@@ -1237,16 +1240,19 @@ public class EZScriptComponent extends CellComponent {
         //check to see if the trigger we're executing is relevant. That is to 
         //say, a trigger has been registered with that name.
         if (triggers.containsKey(label)) {
+            logger.warning("EXECUTING TRIGGER: "+label+" FOR CELL: "+tmpCell.getName());
             ez.threadedExecute(ez.triggerCellEvents.get(label));
         } else {
             //fail gracefully.
-            logger.warning("Received a trigger request with no associated trigger: " + label);
+            logger.warning(tmpCell.getName() + " received a trigger request with no associated trigger: " + label);
             return;
         }
     }
 
     public void triggerCell(CellID cellID, String label, Object[] args) {
 
+        String name = cell.getCellCache().getCell(cellID).getName();
+        logger.warning("SENDING TRIGGER: "+label+" TO CELL: "+name);
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
     }
 
@@ -1358,6 +1364,32 @@ public class EZScriptComponent extends CellComponent {
         return this.sharedStateComponent;
     }
 
+    public Collection<String> getRemoteTriggerList() {
+        return this.triggerCellEvents.keySet();
+    }
+    
+    public Collection<String> getLocalTriggerList() {
+        return this.localTriggerEvents.keySet();
+    }
+    
+    public void executeRemoteTrigger(String name) {
+        if(triggerCellEvents.containsKey(name)) {
+            threadedExecute(triggerCellEvents.get(name));
+        } else {
+            logger.warning("NO TRIGGER: "+name+" FOUND FOR CELL: "+cell.getName());
+        }
+    }
+    
+    public void executeLocalTrigger(String name) {
+
+        if(localTriggerEvents.containsKey(name)) {
+            threadedExecute(localTriggerEvents.get(name));
+        } else {
+            logger.warning("NO TRIGGER: "+name+" FOUND FOR CELL: "+cell.getName());
+        }
+    }
+    
+    
     //<editor-fold defaultstate="collapsed" desc="getters/setters">
     public boolean isInitiatesKeyEvents() {
         return initiatesKeyEvents;
