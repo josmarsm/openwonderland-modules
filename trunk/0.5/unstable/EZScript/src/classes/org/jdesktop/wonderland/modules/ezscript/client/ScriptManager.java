@@ -6,9 +6,7 @@
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.*;
@@ -44,7 +42,8 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.Ret
  * @author JagWire
  */
 public class ScriptManager {
-
+//    INSTANCE;
+    
     private ScriptEditorPanel scriptEditor;
     private JDialog dialog;
     private ScriptEditorPanel panel;
@@ -64,6 +63,10 @@ public class ScriptManager {
         }
         return instance;
     }
+    
+//    public static ScriptManager getInstance() {
+//        return INSTANCE;
+//    }
 
     private ScriptManager() {
         dialog = new JDialog();
@@ -92,7 +95,7 @@ public class ScriptManager {
         
 //        scriptEngine = dao().getClientScriptEngine();
 //        scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
-        logger.warning("manager bindings size: "+scriptBindings.size());
+//        INSTANCE.logger.warning("manager bindings size: "+scriptBindings.size());
         generateDocumentation();
     }
     
@@ -225,6 +228,10 @@ public class ScriptManager {
         } else {
             return; //return gracefully
         }
+    }
+    
+    public Collection<String> getRegisteredCellNames() {
+        return stringToCellID.keySet();
     }
     
 }
