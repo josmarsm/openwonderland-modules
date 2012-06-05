@@ -2,4 +2,5 @@
 <loader-data>
     <version>1</version>
     <modelLoaderClassname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</modelLoaderClassname>
+    <deployedTextures value="../images/texture0.jpg" key="../images/texture0.jpg"/>
 </loader-data>
