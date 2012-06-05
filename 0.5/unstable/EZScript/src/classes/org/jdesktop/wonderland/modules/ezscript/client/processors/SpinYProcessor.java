@@ -7,14 +7,19 @@ package org.jdesktop.wonderland.modules.ezscript.client.processors;
 
 import com.jme.math.Quaternion;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.client.scenemanager.SceneManager;
 /**
  *
  * @author JagWire
  */
 public class SpinYProcessor extends SpinXProcessor {
 
+    private static final Logger logger =
+            Logger.getLogger(SpinYProcessor.class.getName());
+    
     
     public SpinYProcessor(String name,
             Cell cell,
@@ -34,8 +39,8 @@ public class SpinYProcessor extends SpinXProcessor {
         }
         angles[1] += increment;
         //1 revolution = (3.14 * 2) ~ 6.28
-        //
-        System.out.println("current (Y) radians: " + angles[1]);
+        
+        logger.warning("CURRENT (Y) radians:" + angles[1]);
         //quaternion.fromAngles(0.0f, increment, 0.0f);
         quaternion = new Quaternion(new float[]{angles[0], angles[1], angles[2]});
         frameIndex += 1;
