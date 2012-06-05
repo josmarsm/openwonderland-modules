@@ -22,18 +22,17 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 @ScriptMethod
 public class SetVisibilityMethod implements ScriptMethodSPI {
 
-    private Cell cell;
-    private BasicRenderer renderer;
-    private Node node;
-    private boolean visible;
     public String getFunctionName() {
         return "SetVisible";
     }
 
     public void setArguments(Object[] args) {
-        cell = (Cell)args[0];
-        visible = ((Boolean)args[1]).booleanValue();
+//        cell = (Cell)args[0];
+//        visible = ((Boolean)args[1]).booleanValue();
 
+        new SetVisibilityInvoker((Cell)args[0],
+                ((Boolean)args[1]).booleanValue()).invoke();
+        
     }
 
     public String getDescription() {
@@ -47,19 +46,49 @@ public class SetVisibilityMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        SceneWorker.addWorker(new WorkCommit() {
-            public void commit() {
-                renderer = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
-                node = renderer.getSceneRoot();
-                if(visible) {
-                    node.setCullHint(CullHint.Never);
-                } else {
-                    node.setCullHint(CullHint.Always);
-                }               
-                WorldManager.getDefaultWorldManager().addToUpdateList(node);
-            }
-
-        });
+//        SceneWorker.addWorker(new WorkCommit() {
+//            public void commit() {
+//                renderer = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+//                node = renderer.getSceneRoot();
+//                if(visible) {
+//                    node.setCullHint(CullHint.Never);
+//                } else {
+//                    node.setCullHint(CullHint.Always);
+//                }               
+//                WorldManager.getDefaultWorldManager().addToUpdateList(node);
+//            }
+//
+//        });
+    }
+    
+    private static class SetVisibilityInvoker {
+        private final Cell cell;
+        private final boolean visible;
+        public SetVisibilityInvoker(Cell cell, boolean visible) {
+            this.cell = cell;
+            this.visible = visible;
+        }
+        
+        public void invoke() {
+            SceneWorker.addWorker(new WorkCommit() {
+                public void commit() {
+                    BasicRenderer r = (BasicRenderer)cell
+                                        .getCellRenderer(Cell.RendererType.RENDERER_JME);
+                    
+                    Node node = r.getSceneRoot();
+                    
+                    if(visible) {
+                        //make visible
+                        node.setCullHint(CullHint.Never);
+                        
+                    } else {
+                        //make invisible
+                        node.setCullHint(CullHint.Always);
+                    }
+                    WorldManager.getDefaultWorldManager().addToUpdateList(node);
+                }
+            });
+        }
     }
 
 }
