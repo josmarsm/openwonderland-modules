@@ -57,9 +57,13 @@ public class SpinXProcessor extends ProcessorComponent {
         quaternion = transform.getRotation(null);
         angles = quaternion.toAngles(null);
 
+        String anglesToString = "";
         for (float f : angles) {
-            System.out.println(f);
+//            System.out.println(f);
+//            logger.warning("ANGLES: ")
+            anglesToString += (f + ", ");
         }
+        logger.warning("ANGLES: "+anglesToString);
     }
 
     @Override
@@ -92,14 +96,21 @@ public class SpinXProcessor extends ProcessorComponent {
 
         CellTransform transform = cell.getLocalTransform();
         transform.setRotation(quaternion);
-        getMovable(cell).localMoveRequest(transform, false);//transform);
-        Set<String> s = new HashSet<String>();
+//        getMovable(cell).localMoveRequest(transform, false);//transform);
+        
+        /*
+         * Changing the above commented line to use true instead of false for
+         * second parameter. The implication here is that the server will see
+         * the move request. A new pattern should be adopted as this is quite
+         * confusing.
+         */
+        
+        getMovable(cell).localMoveRequest(transform, true);
 
     }
 
     public AnotherMovableComponent getMovable(final Cell cell) {
         if (cell.getComponent(AnotherMovableComponent.class) != null) {
-//            logger.warning("Got AnotherMovableComponent!");
             return cell.getComponent(AnotherMovableComponent.class);
         }
 
