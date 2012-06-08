@@ -127,11 +127,14 @@ public class InstructorToolsClientPlugin extends BaseClientPlugin
         
         if(Boolean.parseBoolean(System.getProperty(TABBED_PANEL_PROP))) {
             HUDTabbedPanel tabbedPanel = HUDTabbedPanel.getInstance();
-            tabbedPanel.addTab("IT", view);
+            tabbedPanel.addTab("Users", view);
+            tabbedPanel.getTabbedPanel().setSelectedComponent(view);
             hc = main.createComponent(tabbedPanel);
+            
         } else {
             hc = main.createComponent(view);
         }
+        
         
         hc.setDecoratable(true);
         hc.setPreferredLocation(CompassLayout.Layout.NORTHWEST);

@@ -73,7 +73,7 @@ import org.jdesktop.wonderland.modules.userlist.client.views.UserListView;
  * @author Ronny Standtke <ronny.standtke@fhnw.ch>
  * @author JagWire
  */
-public class InstructorToolsUserList
+public class InstructorToolsUserList 
         extends javax.swing.JPanel implements UserListView, InstructorToolsView
 {
 
@@ -585,5 +585,19 @@ public class InstructorToolsUserList
     
     public void addReconnectSoftphoneButtonActionListener(ActionListener listener) {
         reconnectSoftphoneButton.addActionListener(listener);
+    }
+
+    public void setPanelVisible(boolean visible) {
+        controlPanel.setVisible(visible);
+        if(visible) {
+            panelToggleButton.setIcon(downIcon);
+        } else {
+            panelToggleButton.setIcon(upIcon);
+        }
+        
+    }
+
+    public boolean isPanelVisible() {
+        return controlPanel.isVisible();
     }
 }
