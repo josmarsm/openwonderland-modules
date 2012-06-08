@@ -22,7 +22,7 @@
     <!-- this module depends on the content repository module -->
     <pathconvert property="module-client.classpath">
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
-        <path location="${current.dir}/../UserList/build/client/userlist-client.jar"/>
+        <path location="${modules.dir}/tools/user-list/build/client/user-list-client.jar"/>
         <path location="${modules.dir}/tools/audio-manager/build/lib/client/audiomanager-client.jar"/>
         <path location="${modules.dir}/tools/presence-manager/build/lib/client/presencemanager-client.jar"/>
 	<path location="${modules.dir}/tools/security-group/build/lib/client/securitygroups-client.jar"/>
