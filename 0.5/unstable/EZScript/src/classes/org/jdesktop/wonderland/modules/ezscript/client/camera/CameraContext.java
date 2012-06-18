@@ -33,7 +33,10 @@ public enum CameraContext {
 
             public void commit() {
                 if (initialized) {
-                    previousController = ClientContextJME.getViewManager().getCameraController();
+                    /*
+                     * Temporary fix camera issues with iSocial last lesson.
+                     */
+//                    previousController = ClientContextJME.getViewManager().getCameraController();
 
                     ClientContextJME.getViewManager().setCameraController(camera);
                 }

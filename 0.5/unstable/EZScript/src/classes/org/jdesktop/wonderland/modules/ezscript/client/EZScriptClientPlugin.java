@@ -40,7 +40,7 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     private ServerSessionManager manager;
     private ScriptImporter importer = null;
     private CommandWindowListener listener = null;
-
+    
     @Override
     public void initialize(ServerSessionManager loginInfo) {
         //ScriptManager.getInstance();

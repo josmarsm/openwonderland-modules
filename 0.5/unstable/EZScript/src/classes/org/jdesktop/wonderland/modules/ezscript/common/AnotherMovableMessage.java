@@ -7,10 +7,11 @@ package org.jdesktop.wonderland.modules.ezscript.common;
 
 import com.jme.math.Quaternion;
 import com.jme.math.Vector3f;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
+//import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MoveAction;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.MovableMessage;
+import org.jdesktop.wonderland.common.cell.security.MoveAction;
 import org.jdesktop.wonderland.common.security.annotation.Actions;
 
 /**
