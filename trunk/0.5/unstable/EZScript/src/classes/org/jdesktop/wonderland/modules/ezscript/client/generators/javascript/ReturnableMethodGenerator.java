@@ -7,6 +7,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.generators.javascript;
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import org.jdesktop.wonderland.modules.ezscript.client.PassthruClassInstantiator;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratorSPI;
 
@@ -46,5 +47,24 @@ public class ReturnableMethodGenerator implements GeneratorSPI {
 
         return scriptx;
     }
+    
+    
+//    public String generateScriptBinding() {
+//        bindings.put("Factory", PassthruClassInstantiator.INSTANCE);;
+//        String scriptx = "function "+method.getFunctionName()+"() {\n"
+//                + "\timportClass("+method.getClass().getName()+");\n"
+//                + "\tvar obj = Factory.instantiate("+method.getClass().getName()+");\n"
+//                + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+//                + "\tfor(var i = 0; i < arguments.length; i++) {\n"
+//                + "\t args[i] = arguments[i];\n"
+//                + "\t}\n"
+//                + "\tobj.setArguments(args);\n"
+//                + "\tobj.run();"
+//                + "\tvar tmp = obj.returns();\n"
+//                + "\treturn tmp\n" 
+//                + "}";
+//        
+//        return scriptx;
+//    }
     
 }

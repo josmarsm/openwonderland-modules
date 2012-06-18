@@ -54,6 +54,7 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
+import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
@@ -93,7 +94,8 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
 public class EZScriptComponent extends CellComponent {
 
     //<editor-fold defaultstate="collapsed" desc="Variables">
-    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
+//    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
+    private ScriptEngineManager engineManager = new ScriptEngineManager(ScannedClassLoader.getSystemScannedClassLoader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
     private JDialog dialog;
@@ -156,6 +158,7 @@ public class EZScriptComponent extends CellComponent {
     //ChannelComponent variables
     @UsesCellComponent
     private ChannelComponent channelComponent;
+    
     @UsesCellComponent
     private AnotherMovableComponent anotherMovable;
     //dislike this.
@@ -176,8 +179,8 @@ public class EZScriptComponent extends CellComponent {
 //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Wonderland Boilerplate">
     public EZScriptComponent(Cell cell) {
-        super(cell);
-
+        super(cell); 
+        
         executor = Executors.newFixedThreadPool(4);
 
         //initialize callback containers
@@ -608,7 +611,6 @@ public class EZScriptComponent extends CellComponent {
         } else {
             volume = new BoundingSphere(info[0], new Vector3f());
         }
-
         cell.setLocalBounds(volume);
         if (proximityEventsEnabled == true && proximityListener != null) {
             proximityComponent.removeProximityListener(proximityListener);

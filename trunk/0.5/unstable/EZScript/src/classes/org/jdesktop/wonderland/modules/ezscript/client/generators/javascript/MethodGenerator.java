@@ -6,6 +6,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.generators.javascript;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
+import org.jdesktop.wonderland.modules.ezscript.client.PassthruClassInstantiator;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratorSPI;
 
@@ -14,6 +15,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratorSPI;
  * @author Ryan
  */
 public class MethodGenerator implements GeneratorSPI {
+
     private final ScriptEngine engine;
     private final Bindings bindings;
     private ScriptMethodSPI method;
@@ -23,14 +25,14 @@ public class MethodGenerator implements GeneratorSPI {
         this.engine = engine;
         this.bindings = bindings;
     }
-    
+
     public void setActiveMethod(ScriptMethodSPI method) {
         this.method = method;
     }
-    
+
     @Override
     public String generateScriptBinding() {
-       
+
         bindings.put("this"+method.getFunctionName(), method);
         String scriptx  = "function " + method.getFunctionName()+"() {\n"
             + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
@@ -42,7 +44,20 @@ public class MethodGenerator implements GeneratorSPI {
             + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
             + "\tthis"+method.getFunctionName()+".run();\n"
             +"}";
-        
+  
+
+//        bindings.put("Factory", PassthruClassInstantiator.INSTANCE);
+//        String scriptx = "function " + method.getFunctionName() + "() {\n"
+//                + "\timportClass("+method.getClass().getName()+");\n"
+//                + "\tvar obj = Factory.instantiate(" + method.getClass().getName() + ");\n"
+//                + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+//                + "\tfor(var i = 0; i < arguments.length; i++) {\n"
+//                + "\t args[i] = arguments[i];\n"
+//                + "\t}\n"
+//                + "\tobj.setArguments(args);\n"
+//                + "\tobj.run();"
+//                + "}";
+//
         return scriptx;
     }
 }

@@ -1,4 +1,3 @@
-
 package org.jdesktop.wonderland.modules.ezscript.server.cell;
 
 import com.sun.sgs.app.AppContext;
@@ -17,75 +16,70 @@ import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.eventrecorder.RecorderManager;
 
 //ON HOLD FOR NOW.
-
-
 /**
  * @author paulby
  * @author JagWire
  */
 //@ComponentLookupClass(MovableComponentMO.class)
 public class AnotherMovableComponentMO extends CellComponentMO {
-
+    
     @UsesCellComponentMO(ChannelComponentMO.class)
     protected ManagedReference<ChannelComponentMO> channelComponentRef = null;
-
     private static final Logger logger = Logger.getLogger(AnotherMovableComponentMO.class.getName());
-
+    
     public AnotherMovableComponentMO(CellMO cell) {
         super(cell);
     }
-
-
+    
     @Override
     public void setLive(boolean live) {
         super.setLive(live);
-
+        
         logger.warning("SET LIVE in AnotherMovableComponentMO!");
-
-        if(live) {
+        
+        if (live) {
             channelComponentRef.getForUpdate().addMessageReceiver(getMessageClass(),
-                                                new ComponentMessageReceiverImpl(this));
+                    new ComponentMessageReceiverImpl(this));
         } else {
             channelComponentRef.getForUpdate().removeMessageReceiver(getMessageClass());
         }
     }
-
+    
     @Override
     protected String getClientClass() {
         logger.warning("GetClientClass in AnotherMovableComponentMO!");
         return "org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent";
     }
-
+    
     protected Class getMessageClass() {
         logger.warning("GetMessageClass in AnotherMovableComponentMO!");
         return AnotherMovableMessage.class;
     }
-
+    
     void moveRequest(WonderlandClientID clientID, AnotherMovableMessage msg) {
         moveRequest(clientID, msg.getCellTransform());
     }
-
+    
     public void moveRequest(WonderlandClientID clientID, CellTransform transform) {
         CellMO cell = cellRef.getForUpdate();
         ChannelComponentMO channelComponent;
         //cell.setLocalTransform(transform);
 
-        if(cell.isLive()) {
+        if (cell.isLive()) {
             channelComponent = channelComponentRef.getForUpdate();
             channelComponent.sendAll(clientID, AnotherMovableMessage.anotherNewMoveRequestMessage(cellID, transform));
-
+            
         }
     }
-
-
-        private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
-
+    
+    private static class ComponentMessageReceiverImpl implements ComponentMessageReceiver {
+        
         private ManagedReference<AnotherMovableComponentMO> compRef;
-
+        
         public ComponentMessageReceiverImpl(AnotherMovableComponentMO comp) {
             compRef = AppContext.getDataManager().createReference(comp);
         }
-
+        
         public void messageReceived(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             AnotherMovableMessage ent = (AnotherMovableMessage) message;
 
@@ -93,8 +87,8 @@ public class AnotherMovableComponentMO extends CellComponentMO {
             switch (ent.getActionType()) {
                 case MOVE_REQUEST:
                     // TODO check permisions
-
-                    compRef.getForUpdate().moveRequest(clientID, ent);                   
+                    Logger.getAnonymousLogger().warning("RECEIVED MOVE REQEUST!");
+                    compRef.getForUpdate().moveRequest(clientID, ent);
 
                     // Only need to send a response if the move can not be completed as requested
                     //sender.send(session, MovableMessageResponse.newMoveModifiedMessage(ent.getMessageID(), ent.getTranslation(), ent.getRotation()));
@@ -105,13 +99,13 @@ public class AnotherMovableComponentMO extends CellComponentMO {
             }
         }
 
-         /**
-         * Record the message -- part of the event recording mechanism.
-         * Nothing more than the message is recorded in this implementation, delegate it to the recorder manager
+        /**
+         * Record the message -- part of the event recording mechanism. Nothing
+         * more than the message is recorded in this implementation, delegate it
+         * to the recorder manager
          */
         public void recordMessage(WonderlandClientSender sender, WonderlandClientID clientID, CellMessage message) {
             RecorderManager.getDefaultManager().recordMessage(sender, clientID, message);
         }
     }
-   
 }
