@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-${module.name}-module" default="dist" basedir=".">
+    <property file="my.module.properties"/>
+
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common,
+            -module-compile-server,
+            -module-compile-client,
+            -module-compile-main"/>
+
+    <target name="-module-compile-main" depends="-module-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/main/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
+
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="${module.version.major}"
+                minorVersion="${module.version.minor}"
+                miniVersion="${module.version.mini}"
+                jarfile="${module.dist.dir}/${module.jarname}.jar"
+                moduleDescription="${module.description}" builddir="${build.dir}">
+
+
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.properties"/>
+                        <include name="${module.src}/client/resources/**/*.gif"/>
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
+                </clientjar>
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <!--<include name="${module.src}/server/resources/**/*.html"/>-->
+                    </fileset>
+                </serverjar>
+            </server>
+        </module>
+    </target>
+
+    <!-- run the connection main -->
+    <target name="run" depends="dist">
+        <java classname="uk.ac.essex.wonderland.modules.countdowntimer.main.ConnectionClientMain">
+            <classpath>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement path="${module-client.classpath}"/>
+                <pathelement path="${build.classes.dir}"/>
+            </classpath>
+
+            <arg value="4"/>
+            <arg value="${wonderland.web.url}"/>
+            <arg value="admin"/>
+            <arg value="admin"/>
+        </java>
+    </target>
+
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>
