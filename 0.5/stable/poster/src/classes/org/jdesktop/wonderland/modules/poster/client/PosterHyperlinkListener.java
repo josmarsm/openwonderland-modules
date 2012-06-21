@@ -180,7 +180,7 @@ public class PosterHyperlinkListener implements HyperlinkListener {
             if (relZ.relative) {
                 relOffset.setZ(relZ.value);
             } else {
-                loc.setX(relZ.value);
+                loc.setZ(relZ.value);
             }
         }
         
