@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import com.jme.math.FastMath;
@@ -26,23 +25,25 @@ public class SpinZMethod implements ScriptMethodSPI {
     private float rotations;
     private float time;
     private Semaphore lock;
+
     public String getFunctionName() {
         return "SpinZ";
     }
 
     public void setArguments(Object[] args) {
-                cell = (Cell)args[0];
-        rotations = ((Double)args[1]).floatValue();
-        time = ((Double)args[2]).floatValue();
+        cell = (Cell) args[0];
+        rotations = ((Double) args[1]).floatValue();
+        time = ((Double) args[2]).floatValue();
         lock = new Semaphore(0);
     }
 
     public String getDescription() {
-        return "";
+        return "Spin a cell on the z-axis, like a pin-wheel.\n"
+                + "-- usage: SpinZ(cell, <rotations>, <seconds>);";
     }
 
     public String getCategory() {
-        return "transformation";
+        return "Object Movement";
     }
 
     public void run() {
@@ -58,10 +59,10 @@ public class SpinZMethod implements ScriptMethodSPI {
 
                 r.getEntity().addComponent(SpinZProcessor.class,
                         new SpinZProcessor("Spin",
-                                            cell,
-                                            time,
+                        cell,
+                        time,
                         (rotations * FastMath.PI * 2) / (30.0f * time),
-                                            lock));
+                        lock));
             }
         });
         try {
@@ -72,5 +73,4 @@ public class SpinZMethod implements ScriptMethodSPI {
             System.out.println("SpinZ finished...");
         }
     }
-
 }

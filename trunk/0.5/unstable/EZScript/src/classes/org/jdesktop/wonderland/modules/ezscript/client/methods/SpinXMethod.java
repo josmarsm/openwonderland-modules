@@ -44,7 +44,7 @@ public class SpinXMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "transformation";
+        return "Object Movement";
     }
 
     public void run() {

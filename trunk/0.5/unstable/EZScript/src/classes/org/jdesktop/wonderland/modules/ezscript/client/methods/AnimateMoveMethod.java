@@ -101,7 +101,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "animation";
+        return "Object Movement";
     }
 
     public MovableComponent getMovable(Cell cell) {

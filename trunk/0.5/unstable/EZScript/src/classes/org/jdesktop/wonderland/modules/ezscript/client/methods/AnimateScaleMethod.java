@@ -77,7 +77,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "animation";
+        return "Object Movement";
     }
 
     public MovableComponent getMovable(Cell cell) {

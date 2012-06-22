@@ -63,7 +63,7 @@ public class GeneratedCellMethod implements ReturnableScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "cells";
+        return "Insert Object";
     }
 
     public void setArguments(Object[] args) {
