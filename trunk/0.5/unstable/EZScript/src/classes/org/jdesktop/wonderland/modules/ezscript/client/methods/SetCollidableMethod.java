@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
 
 import org.jdesktop.wonderland.client.cell.Cell;
@@ -17,26 +16,19 @@ import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 @ScriptMethod
 public class SetCollidableMethod implements ScriptMethodSPI {
 
-    private Cell cell;
-    private boolean collidable;
-    private BasicRenderer renderer;
-    private boolean fail = false;
     public String getFunctionName() {
         return "SetCollidable";
     }
 
     public void setArguments(Object[] args) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-        cell = (Cell)args[0];
-        collidable = ((Boolean)args[1]).booleanValue();
-
-        renderer = (BasicRenderer)cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        new SetCollidableInvoker((Cell)args[0],
+                                ((Boolean) args[1]).booleanValue()).invoke();
     }
 
     public String getDescription() {
         //throw new UnsupportedOperationException("Not supported yet.");
-        return "Toggle the the collision of a cell.\n" +
-                "-- usage: SetCollidable(cell, true_or_false);";
+        return "Toggle the the collision of a cell.\n"
+                + "-- usage: SetCollidable(cell, true_or_false);";
     }
 
     public String getCategory() {
@@ -44,7 +36,21 @@ public class SetCollidableMethod implements ScriptMethodSPI {
     }
 
     public void run() {
-        //throw new UnsupportedOperationException("Not supported yet.");
-        renderer.setCollisionEnabled(collidable);
+    }
+
+    private static final class SetCollidableInvoker {
+
+        private Cell cell;
+        private boolean collidable;
+
+        public SetCollidableInvoker(Cell cell, boolean collidable) {
+            this.cell = cell;
+            this.collidable = collidable;
+        }
+
+        public void invoke() {
+            BasicRenderer renderer = (BasicRenderer) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+            renderer.setCollisionEnabled(collidable);
+        }
     }
 }
