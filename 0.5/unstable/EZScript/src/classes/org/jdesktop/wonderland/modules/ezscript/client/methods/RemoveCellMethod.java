@@ -36,7 +36,7 @@ public class RemoveCellMethod implements ScriptMethodSPI {
 
     public String getCategory() {
 //        throw new UnsupportedOperationException("Not supported yet.");
-        return "cell";
+        return "Cells";
     }
 
     public void run() {

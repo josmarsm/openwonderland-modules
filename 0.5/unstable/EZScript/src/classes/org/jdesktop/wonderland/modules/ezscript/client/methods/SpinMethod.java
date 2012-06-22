@@ -74,7 +74,7 @@ public class SpinMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "animation";
+        return "Object Movement";
     }
 
 

@@ -40,7 +40,7 @@ public class SetCollidableMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "cell";
+        return "Cells";
     }
 
     public void run() {

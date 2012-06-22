@@ -67,6 +67,6 @@ public class MoveMethod implements ScriptMethodSPI, Runnable {
     }
 
     public String getCategory() {
-        return "transformation";
+        return "Object Movement";
     }
 }

@@ -43,7 +43,7 @@ public class ScaleMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "transformation";
+        return "Object Movement";
     }
 
 }

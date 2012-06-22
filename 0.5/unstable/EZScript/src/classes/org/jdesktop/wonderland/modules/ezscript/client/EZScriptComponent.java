@@ -95,7 +95,7 @@ public class EZScriptComponent extends CellComponent {
 
     //<editor-fold defaultstate="collapsed" desc="Variables">
 //    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
-    private ScriptEngineManager engineManager = new ScriptEngineManager(ScannedClassLoader.getSystemScannedClassLoader());
+    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
     private JDialog dialog;

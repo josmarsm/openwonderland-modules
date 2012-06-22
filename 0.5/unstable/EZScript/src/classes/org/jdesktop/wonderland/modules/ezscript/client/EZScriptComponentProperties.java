@@ -102,7 +102,7 @@ public class EZScriptComponentProperties
     public void open() {
         CellServerState state = editor.getCellServerState();
         CellComponentServerState compState = state.getComponentServerState(
-                EZScriptComponentServerState.class);
+                                                            EZScriptComponentServerState.class);
         if (state != null) {
             EZScriptComponentServerState EZScriptComponentServerState =
                     (EZScriptComponentServerState) compState;
@@ -111,6 +111,9 @@ public class EZScriptComponentProperties
 
 
             EZScriptComponent component = editor.getCell().getComponent(EZScriptComponent.class);
+            if(component == null)
+                return;
+            
             SharedMapCli states = component.getStateMap();
             if(states == null)
                 return;

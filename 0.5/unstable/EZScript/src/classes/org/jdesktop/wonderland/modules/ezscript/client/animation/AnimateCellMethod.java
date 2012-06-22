@@ -38,7 +38,7 @@ public class AnimateCellMethod implements ScriptMethodSPI {
     }
 
     public String getCategory() {
-        return "animations";
+        return "Object Movement";
     }
 
     public void run() {
