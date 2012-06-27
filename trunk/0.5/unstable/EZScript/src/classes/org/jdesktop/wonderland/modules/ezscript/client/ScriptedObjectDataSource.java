@@ -18,13 +18,16 @@ import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventBridgeSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.GlobalSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.Global;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.GlobalsGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
 
@@ -39,6 +42,7 @@ public enum ScriptedObjectDataSource {
    private ArrayList<ReturnableScriptMethodSPI> returnables;
    private ArrayList<ScriptMethodSPI> voids;
    private ArrayList<CellFactorySPI> cellFactories;
+   private ArrayList<GlobalSPI> globals;
    
    private ScriptEngineManager manager = null;
    private ScriptEngine engine = null;
@@ -61,11 +65,23 @@ public enum ScriptedObjectDataSource {
         
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
 
-        bridges = listFromIterator(loader.getInstances(EventBridge.class, EventBridgeSPI.class));
-        returnables = listFromIterator(loader.getInstances(ReturnableScriptMethod.class,
-                ReturnableScriptMethodSPI.class));
-        voids = listFromIterator(loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class));
-        cellFactories = listFromIterator(loader.getInstances(CellFactory.class, CellFactorySPI.class));
+        bridges = listFromIterator(instances(loader, EventBridge.class, EventBridgeSPI.class));
+        
+//        bridges = listFromIterator(loader.getInstances(EventBridge.class, EventBridgeSPI.class));
+        returnables = listFromIterator(instances(loader,
+                                                ReturnableScriptMethod.class,
+                                                ReturnableScriptMethodSPI.class));
+//        returnables = listFromIterator(loader.getInstances(ReturnableScriptMethod.class,
+//                ReturnableScriptMethodSPI.class));
+        voids = listFromIterator(instances(loader,
+                                            ScriptMethod.class,
+                                            ScriptMethodSPI.class));
+//        voids = listFromIterator(loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class));
+        cellFactories = listFromIterator(instances(loader, CellFactory.class, CellFactorySPI.class));
+//        cellFactories = listFromIterator(loader.getInstances(CellFactory.class, CellFactorySPI.class));
+        
+        globals = listFromIterator(instances(loader, Global.class, GlobalSPI.class));
+        
         logger.warning("OBTAINED SCRIPTED OBJECT DATA!");
         
         manager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
@@ -82,6 +98,11 @@ public enum ScriptedObjectDataSource {
         initialized = true;
     }
    
+    private <T> Iterator<T> instances(ScannedClassLoader loader, Class annotation, Class spi) {
+       return loader.getInstances(annotation, spi);
+    }
+    
+    
     public Bindings getClientBindings() {
         Bindings bindings = engine.createBindings();
         bindings.putAll(clientBindings);
@@ -147,6 +168,7 @@ public enum ScriptedObjectDataSource {
         generateNonVoidMethods(bindings);
         generateCellFactories(bindings);
         generateBridges(bindings);
+        generateGlobals(bindings);
         
         return bindings;
     }
@@ -201,6 +223,20 @@ public enum ScriptedObjectDataSource {
                       scriptBindings);
 
         }
+    }
+
+    private void generateGlobals(Bindings scriptBindings) {
+        GlobalsGenerator globalGenerator
+                = new GlobalsGenerator(engine, scriptBindings);
+        for(final GlobalSPI global: getGlobals()) {
+            globalGenerator.setActiveGlobal(global);
+            bindScript(globalGenerator.generateScriptBinding(),
+                        scriptBindings);
+        }
+    }
+
+    private ArrayList<GlobalSPI> getGlobals() {
+        return globals;
     }
    
 }
