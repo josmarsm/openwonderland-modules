@@ -74,16 +74,16 @@ public class CommonCellRenderer extends BasicRenderer {
                 for(DeployedModel model: models.values()) {
                     logger.warning("Processing model: "+model.getModelURL());
                     Node modelNode = model.getModelLoader().loadDeployedModel(model, entity);
-                    modelNode.updateModelBound();
-                    modelNode.updateGeometricState(0, true);
-                    modelNode.setVisible(true);
-                    modelNode.setIsCollidable(true);
+//                    modelNode.updateModelBound();
+//                    modelNode.updateGeometricState(0, true);
+//                    modelNode.setVisible(true);
+//                    modelNode.setIsCollidable(true);
                     
                     modelsRoot.attachChild(modelNode);
                 }
 
-                modelsRoot.updateModelBound();
-                modelsRoot.updateGeometricState(0, true);
+//                modelsRoot.updateModelBound();
+//                modelsRoot.updateGeometricState(0, true);
                 ClientContextJME.getWorldManager().addToUpdateList(modelsRoot);
                 //finish up here too
             }
