@@ -198,7 +198,8 @@ public class CommonCell extends Cell {
                 renderer.getModelsMap().put(msg.getModelID(), model);
                 
                 //Tell the renderer to re-render.
-                renderer.update();
+//                renderer.update();
+                renderer.initializeModels();
             } catch(MalformedURLException ex) {
                 ex.printStackTrace();
             } catch(IOException e) {
