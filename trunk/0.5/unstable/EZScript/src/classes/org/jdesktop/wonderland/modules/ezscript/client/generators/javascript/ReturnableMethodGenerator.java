@@ -6,8 +6,6 @@ package org.jdesktop.wonderland.modules.ezscript.client.generators.javascript;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
-import org.jdesktop.wonderland.modules.ezscript.client.PassthruClassInstantiator;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratorSPI;
 

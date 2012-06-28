@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 
 /**
  *
- * @author Ryan
+ * @author JagWire
  */
 
 @Retention(RetentionPolicy.RUNTIME)
