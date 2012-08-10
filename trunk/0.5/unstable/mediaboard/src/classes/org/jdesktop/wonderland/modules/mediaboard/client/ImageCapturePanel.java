@@ -20,10 +20,10 @@
 
 package org.jdesktop.wonderland.modules.mediaboard.client;
 
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -40,6 +40,7 @@ import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepository;
 import org.jdesktop.wonderland.modules.contentrepo.client.ContentRepositoryRegistry;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentCollection;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentNode.Type;
+import org.jdesktop.wonderland.modules.contentrepo.common.ContentRepositoryException;
 import org.jdesktop.wonderland.modules.contentrepo.common.ContentResource;
 import org.jdesktop.wonderland.modules.mediaboard.client.webcamera.CameraUtils;
 import org.w3c.dom.Element;
@@ -60,12 +61,14 @@ public class ImageCapturePanel extends javax.swing.JPanel implements ControlChan
     private boolean fail = false;
     private static final Logger logger =
             Logger.getLogger(ImageCapturePanel.class.getName());
+    private ContentCollection photosRoot = null;
     public ImageCapturePanel(WhiteboardDocument document) {
         initComponents();
         triesLabel.setText("You have "+tries+" left.");
         this.document = document;
         this.document.getWindow().getApp().getControlArb().addListener(this);
         //this.component = component;
+        
         
         
     }
@@ -170,112 +173,130 @@ public class ImageCapturePanel extends javax.swing.JPanel implements ControlChan
         Cell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
         String name = cell.getCellCache().getSession().getUserID().getUsername();
         index += 1;
-        filename = name+Integer.toString(index)+".jpg";
+        filename = name+Integer.toString(index)+".png";
     }
-    private void captureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureButtonActionPerformed
 
-        fail = false;
-        URLAsString = new String();
-
-        Runtime rt = Runtime.getRuntime();
-        
-        try {
-            //Process pr = rt.exec("imagecapture myPicture.jpg");
-            ImageTagRegistry.getRegistry().flushCache();
-
-            //craft file name
-            Cell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
-            String name = cell.getCellCache().getSession().getUserID().getUsername();
-            name = name.replace(' ', '_');
-
-            filename = name+Integer.toString(index);//+ ".jpg";
-            System.out.println("Processing file: " + filename);
-
-            // kind of basackwards... let's look into doing this a better way.
-
-//            Process pr = rt.exec("./imagesnap " + filename);
-//            pr.waitFor();
-
-          //  pr = rt.exec("curl http://isocial-sas.missouri.edu:8080/content-repository/wonderland-content-repository/browse/"+filename+"?action=delete");
-           // pr.waitFor();
-//           File file = new File(filename);
-           File file = CameraUtils.CaptureImageToFile(filename, ".png");
-           WonderlandSession session = cell.getCellCache().getSession();           
+    private void handleAnyFilenameCollisions(Cell cell) throws ContentRepositoryException {
+        if(photosRoot == null) {
+            
+            WonderlandSession session = cell.getCellCache().getSession();        
            ServerSessionManager manager = session.getSessionManager();
            ContentRepository repository = ContentRepositoryRegistry.getInstance().getRepository(manager);
 
             ContentCollection groupsRoot = (ContentCollection)repository.getRoot().getChild("groups");
             if(groupsRoot == null) {
-                System.out.println("groupsRoot is null");
+                logger.warning("groupsRoot is null");
+                throw new UnsupportedOperationException("/groups does not exist!");
             }
             ContentCollection mediaRoot = (ContentCollection)groupsRoot.getChild("media");
             if(mediaRoot == null) {
-                System.out.println("mediaRoot is NULL!");
+                logger.warning("mediaRoot is NULL!");
+                throw new UnsupportedOperationException("/groups/media does not exist!");
             }
-            ContentCollection photosRoot = (ContentCollection)mediaRoot.getChild("photos");
+            photosRoot = (ContentCollection)mediaRoot.getChild("photos");
             if(photosRoot == null) {
-                System.out.println("photosRoot is NULL!");
-                return;
+                logger.warning("photosRoot is NULL!");
+                throw new UnsupportedOperationException("/groups/media/photos doesn't exist!");
             }
-
+            
+            
             while(true) {
-                if(photosRoot.getChild(filename) != null) {
+                if(filenameShouldBeChanged(photosRoot, filename)) {
                     updateFilename();
-                }
-                else {
+                } else {
                     break;
                 }
             }
-            ContentResource resource = (ContentResource)photosRoot.createChild(filename,Type.RESOURCE);
-            resource.put(file);
-            URLAsString=resource.getURL().toString();
+        }
+        
+        
+    }
+    
+    
+    private boolean filenameShouldBeChanged(ContentCollection root, String filename) throws ContentRepositoryException {
+        logger.warning("Checking availability of "+filename);
+        if(root.getChild(filename) != null) {
+            logger.warning(filename + " is not available!");
+            return true;
+        }
+        logger.warning(filename + " is available!");
+        return false;
+    }
+    
+    private String uploadPicture(File file) throws ContentRepositoryException, IOException {
+        ContentResource resource = (ContentResource)photosRoot.createChild(file.getName(), Type.RESOURCE);
+        resource.put(file);
+        return resource.getURL().toString();        
+    }
+    
+    private void captureButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_captureButtonActionPerformed
 
-//            ImageIcon icon = new ImageIcon(ImageIO.read(file));
-            BufferedImage sourceImage =ImageIO.read(file);// CameraUtils.CaptureImage();//ImageIO.read(file);
+        //<editor-fold defaultstate="collapsed" desc="goes inside thread">
+        fail = false;
+        URLAsString = new String();
+        
+        try {
+            //Process pr = rt.exec("imagecapture myPicture.jpg");
+            ImageTagRegistry.getRegistry().flushCache();
             
-            if(sourceImage == null) {
-                logger.warning("source Image is null!");
-            }
+            //craft file name
+            Cell cell = ClientContextJME.getViewManager().getPrimaryViewCell();
+            String name = cell.getCellCache().getSession().getUserID().getUsername();
+            name = name.replace(' ', '_');
+            
+//            filename = name+Integer.toString(index)+".png";
+            updateFilename();
+            System.out.println("Processing file: " + filename);
+            
+            handleAnyFilenameCollisions(cell);
+            
+            File file = CameraUtils.CaptureImageToFile(filename);
+            
+            URLAsString = uploadPicture(file);
+            
+            
+            BufferedImage sourceImage =ImageIO.read(file);
+            
             //BufferedImage targetImage = new BufferedImage(imageLabel.getSize().width, imageLabel.getSize().height, BufferedImage.TYPE_INT_ARGB);
             //Graphics2D g2D = targetImage.createGraphics();
-
+            
             int width = imageLabel.getSize().width;
             int height = imageLabel.getSize().height;
             //AffineTransform at =
-                //    AffineTransform.getScaleInstance(imageLabel.getSize().width/sourceImage.getWidth(),
-              //                                       imageLabel.getSize().height/sourceImage.getHeight());
+            //    AffineTransform.getScaleInstance(imageLabel.getSize().width/sourceImage.getWidth(),
+            //                                       imageLabel.getSize().height/sourceImage.getHeight());
             
             //g2D.drawRenderedImage(sourceImage, at);
             //File scaledFile = new File(filename);
-           // ImageIO.write(targetImage, "JPG", scaledFile);
+            // ImageIO.write(targetImage, "JPG", scaledFile);
             
             imageLabel.setIcon(new ImageIcon(sourceImage.getScaledInstance(width, height, 0)));
-            //imageLabel.setIcon(icon);
-
+//            updateFilename();
+            
         } catch(Exception e) {
             e.printStackTrace();
             fail = true;
             logger.warning("Unable to take picture. Failing gracefully.");
-            JOptionPane.showMessageDialog(this, "This computer is unable to take pictures, please click cancel to continue.", "Imagesnap Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "This computer is unable to take pictures, please click cancel to continue.", "Image Capture Error", JOptionPane.ERROR_MESSAGE);
         }
-/*
-            pr = rt.exec("curl --form file=@"+filename+" --form press=Upload http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse");
-            pr.waitFor();
-
-            URL url = new URL("http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse/"+filename);
-            ImageIcon ikon = new ImageIcon(url);
-         //   ImageIcon ikon = new ImageIcon("http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse/myTest2.jpg");
-           // MediaTracker m = new MediaTracker(imageLabel);
-
-            System.out.println(ikon.getImageLoadStatus());
-
-
-            imageLabel.setIcon(ikon);
-            
-        } catch(Exception e) {
-           System.out.println("fail!");
-           e.printStackTrace();
-        }*/
+        /*
+         * pr = rt.exec("curl --form file=@"+filename+" --form press=Upload http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse");
+         * pr.waitFor();
+         * 
+         * URL url = new URL("http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse/"+filename);
+         * ImageIcon ikon = new ImageIcon(url);
+         * //   ImageIcon ikon = new ImageIcon("http://isocial-temp.missouri.edu:8080/content-repository/wonderland-content-repository/browse/myTest2.jpg");
+         * // MediaTracker m = new MediaTracker(imageLabel);
+         * 
+         * System.out.println(ikon.getImageLoadStatus());
+         * 
+         * 
+         * imageLabel.setIcon(ikon);
+         * 
+         * } catch(Exception e) {
+         * System.out.println("fail!");
+         * e.printStackTrace();
+         * }*/
         finally {
             tries -= 1;
             acceptButton.setEnabled(true);
@@ -285,6 +306,8 @@ public class ImageCapturePanel extends javax.swing.JPanel implements ControlChan
             }
             triesLabel.setText("You have " + tries + " left.");
         }
+        //</editor-fold>
+                    
     }//GEN-LAST:event_captureButtonActionPerformed
 
     private void acceptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptButtonActionPerformed

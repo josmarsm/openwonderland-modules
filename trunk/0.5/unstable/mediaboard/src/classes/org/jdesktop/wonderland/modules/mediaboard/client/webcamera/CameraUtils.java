@@ -24,9 +24,10 @@ import com.googlecode.javacv.cpp.opencv_core.IplImage;
 import com.googlecode.javacv.cpp.opencv_highgui;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
+import org.jdesktop.wonderland.modules.javacv.client.CameraFrameGrabber;
 
 /**
  *
@@ -34,6 +35,9 @@ import javax.imageio.ImageIO;
  */
 public class CameraUtils {
     private static final Logger logger = Logger.getLogger(CameraUtils.class.getName());
+
+          
+ 
     /**
      * Utility method to acquire an image from a camera
      * 
@@ -41,40 +45,39 @@ public class CameraUtils {
      * @param extension extension to file, currently supported: ".png" and ".jpeg"
      * @return A file containing the image from the camera
      */
-    public static File CaptureImageToFile(String filename, String extension) {
-        OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
+    public static File CaptureImageToFile(String filename) {
+
         IplImage image = null;
         BufferedImage bImg = null;
-        File out = null;// = new File(filename+extension);
+        int captureTries = 0;
+        File out = new File(filename);
+
         try {
-            grabber.start();
-            image = grabber.grab();
-            bImg = image.getBufferedImage();
-            
-            
-//            boolean success = ImageIO.write(bImg, extension, out);
-           opencv_highgui.cvSaveImage(filename+extension, image);
-           
-           out = new File(filename+extension);
-           if(out.exists()) {
-               logger.warning("file exists!");
-           } else {
-               logger.warning("file does not exist!");
-           }
-//            if(!success) {
-//                logger.warning("Error writing to file!");
-//                return null;
-//            } 
-//            
-            logger.warning("Image: " +filename+extension+" written!");        
-            grabber.stop();
-        } catch(Exception e) {
-            e.printStackTrace();
-            
+            logger.warning("USING CameraFrameGrabber from JavaCV-Common");
+            image = CameraFrameGrabber.INSTANCE.getJavaCVImage();
+
+            opencv_highgui.cvSaveImage(filename, image);
+
+            out = new File(filename);
+            if (out.exists()) {
+                logger.warning("file exists!");
+            } else {
+                logger.warning("file does not exist!");
+            }
+
+            logger.warning("Image: " + filename + " written!");
+
+        } catch (Exception ex) {
+//            System.out.println("Exception occured!");
+            ex.printStackTrace();
         } finally {
 
+            if (out == null) {
+                logger.warning("file will be null!");
+            }
+
             return out;
-        }                
+        }           
     }
     
     /**
@@ -100,4 +103,15 @@ public class CameraUtils {
         }
 
     }
+    
+    public static boolean isWindows() {
+        logger.warning("os.name="+System.getProperty("os.name"));
+        
+        return isWin(System.getProperty("os.name"));
+    }
+    
+    private static boolean isWin(String OS) {
+       return (OS.contains("Win"));
+    }
+    
 }

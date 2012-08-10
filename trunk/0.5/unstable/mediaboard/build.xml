@@ -30,7 +30,8 @@
         <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${current.dir}/../javacv-integration/javacv.jar"/>
         <path location="${current.dir}/../javacv-integration/javacpp.jar"/>
-	
+<!--        <path location="${wonderland.dir}/../iSocial/javacv-common/build/client/JavaCV-Common-client.jar" />
+-->    <path location="${current.dir}/../javacv-integration/build/client/javacv-integration-client.jar"/>		
     </pathconvert>
 
     <pathconvert property="module-common.classpath">
