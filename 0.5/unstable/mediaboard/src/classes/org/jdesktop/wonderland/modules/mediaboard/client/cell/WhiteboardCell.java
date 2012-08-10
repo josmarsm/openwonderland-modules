@@ -42,7 +42,7 @@ import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapListenerCli;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedStateComponent;
 import org.jdesktop.wonderland.modules.sharedstate.common.SharedDouble;
-import org.jdesktop.wonderland.modules.sharedstate.common.SharedInteger;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGDocument;
 
@@ -138,6 +138,7 @@ public class WhiteboardCell extends App2DCell {
                     sync();
 
                     stateMap = sharedStateComponent.get("state");
+                    handleStateMap(stateMap);
                     listener = new SharedMapListener();
                     stateMap.addSharedMapListener(listener);
 
@@ -232,14 +233,58 @@ public class WhiteboardCell extends App2DCell {
                     case SET_STATE:
                         if (isSynced()) {
                             String docURI = msg.getURI();
-                            if (docURI != null) {
-                                // load an SVG document
-                                ((WhiteboardApp) this.getApp()).openDocument(docURI, false);
-                            } else {
-                                // load state from SVG XML string
+                            
+//                            if (docURI != null) {
+//                                // load an SVG document
+//                                ((WhiteboardApp) this.getApp()).openDocument(docURI, false);
+////                                WhiteboardUtils.documentToXMLString(null)
+//                                Document d = WhiteboardClientUtils.openDocument(docURI);
+//                                
+//                                
+//                                System.out.println("\nFrom URI: \n"+removeSVGTags(WhiteboardUtils.documentToXMLString(d))+" \n");
+//                                
+//                            } else {
+//                                // load state from SVG XML string
+//                                System.out.println("\nFrom String: "+removeSVGTags(msg.getXMLString())+" \n");
+//                                SVGDocument svgDocument = (SVGDocument) WhiteboardUtils.xmlStringToDocument(msg.getXMLString());
+//                                ((WhiteboardApp) this.getApp()).setDocument(svgDocument, false);
+//                            }
+                            
+                            
+                            //if docURI exists...
+                            if(docURI != null) {
+                                
+                                //if we don't have any svg string, just open the URI.
+                                if(msg.getXMLString() == null || msg.getXMLString() == "") {
+                                    
+                                    
+                                    ((WhiteboardApp) this.getApp()).openDocument(docURI, synced);
+                                    
+                                } else { //otherwise...
+                                    String tagsRemoved = "";                 
+                                    //...open it so we can get the xml form...
+                                    Document d = WhiteboardUtils.openDocument(docURI);
+                                    
+                                    String textDocument = WhiteboardUtils.documentToXMLString(d);
+                                    //...get the xml form and remove the <svg></svg> tags
+                                    tagsRemoved = removeSVGTags(msg.getXMLString());
+                                                                        
+                                    //append the altered xml form to the current svg xml...
+                                    String combinedMarkup = appendStringToSVGDocument(textDocument, tagsRemoved);
+                                    System.out.println("From URI AND String:\n"+combinedMarkup+"\n\n");
+                                    SVGDocument svgDocument = (SVGDocument)WhiteboardUtils.xmlStringToDocument(combinedMarkup);
+                                    ((WhiteboardApp) this.getApp()).setDocument(svgDocument, false);
+                                }
+                                
+                                
+                            } else {//if the docURI doesn't exist, open from XML
+                                System.out.println("FROM STRING: "+msg.getXMLString());
                                 SVGDocument svgDocument = (SVGDocument) WhiteboardUtils.xmlStringToDocument(msg.getXMLString());
                                 ((WhiteboardApp) this.getApp()).setDocument(svgDocument, false);
                             }
+                                
+                            
+                            
 
                             //setViewPosition(msg.getPosition());
                             //setZoom(msg.getZoom(), false);
@@ -267,6 +312,45 @@ public class WhiteboardCell extends App2DCell {
         }
     }
 
+    /**
+     * Given "<svg>Hello World!</svg>", should return "Hello World!"
+     * @param xmlDocument string wrapped in <svg></svg>
+     * @return unwrapped string
+     */
+    private String removeSVGTags(String xmlDocument) {
+        
+        //we first want to get the first index of '>' and replace everything
+        //from 0 to that with ""
+        int first = xmlDocument.indexOf('>');
+                 
+        //the second pass we want to replace </svg> with ""
+       int last = xmlDocument.lastIndexOf("</svg>");
+       if(last < 0) {
+           last = xmlDocument.length();
+       }
+        return xmlDocument.substring(first+1, last);
+    }
+    
+    /**
+     * Given a string with "<svg></svg>", and markup: "hello world!", should 
+     * return "<svg>hello world!</svg>
+     * 
+     * @param document svg document xml in string form
+     * @param markup svg markup fragment
+     * @return expanded svg document 
+     */
+    private String appendStringToSVGDocument(String document, String markup) {
+        int indexToInsertAt = document.lastIndexOf("</svg>");
+        
+        StringBuilder sb = new StringBuilder(document);
+        sb.insert(indexToInsertAt, markup);
+        
+        
+        return sb.toString();
+        
+    } 
+    
+    
     public void sync() {
         sync(!isSynced());
     }
@@ -379,6 +463,17 @@ public class WhiteboardCell extends App2DCell {
         return stateMap;
     }
 
+    private void handleStateMap(SharedMapCli map) {
+        if(!map.containsKey("margin-width"))
+            return;
+        
+        logger.warning("HANDLING MEDIABOARD STATE!");
+        double d = ((SharedDouble)map.get("margin-width")).getValue();
+        int nextMargin = new Double(d).intValue();
+        whiteboardWin.getWhiteboardDocument().setTextMargin(new Integer(nextMargin).doubleValue());
+    }
+    
+    
     class SharedMapListener implements SharedMapListenerCli {
         public void propertyChanged(SharedMapEventCli event) {
             //ensure we're operating on the state map

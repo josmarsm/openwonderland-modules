@@ -50,24 +50,24 @@ public class WhiteboardSelection {
             addSelectionHandle(new Point((int) line.getX2(), (int) line.getY2()));
         } else if (selectedShape instanceof Rectangle2D.Double) {
             Rectangle2D rectangle = selectedShape.getBounds2D();
-            selectionHandles.add(rectangle);
-//            int x, y;
-//            // Point 1 - top left
-//            x = (int) rectangle.getX();
-//            y = (int) rectangle.getY();
-//            addSelectionHandle(new Point(x, y));
-//            // Point 2 - top right
-//            x = (int) (rectangle.getX() + rectangle.getWidth());
-//            y = (int) rectangle.getY();
-//            addSelectionHandle(new Point(x, y));
-//            // Point 3 - bottom left
-//            x = (int) rectangle.getX();
-//            y = (int) (rectangle.getY() + rectangle.getHeight());
-//            addSelectionHandle(new Point(x, y));
-//            // Point 4 - bottom right
-//            x = (int) (rectangle.getX() + rectangle.getWidth());
-//            y = (int) (rectangle.getY() + rectangle.getHeight());
-//            addSelectionHandle(new Point(x, y));
+//            selectionHandles.add(rectangle);
+            int x, y;
+            // Point 1 - top left
+            x = (int) rectangle.getX();
+            y = (int) rectangle.getY();
+            addSelectionHandle(new Point(x, y));
+            // Point 2 - top right
+            x = (int) (rectangle.getX() + rectangle.getWidth());
+            y = (int) rectangle.getY();
+            addSelectionHandle(new Point(x, y));
+            // Point 3 - bottom left
+            x = (int) rectangle.getX();
+            y = (int) (rectangle.getY() + rectangle.getHeight());
+            addSelectionHandle(new Point(x, y));
+            // Point 4 - bottom right
+            x = (int) (rectangle.getX() + rectangle.getWidth());
+            y = (int) (rectangle.getY() + rectangle.getHeight());
+            addSelectionHandle(new Point(x, y));
         } else if (selectedShape instanceof Ellipse2D.Double) {
             Rectangle2D rectangle = selectedShape.getBounds2D();
             int x, y;

@@ -144,7 +144,7 @@ public class WhiteboardWindow extends Window2D {
         LOGGER.info("creating whiteboard with size: " + width + "x" + height);
         this.cell = cell;
         this.commComponent = commComponent;
-        setTitle(BUNDLE.getString("Whiteboard"));
+        setTitle("Mediaboard");
         initCanvas(width, height);
         initHUD();
         setDisplayMode(DisplayMode.WORLD);
@@ -455,10 +455,10 @@ public class WhiteboardWindow extends Window2D {
                 while (it.hasNext()) {
                     Shape s = it.next();
 
-                    g2d.setColor(new Color(0, 0, 1, 0.4f));
-                    g2d.fill(s);
-//                    g2d.setColor(Color.BLACK);
-//                    g2d.draw(s);
+//                    g2d.setColor(new Color(0, 0, 1, 0.4f));
+//                    g2d.fill(s);
+                    g2d.setColor(Color.BLACK);
+                    g2d.draw(s);
                 }
             }
         }

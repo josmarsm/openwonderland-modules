@@ -1,39 +1,36 @@
 /**
-  * iSocial Project
-  * http://isocial.missouri.edu
-  *
-  * Copyright (c) 2011, University of Missouri iSocial Project, All 
-  * Rights Reserved
-  *
-  * Redistributions in source code form must reproduce the above
-  * copyright and this condition.
-  *
-  * The contents of this file are subject to the GNU General Public
-  * License, Version 2 (the "License"); you may not use this file
-  * except in compliance with the License. A copy of the License is
-  * available at http://www.opensource.org/licenses/gpl-license.php.
-  *
-  * The iSocial project designates this particular file as
-  * subject to the "Classpath" exception as provided by the iSocial
-  * project in the License file that accompanied this code.
-  */
-
+ * iSocial Project http://isocial.missouri.edu
+ *
+ * Copyright (c) 2011, University of Missouri iSocial Project, All Rights
+ * Reserved
+ *
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
+ *
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
+ *
+ * The iSocial project designates this particular file as subject to the
+ * "Classpath" exception as provided by the iSocial project in the License file
+ * that accompanied this code.
+ */
 /**
  * Project Wonderland
  *
  * Copyright (c) 2004-2010, Sun Microsystems, Inc., All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * Sun designates this particular file as subject to the "Classpath"
- * exception as provided by Sun in the License file that accompanied
- * this code.
+ * Sun designates this particular file as subject to the "Classpath" exception
+ * as provided by Sun in the License file that accompanied this code.
  */
 package org.jdesktop.wonderland.modules.mediaboard.client;
 
@@ -58,6 +55,7 @@ import javax.swing.SwingUtilities;
 //import javax.vecmath.Vector3f;
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.hud.CompassLayout.Layout;
 import org.jdesktop.wonderland.client.hud.HUD;
@@ -65,11 +63,17 @@ import org.jdesktop.wonderland.client.hud.HUDComponent;
 import org.jdesktop.wonderland.client.hud.HUDDialog.MESSAGE_TYPE;
 import org.jdesktop.wonderland.client.hud.HUDManagerFactory;
 import org.jdesktop.wonderland.client.hud.HUDObject.DisplayMode;
-import org.jdesktop.wonderland.modules.hud.client.HUDDialogComponent;
+import org.jdesktop.wonderland.client.input.InputManager;
+import org.jdesktop.wonderland.modules.appbase.client.App2D;
+import org.jdesktop.wonderland.modules.appbase.client.Window2D;
+import org.jdesktop.wonderland.modules.appbase.client.swing.WindowSwing;
+//import org.jdesktop.wonderland.modules.hud.client.HUDDialogComponent;
 import org.jdesktop.wonderland.modules.mediaboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.jdesktop.wonderland.modules.mediaboard.client.cell.WhiteboardCell;
+import org.jdesktop.wonderland.modules.mediaboard.client.hud.HUDDialogComponent;
 import org.jdesktop.wonderland.modules.mediaboard.common.cell.WhiteboardCellMessage.Action;
 import org.jdesktop.wonderland.modules.mediaboard.common.WhiteboardUtils;
+
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -78,6 +82,7 @@ import org.w3c.dom.svg.SVGDocument;
 
 /**
  * Wraps the SVG document
+ *
  * @author Bernard Horan
  */
 public class WhiteboardDocument implements SVGDocumentLoaderListener {
@@ -96,7 +101,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     private HUDDialogComponent dialog;
     private HUDComponent mediaLibraryComponent = null; //used for MediaLibrary
     protected static final Object readyLock = new Object();
-
     //*******
     private static double TEXT_MARGIN = 17.0;
     HUDComponent pictureComponent = null;
@@ -106,8 +110,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     public void setTextMargin(Double margin) {
         TEXT_MARGIN = margin;
     }
-
-
 
     /**
      * A class for handling the loading of SVG documents. This can be time
@@ -119,8 +121,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
         public DocumentLoader(String uri) {
             this.uri = uri;
-            System.out.println("[iSocial] loading document from uri: " +uri);
-           // Thread.dumpStack();
+            System.out.println("[iSocial] loading document from uri: " + uri);
+            // Thread.dumpStack();
         }
 
         @Override
@@ -163,69 +165,65 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                 String urlString = "";// TakePhotoDialog.getPicture();
 
                 //is this a photo?
-                if(urlString.contains("photos")) {
+                if (urlString.contains("photos")) {
                     int width = this.getWindow().getWidth();
-                    if(width > 1200) {
+                    if (width > 1200) {
                         element = createImageElement(150, 250, urlString);
-                    }
-                    else {
+                    } else {
                         element = createImageElement(300, 500, urlString);
                     }
-                }
-                else { //must be an image instead
+                } else { //must be an image instead
                     try {
                         ImageIcon icon = new ImageIcon(new URL(urlString));
-                        System.out.println("Icon Height: " +icon.getIconHeight()
-                                +"\nIcon Width: " +icon.getIconWidth());
+                        System.out.println("Icon Height: " + icon.getIconHeight()
+                                + "\nIcon Width: " + icon.getIconWidth());
 
                         element = createImageElement(icon.getIconHeight(),
-                                                 icon.getIconWidth(),
-                                                 urlString);
-                    }
-                    catch (Exception e) {
+                                icon.getIconWidth(),
+                                urlString);
+                    } catch (Exception e) {
                         e.printStackTrace();
-                    } 
+                    }
                 }
 
                 this.whiteboardWindow.getToolManager().selector();
                 break;
             case SAVE: //TODO: this should be refactored out of this method
-                       //open save dialog
-  
+                //open save dialog
+
 
                 break;
             case OPEN: //TODO: this should be refactored out of this method
-                       //open medialibrary dialog
+                //open medialibrary dialog
                 final Cell cell = this.whiteboardWindow.getCell();
                 final WhiteboardDocument document = this;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        if(mediaLibraryComponent == null) {
+                        if (mediaLibraryComponent == null) {
                             HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                            MediaLibrary libraryPanel = new MediaLibrary((WhiteboardCell)cell, document);
+                            MediaLibrary libraryPanel = new MediaLibrary((WhiteboardCell) cell, document);
                             mediaLibraryComponent = mainHUD.createComponent(libraryPanel);
                             libraryPanel.setHUDComponent(mediaLibraryComponent);
                             mediaLibraryComponent.setPreferredLocation(Layout.CENTER);
                             mediaLibraryComponent.setDecoratable(true);
                             mainHUD.addComponent(mediaLibraryComponent);
                             mediaLibraryComponent.setVisible(true);
-                        }
-                        else {
-                           
+                        } else {
+
                             mediaLibraryComponent.setVisible(true);
                         }
                     }
                 });
                 break;
             case PICTURE:
-                    //open take picture dialog
+                //open take picture dialog
                 break;
 
             default:
                 break;
         }
         this.whiteboardWindow.getToolManager().selector();
-        
+
         return element;
     }
 
@@ -270,19 +268,19 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     public Element createImageElement(int height, int width, String source) {
 
-            Element image = svgDocument.createElementNS(WhiteboardUtils.svgNS, "image");
-            System.out.println(source);
-            
-            image.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", source);
-            image.setAttributeNS(null, "x", Integer.toString(50));
-            image.setAttributeNS(null, "y", Integer.toString(50)); //, dialog, dialog)
-            image.setAttributeNS(null, "height", Integer.toString(height));
-            image.setAttributeNS(null, "width", Integer.toString(width));
+        Element image = svgDocument.createElementNS(WhiteboardUtils.svgNS, "image");
+        System.out.println(source);
 
-            String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
-            image.setAttributeNS(null, "id", idString);
+        image.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", source);
+        image.setAttributeNS(null, "x", Integer.toString(50));
+        image.setAttributeNS(null, "y", Integer.toString(50)); //, dialog, dialog)
+        image.setAttributeNS(null, "height", Integer.toString(height));
+        image.setAttributeNS(null, "width", Integer.toString(width));
 
-            return image;
+        String idString = whiteboardWindow.getCellUID(whiteboardWindow.getApp()) + System.currentTimeMillis();
+        image.setAttributeNS(null, "id", idString);
+
+        return image;
     }
 
     public Element createEllipseElement(Point start, Point end, boolean filled) {
@@ -315,56 +313,6 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     public WhiteboardWindow getWindow() {
         return this.whiteboardWindow;
     }
-    private class TextGetter implements Runnable {
-
-        private Point position;
-
-        public TextGetter(Point position) {
-            this.position = position;
-        }
-
-        public void run() {
-            if (dialog == null) {
-                // create a HUD text dialog
-                dialog = new HUDDialogComponent(whiteboardWindow.getCell());
-                dialog.setMessage(BUNDLE.getString("Enter_text"));
-                dialog.setType(MESSAGE_TYPE.QUERY);
-                dialog.setPreferredLocation(Layout.CENTER);
-                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.5f));
-
-                // add the text dialog to the HUD
-                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
-                mainHUD.addComponent(dialog);
-
-                PropertyChangeListener plistener = new PropertyChangeListener() {
-
-                    public void propertyChange(PropertyChangeEvent pe) {
-                        if (pe.getPropertyName().equals("ok")) {
-                            String value = (String) pe.getNewValue();
-                            if ((value != null) && (value.length() > 0)) {
-                                LOGGER.info("creating text element: " + value + " at " + position);
-                                Element e = createTextElement(position, value);
-                                whiteboardWindow.addNewElement(e, true);
-                            }
-                        }
-                        if (dialog.isVisible()) {
-                            dialog.setVisible(false);
-                        }
-                        if (dialog.isWorldVisible()) {
-                            dialog.setWorldVisible(false);
-                        }
-                        dialog.setValue("");
-                        dialog.removePropertyChangeListener(this);
-                        dialog = null;
-                    }
-                };
-                dialog.addPropertyChangeListener(plistener);
-            }
-
-            dialog.setVisible(whiteboardWindow.getDisplayMode() == DisplayMode.HUD);
-            dialog.setWorldVisible(whiteboardWindow.getDisplayMode() != DisplayMode.HUD);
-        }
-    };
 
     public Element createTextElement(Point end) {
         TextGetter getter = new TextGetter(end);
@@ -385,18 +333,17 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
          * This is the first of two passes. This pass tokenizes the text by
          * spaces.
          */
-
         String[] tokens = text.split("\\s");
         int lineNumbers = 1;
         String line = new String();
-        for(String token: tokens) {
+        for (String token : tokens) {
             //total length + space + token length
-            if((line.length() + 1 + token.length()) >= (TEXT_MARGIN*lineNumbers)) {
-               line += "\n"+token;
+            if ((line.length() + 1 + token.length()) >= (TEXT_MARGIN * lineNumbers)) {
+                line += "\n" + token;
 
-               lineNumbers += 1;
+                lineNumbers += 1;
             } else {
-                line += " "+token;
+                line += " " + token;
             }
         }
 
@@ -404,9 +351,8 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
          * This is the second of two passes. This pass tokenizes the text by
          * newlines.
          */
-
         tokens = line.split("\n");
-        for(String token: tokens) {
+        for (String token : tokens) {
             textElement.appendChild(addTSpan(end, token.trim()));
         }
 
@@ -415,9 +361,11 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
         return textElement;
     }
+
     /**
-     * In order to achieve the illusion of word wrap in SVG, we'll need to 
-     * transform the create text element 
+     * In order to achieve the illusion of word wrap in SVG, we'll need to
+     * transform the create text element
+     *
      * @param end where the text was dropped. It acts as the x attribute
      * @param stringlet a small piece of the original String
      */
@@ -430,6 +378,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
         return tspanElement;
         //return WhiteboardUtils.elementToXMLString(tspanElement);
     }
+
     public Element moveElement(Element toMove) {
         int xDiff = (int) (whiteboardWindow.getCurrentPoint().getX() - whiteboardWindow.getPressedPoint().getX());
         int yDiff = (int) (whiteboardWindow.getCurrentPoint().getY() - whiteboardWindow.getPressedPoint().getY());
@@ -473,9 +422,9 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
             //edit x-position on document when text is moved and dragged.
             NodeList elements = afterMove.getElementsByTagName("tspan");
-            for(int i = 0; i < elements.getLength(); i++) {
-                if(elements.item(i) instanceof Element) {
-                    Element e = (Element)elements.item(i);
+            for (int i = 0; i < elements.getLength(); i++) {
+                if (elements.item(i) instanceof Element) {
+                    Element e = (Element) elements.item(i);
                     e.setAttributeNS(null, "x", Integer.toString(x + xDiff));
 
                 }
@@ -493,6 +442,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     /**
      * Loads an SVG document
+     *
      * @param uri the URI of the SVG document to load
      * @param notify whether to notify other clients
      */
@@ -511,6 +461,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     /**
      * Loads an SVG document
+     *
      * @param uri the URI of the SVG document to load
      */
     public void openDocument(String uri) {
@@ -519,11 +470,9 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
 
     public void showSVGDialog() {
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 svgDocumentDialog = new DocumentDialog(null, false);
                 svgDocumentDialog.addActionListener(new java.awt.event.ActionListener() {
-
                     public void actionPerformed(java.awt.event.ActionEvent evt) {
                         svgDocumentDialog.setVisible(false);
                         if (evt.getActionCommand().equals("OK")) {
@@ -544,7 +493,7 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
     }
 
     /**
-     *  DocumentLoaderListener methods
+     * DocumentLoaderListener methods
      */
     /**
      * Called when the loading of a document was started.
@@ -626,11 +575,11 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
                 //dialo = new HUDDialogComponent(whiteboardWindow.getCell());
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 mainHUD.addComponent(pictureComponent);
-               // pictureComponent = mainHUD.createComponent(panel);
+                // pictureComponent = mainHUD.createComponent(panel);
 
 
 //                dialog.setMessage(BUNDLE.getString("Enter_text"));
-  //              dialog.setType(MESSAGE_TYPE.QUERY);
+                //              dialog.setType(MESSAGE_TYPE.QUERY);
                 pictureComponent.setPreferredLocation(Layout.CENTER);
                 pictureComponent.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.5f));
 
@@ -641,31 +590,91 @@ public class WhiteboardDocument implements SVGDocumentLoaderListener {
             pictureComponent.setVisible(whiteboardWindow.getDisplayMode() == DisplayMode.HUD);
             pictureComponent.setWorldVisible(whiteboardWindow.getDisplayMode() != DisplayMode.HUD);
 
-        	String urlString = panel.getPicture();
-        	if(urlString.contains("photos")) {
-                    int width = 0;//this.getWindow().getWidth();
-                    if(width > 1200) {
-                //        element = createImageElement(150, 250, urlString);
-                    }
-                    else {
-                        //element = createImageElement(300, 500, urlString);
-                    }
+            String urlString = panel.getPicture();
+            if (urlString.contains("photos")) {
+                int width = 0;//this.getWindow().getWidth();
+                if (width > 1200) {
+                    //        element = createImageElement(150, 250, urlString);
+                } else {
+                    //element = createImageElement(300, 500, urlString);
                 }
-                else { //must be an image instead
-                    try {
-                        ImageIcon icon = new ImageIcon(new URL(urlString));
-                        System.out.println("Icon Height: " +icon.getIconHeight()
-                                +"\nIcon Width: " +icon.getIconWidth());
+            } else { //must be an image instead
+                try {
+                    ImageIcon icon = new ImageIcon(new URL(urlString));
+                    System.out.println("Icon Height: " + icon.getIconHeight()
+                            + "\nIcon Width: " + icon.getIconWidth());
 
-                        //element = createImageElement(icon.getIconHeight(),
-                              //                   icon.getIconWidth(),
-                              //                   urlString);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    //element = createImageElement(icon.getIconHeight(),
+                    //                   icon.getIconWidth(),
+                    //                   urlString);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }
         }
     };
 
+    private class TextGetter implements Runnable {
+
+        private Point position;
+
+        public TextGetter(Point position) {
+            this.position = position;
+        }
+
+        public void run() {
+            if (dialog == null) {
+                // create a HUD text dialog
+                dialog = new HUDDialogComponent(whiteboardWindow.getCell());
+                dialog.setMessage(BUNDLE.getString("Enter_text"));
+                dialog.setType(MESSAGE_TYPE.QUERY);
+                dialog.setPreferredLocation(Layout.CENTER);
+                dialog.setWorldLocation(new Vector3f(0.0f, 0.0f, 0.5f));
+
+                // add the text dialog to the HUD
+                HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
+                mainHUD.addComponent(dialog);
+
+                PropertyChangeListener plistener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent pe) {
+                        if (pe.getPropertyName().equals("ok")) {
+                            String value = (String) pe.getNewValue();
+                            if ((value != null) && (value.length() > 0)) {
+                                LOGGER.info("creating text element: " + value + " at " + position);
+                                Element e = createTextElement(position, value);
+                                whiteboardWindow.addNewElement(e, true);
+                            }
+                        }
+                        if (dialog.isVisible()) {
+                            dialog.setVisible(false);
+                        }
+                        if (dialog.isWorldVisible()) {
+                            dialog.setWorldVisible(false);
+                        }
+                        dialog.setValue("");
+                        dialog.removePropertyChangeListener(this);
+                        dialog = null;
+                    }
+                };
+                dialog.addPropertyChangeListener(plistener);
+            }
+
+            dialog.setVisible(whiteboardWindow.getDisplayMode() == DisplayMode.HUD);
+            dialog.setWorldVisible(whiteboardWindow.getDisplayMode() != DisplayMode.HUD);
+           
+            Window2D window = dialog.getWindow();
+            App2D app = window.getApp();
+            Entity e = app.getFocusEntity();
+            
+            WindowSwing swingWindow = (WindowSwing)window;
+//            swingWindow.getEmbeddedPeer();
+            LOGGER.warning("SETTING FOCUS TO DIALOG ENTITY!");
+            InputManager.inputManager().addKeyMouseFocus(e);
+            dialog.setFocused(true);
+            
+            HUDManagerFactory.getHUDManager().getHUD("");
+//            WonderlandHUDComponentFactory
+                   
+        }
+    };
 }
