@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.awt.event.ActionEvent;
@@ -11,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JDialog;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.BaseClientPlugin;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.content.ContentImportManager;
@@ -23,8 +23,9 @@ import org.jdesktop.wonderland.client.login.ServerSessionManager;
 import org.jdesktop.wonderland.client.login.SessionLifecycleListener;
 import org.jdesktop.wonderland.common.annotation.Plugin;
 
-/** Testing online googlecode editing feature. */
-
+/**
+ * Testing online googlecode editing feature.
+ */
 /**
  *
  * @author JagWire
@@ -40,43 +41,58 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     private ServerSessionManager manager;
     private ScriptImporter importer = null;
     private CommandWindowListener listener = null;
-    
+
     @Override
     public void initialize(ServerSessionManager loginInfo) {
         //ScriptManager.getInstance();
-        physicsMenuItem = new JMenuItem("Simple Physics");
-        editorMenuItem = new JMenuItem("Script Editor");
-        commandDialog = new JDialog();
-        commandPanel = new CommandPanel();
-        commandPanel.setDialog(commandDialog);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                physicsMenuItem = new JMenuItem("Simple Physics");
+                editorMenuItem = new JMenuItem("Script Editor");
+                commandDialog = new JDialog();
+                commandPanel = new CommandPanel();
+                commandPanel.setDialog(commandDialog);
+
+            }
+        });
+
+
         loginInfo.addLifecycleListener(this);
         super.initialize(loginInfo);
 
     }
+
     @Override
     public void activate() {
         importer = new ScriptImporter();
-        
-        initializeDialog();
-  
-        //Disable until we can do something useful with it.
+
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                initializeDialog();
+
+                //Disable until we can do something useful with it.
 //        physicsMenuItem.addActionListener(new ActionListener() { 
 //            public void actionPerformed(ActionEvent e) {
 //                //show physics control panel here.
 //                SimplePhysicsManager.INSTANCE.showControlPanel();
 //            }
 //        });
-        
-        editorMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                ScriptManager.getInstance().showScriptEditor();
+
+                editorMenuItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        ScriptManager.getInstance().showScriptEditor();
+                    }
+                });
+
+                JmeClientMain.getFrame().addToToolsMenu(physicsMenuItem);
+                JmeClientMain.getFrame().addToToolsMenu(editorMenuItem);
             }
         });
-        
-        JmeClientMain.getFrame().addToToolsMenu(physicsMenuItem);
-        JmeClientMain.getFrame().addToToolsMenu(editorMenuItem);
+
         ContentImportManager.getContentImportManager().registerContentImporter(importer);
-        
+        ScriptedObjectDataSource init = ScriptedObjectDataSource.INSTANCE;
     }
 
     @Override
@@ -86,7 +102,7 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
         InputManager.inputManager().removeGlobalEventListener(listener);
         ContentImportManager.getContentImportManager().unregisterContentImporter(importer);
         importer = null;
-        
+
     }
 
     @Override
@@ -102,19 +118,17 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
     }
 
     public void primarySession(WonderlandSession session) {
-            
     }
-    
+
     private void initializeDialog() {
         commandDialog.setTitle("Command Line");
         commandDialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
         commandDialog.setContentPane(commandPanel);
         commandDialog.pack();
-        
-        commandDialog.addKeyListener(new KeyListener() {
 
+        commandDialog.addKeyListener(new KeyListener() {
             public void keyTyped(KeyEvent ke) {
-                if(ke.getKeyChar() == '`' || ke.getKeyChar() == '~') {
+                if (ke.getKeyChar() == '`' || ke.getKeyChar() == '~') {
                     toggleDialog();
                 }
             }
@@ -126,41 +140,40 @@ public class EZScriptClientPlugin extends BaseClientPlugin implements SessionLif
             public void keyReleased(KeyEvent ke) {
 //                throw new UnsupportedOperationException("Not supported yet.");
             }
-        
         });
-        if(listener == null) {
+        if (listener == null) {
             listener = new CommandWindowListener();
             InputManager.inputManager().addGlobalEventListener(listener);
         }
     }
-    
+
     private void toggleDialog() {
         commandDialog.setVisible(!commandDialog.isVisible());
     }
-    
+
     class CommandWindowListener extends EventClassListener {
+
         @Override
-        public Class[] eventClassesToConsume () {
-            return new Class[] { KeyEvent3D.class };
+        public Class[] eventClassesToConsume() {
+            return new Class[]{KeyEvent3D.class};
         }
-        
+
         @Override
         public void commitEvent(Event event) {
             //cast event to key event;
-            KeyEvent3D keyEvent = (KeyEvent3D)event;
-            
+            KeyEvent3D keyEvent = (KeyEvent3D) event;
+
             //Did user press and release key?
-            if(keyEvent.isTyped()) {
+            if (keyEvent.isTyped()) {
                 //get character of key pressed.
                 char key = keyEvent.getKeyChar();
-                
+
                 //if the key was the tilde key
-                if(key == '`' || key == '~') {
-                   //show or hide the dialog
+                if (key == '`' || key == '~') {
+                    //show or hide the dialog
                     toggleDialog();
                 }
             }
         }
     }
-
 }

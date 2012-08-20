@@ -123,6 +123,7 @@ public class CommonCellRenderer extends BasicRenderer {
                         //Create the deployed model object from our recently acquired URL.
                         DeployedModel model = manager.getLoaderFromDeployment(url);
 
+                        
                         //put in our local map
                         models.put(e.getKey(), model);
 

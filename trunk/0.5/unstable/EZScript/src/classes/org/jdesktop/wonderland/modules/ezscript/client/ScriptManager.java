@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.io.PrintStream;
@@ -36,6 +35,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellM
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.loaders.OptimizedLoader;
 
 /**
  *
@@ -43,7 +43,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.Ret
  */
 public class ScriptManager {
 //    INSTANCE;
-    
+
     private ScriptEditorPanel scriptEditor;
     private JDialog dialog;
     private ScriptEditorPanel panel;
@@ -51,91 +51,97 @@ public class ScriptManager {
     private ScriptEngine scriptEngine = null;
     private Bindings scriptBindings = null;
     private static final Logger logger = Logger.getLogger(ScriptManager.class.getName());
-
     //utilities
     private Map<String, CellID> stringToCellID;
-
     private static ScriptManager instance;
 
     public static ScriptManager getInstance() {
-        if(instance == null) {
+        if (instance == null) {
             instance = new ScriptManager();
         }
         return instance;
     }
-    
+
 //    public static ScriptManager getInstance() {
 //        return INSTANCE;
 //    }
-
     private ScriptManager() {
-        dialog = new JDialog();
-        panel = new ScriptEditorPanel(dialog);
-        dialog.setTitle("Script Editor - Wonderland Client");
-        //2. Optional: What happens when the frame closes?
-        dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
-        //3. Create component and put them in the frame.
-        dialog.setContentPane(panel);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                dialog = new JDialog();
+                panel = new ScriptEditorPanel(dialog);
+                dialog.setTitle("Script Editor - Wonderland Client");
+                //2. Optional: What happens when the frame closes?
+                dialog.setDefaultCloseOperation(JDialog.HIDE_ON_CLOSE);
 
-        //4. Size the frame.
-        dialog.pack();
+                //3. Create component and put them in the frame.
+                dialog.setContentPane(panel);
+
+                //4. Size the frame.
+                dialog.pack();
+            }
+        });
+
 
         //Next, acquire the scripting magicry
-        engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
-        scriptEngine = engineManager.getEngineByName("JavaScript");
-        scriptBindings = scriptEngine.createBindings();
+//        engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
+//        scriptEngine = engineManager.getEngineByName("JavaScript");
+//       / scriptBindings = scriptEngine.createBindings();
 
         //Add the necessary script bindings
-        scriptBindings.put("Client", ClientContextJME.getClientMain());
+//        scriptBindings.put("Client", ClientContextJME.getClientMain());
 
         stringToCellID = new HashMap<String, CellID>();
-        
-        scriptBindings.putAll(dao().getClientBindings());
-        
+
+        OptimizedLoader loader = new OptimizedLoader();
+        loader.loadBindings();
+        scriptBindings = loader.getBindings();
+        scriptEngine = loader.getEngine();
+//        scriptBindings.putAll(dao().getClientBindings());
+
 //        scriptEngine = dao().getClientScriptEngine();
 //        scriptEngine.setBindings(scriptBindings, ScriptContext.ENGINE_SCOPE);
 //        INSTANCE.logger.warning("manager bindings size: "+scriptBindings.size());
         generateDocumentation();
     }
-    
+
     private void generateDocumentation() {
         generateNonVoidDocumentation();
         generateVoidDocumentation();
         generateCellFactoryDocumentation();
     }
-    
-    
-    private void generateNonVoidDocumentation() {
-        
-        for(final ReturnableScriptMethodSPI returnable: dao().getReturnables()) {
-            
-            SwingUtilities.invokeLater(new Runnable() { 
-                public void run() {
-                    panel.addLibraryEntry(returnable);
-                }
-            });
-        }
-    }
-    
-    private void generateCellFactoryDocumentation() {                
-        
-        for( CellFactorySPI factory: dao().getCellFactories()) {
-            final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
-            
-            SwingUtilities.invokeLater(new Runnable() { 
-                public void run() {
-                    panel.addLibraryEntry(returnable);
-                }
-            });
-        }
-    }
-    
-    private void generateVoidDocumentation() {
-        
-        for(final ScriptMethodSPI method: dao().getVoids()) {
 
-            SwingUtilities.invokeLater(new Runnable() { 
+    private void generateNonVoidDocumentation() {
+
+        for (final ReturnableScriptMethodSPI returnable : dao().getReturnables()) {
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.addLibraryEntry(returnable);
+                }
+            });
+        }
+    }
+
+    private void generateCellFactoryDocumentation() {
+
+        for (CellFactorySPI factory : dao().getCellFactories()) {
+            final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    panel.addLibraryEntry(returnable);
+                }
+            });
+        }
+    }
+
+    private void generateVoidDocumentation() {
+
+        for (final ScriptMethodSPI method : dao().getVoids()) {
+
+            SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     panel.addLibraryEntry(method);
                 }
@@ -144,20 +150,20 @@ public class ScriptManager {
     }
 
     private ScriptedObjectDataSource dao() {
-        ScriptedObjectDataSource.INSTANCE.initialize();
-        
+//        ScriptedObjectDataSource.INSTANCE.initialize();
+
         return ScriptedObjectDataSource.INSTANCE;
     }
-    
+
     private void bindScript(String script) {
         try {
             scriptEngine.eval(script, scriptBindings);
         } catch (ScriptException ex) {
             Logger.getLogger(ScriptManager.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
-    
+
     public void evaluate(String script) {
         try {
             scriptEngine.eval(script, scriptBindings);
@@ -181,11 +187,10 @@ public class ScriptManager {
         } else {
             info = new DefaultFriendlyErrorInfo("Wonderland Client");
         }
-         window = new ErrorWindow(info.getSummary(), info.getSolutions());
-         TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());
-         e.printStackTrace(new PrintStream(output));
-         SwingUtilities.invokeLater(new Runnable() {
-         
+        window = new ErrorWindow(info.getSummary(), info.getSolutions());
+        TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());
+        e.printStackTrace(new PrintStream(output));
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
 
@@ -193,21 +198,21 @@ public class ScriptManager {
                 window.setHUDComponent(component);
                 component.setDecoratable(true);
                 component.setPreferredLocation(Layout.CENTER);
-                
+
                 mainHUD.addComponent(component);
 
                 component.setVisible(true);
             }
-         });
-         logger.warning("Error in evaluation()!");
+        });
+        logger.warning("Error in evaluation()!");
     }
 
     public void showScriptEditor() {
         dialog.setVisible(true);
     }
-        
+
     public void addCell(Cell cell) {
-        if(!stringToCellID.containsKey(cell.getName())) {
+        if (!stringToCellID.containsKey(cell.getName())) {
             stringToCellID.put(cell.getName(), cell.getCellID());
         } else {
             return; //return gracefully.
@@ -215,7 +220,7 @@ public class ScriptManager {
     }
 
     public CellID getCellID(String name) {
-        if(stringToCellID.containsKey(name)) {
+        if (stringToCellID.containsKey(name)) {
             return stringToCellID.get(name);
         } else {
             return null;
@@ -223,15 +228,14 @@ public class ScriptManager {
     }
 
     public void removeCell(Cell cell) {
-        if(stringToCellID.containsKey(cell.getName())) {
+        if (stringToCellID.containsKey(cell.getName())) {
             stringToCellID.remove(cell.getName());
         } else {
             return; //return gracefully
         }
     }
-    
+
     public Collection<String> getRegisteredCellNames() {
         return stringToCellID.keySet();
     }
-    
 }

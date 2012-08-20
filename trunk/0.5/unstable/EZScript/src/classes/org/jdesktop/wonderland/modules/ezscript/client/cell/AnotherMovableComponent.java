@@ -27,6 +27,7 @@ public class AnotherMovableComponent extends MovableComponent {
     }
     @Override
     protected void setStatus(CellStatus status, boolean increasing) {
+//        super.super.setStatus(status, increasing);
         this.status = status;
 
         switch (status) {
