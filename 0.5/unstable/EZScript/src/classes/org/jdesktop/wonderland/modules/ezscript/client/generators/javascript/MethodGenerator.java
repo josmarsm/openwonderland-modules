@@ -32,19 +32,26 @@ public class MethodGenerator implements GeneratorSPI {
     @Override
     public String generateScriptBinding() {
 
-        bindings.put("this"+method.getFunctionName(), method);
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\targs[i] = arguments[i];\n"
-            + "\t}\n"
-
-           // + "\targs = "+method.getFunctionName()+".arguments;\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
-            +"}";
-  
-
+        bindings.put("I"+method.getFunctionName(), method);
+//        String scriptx  = "var "+method.getFunctionName()+" = function() {\n"
+//            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+//            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
+//            + "\t\targs[i] = arguments[i];\n"
+//            + "\t}\n"
+//
+//           // + "\targs = "+method.getFunctionName()+".arguments;\n"
+//            + "\tI"+method.getFunctionName()+".setArguments(args);\n"
+//            + "\tI"+method.getFunctionName()+".run();\n"
+//            +"}";
+        String IFace = "I"+method.getFunctionName();
+        String scriptx = "var " + method.getFunctionName()+" = command_factory("+IFace+");";
+        
+        
+        
+        
+        
+        
+//            System.out.println(scriptx);
 //        bindings.put("Factory", PassthruClassInstantiator.INSTANCE);
 //        String scriptx = "function " + method.getFunctionName() + "() {\n"
 //                + "\timportClass("+method.getClass().getName()+");\n"

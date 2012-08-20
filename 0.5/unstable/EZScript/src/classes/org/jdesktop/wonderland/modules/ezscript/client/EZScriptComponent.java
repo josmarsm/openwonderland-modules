@@ -56,6 +56,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
 import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
+import org.jdesktop.wonderland.modules.ezscript.client.SPI.IBindingsLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
@@ -64,6 +65,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendly
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavaErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.errorinfo.DefaultFriendlyJavascriptErrorInfo;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.loaders.SerialLoader;
 import org.jdesktop.wonderland.modules.ezscript.common.CellTriggerEventMessage;
 import org.jdesktop.wonderland.modules.ezscript.common.SharedBounds;
 import org.jdesktop.wonderland.modules.sharedstate.client.SharedMapEventCli;
@@ -158,7 +160,6 @@ public class EZScriptComponent extends CellComponent {
     //ChannelComponent variables
     @UsesCellComponent
     private ChannelComponent channelComponent;
-    
     @UsesCellComponent
     private AnotherMovableComponent anotherMovable;
     //dislike this.
@@ -179,9 +180,9 @@ public class EZScriptComponent extends CellComponent {
 //</editor-fold>
     //<editor-fold defaultstate="collapsed" desc="Wonderland Boilerplate">
     public EZScriptComponent(Cell cell) {
-        super(cell); 
-        
-        executor = Executors.newFixedThreadPool(4);
+        super(cell);
+
+        executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         //initialize callback containers
 //        callbacksOnClick = new ArrayList<Runnable>();
@@ -236,14 +237,30 @@ public class EZScriptComponent extends CellComponent {
         mapListener = new SharedMapListener();
         proximityListener = new ProximityListenerImpl();
 
-        scriptEngine = engineManager.getEngineByName("JavaScript");
-        cell.getClass().getName();
-        scriptBindings = scriptEngine.createBindings();
+        IBindingsLoader bindingLoader = new SerialLoader();
+//        IBindingsLoader bindingLoader = new OptimizedLoader();
+
+        bindingLoader.loadBindings();
+
+        scriptEngine = bindingLoader.getEngine();
+        scriptBindings = bindingLoader.getBindings();
+
+
+//        scriptEngine = engineManager.getEngineByName("JavaScript");
+//        cell.getClass().getName();
+//        scriptBindings = scriptEngine.createBindings();
         ScriptManager.getInstance().addCell(cell);
         dialog = new JDialog();
-        panel = new ScriptEditorPanel(this, dialog);
+        
+        final EZScriptComponent ezRef = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                panel = new ScriptEditorPanel(ezRef, dialog);
 
-        scriptBindings.putAll(dao().getCellBindings());
+            }
+        });
+
+//        scriptBindings.putAll(dao().getCellBindings());
         generateDocumentation();
 
 
@@ -272,7 +289,6 @@ public class EZScriptComponent extends CellComponent {
                     if (menuFactory == null) {
                         menuListener = new MenuItemListener();
                         menuFactory = new ContextMenuFactorySPI() {
-
                             public ContextMenuItem[] getContextMenuItems(ContextEvent event) {
                                 return new ContextMenuItem[]{
                                             new SimpleContextMenuItem("Script", menuListener)
@@ -283,9 +299,8 @@ public class EZScriptComponent extends CellComponent {
                     }
 
                     executor.submit(new Runnable() {
-
                         public void run() {
-                            
+
                             //grab the "callbacks" map in order to hopefully
                             //use an additional map for "state" if needed
                             synchronized (sharedStateComponent) {
@@ -368,7 +383,7 @@ public class EZScriptComponent extends CellComponent {
                     callbacksMap.removeSharedMapListener(mapListener);
                     scriptsMap.removeSharedMapListener(mapListener);
                     stateMap.removeSharedMapListener(mapListener);
-                    
+
                     executor.shutdownNow();
                 }
                 break;
@@ -400,7 +415,7 @@ public class EZScriptComponent extends CellComponent {
 
     private ScriptedObjectDataSource dao() {
 
-        ScriptedObjectDataSource.INSTANCE.initialize();
+//        ScriptedObjectDataSource.INSTANCE.initialize();
 
         return ScriptedObjectDataSource.INSTANCE;
     }
@@ -424,7 +439,6 @@ public class EZScriptComponent extends CellComponent {
         for (final ReturnableScriptMethodSPI returnable : dao().getReturnables()) {
 
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     panel.addLibraryEntry(returnable);
                 }
@@ -438,7 +452,6 @@ public class EZScriptComponent extends CellComponent {
             final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
 
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     panel.addLibraryEntry(returnable);
                 }
@@ -450,7 +463,6 @@ public class EZScriptComponent extends CellComponent {
         for (final ScriptMethodSPI method : dao().getVoids()) {
 
             SwingUtilities.invokeLater(new Runnable() {
-
                 public void run() {
                     panel.addLibraryEntry(method);
                 }
@@ -508,13 +520,17 @@ public class EZScriptComponent extends CellComponent {
     public void handleScript(SharedMapCli states) {
         if (states.containsKey("script")) {
             final SharedString script = (SharedString) states.get("script");
-            
-            executor.submit(new Runnable() { 
-                public void run() {
-                    logger.warning("EXECUTING LOADED SCRIPT FOR CELL: "+cell.getName());
-                    evaluateScript(script.getValue());
-                }
-            });
+
+
+
+//            executor.submit(new Runnable() {
+//                public void run() {
+            logger.warning("[EZSCRIPT] EXECUTING LOADED SCRIPT FOR CELL: " + cell.getName());
+//                    System.out.println(script.getValue());
+
+            evaluateScript(script.getValue());
+//                }
+//            });
 //            
 //            new Thread(new Runnable() {
 //
@@ -918,18 +934,20 @@ public class EZScriptComponent extends CellComponent {
     }
 
     public void evaluateScript(final String script) {
-
-        try {
-            scriptEngine.eval(script, scriptBindings);
-        } catch (Exception e) {
-            processException(e);
-        } finally {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                public void run() {
-                    panel.setScriptTextArea(script);
-                }
-            });
+        synchronized (scriptEngine) {
+            try {
+//                scriptBindings.clear();
+//                scriptBindings.putAll(dao().getCellBindings());
+                scriptEngine.eval(script, scriptBindings);
+            } catch (Exception e) {
+                processException(e);
+            } finally {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        panel.setScriptTextArea(script);
+                    }
+                });
+            }
         }
     }
 
@@ -957,16 +975,16 @@ public class EZScriptComponent extends CellComponent {
                     //FIX FOR EZMOVE
                     InputEvent awtEvent = m.getAwtEvent();
                     if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
-//                            && awtEvent.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
+                            //                            && awtEvent.getModifiersEx() == MouseEvent.BUTTON1_DOWN_MASK) {
                             && awtEvent.getModifiersEx() == 0
-                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
+                            && SwingUtilities.isLeftMouseButton((MouseEvent) awtEvent)) {
                         if (respondsToMouseEvents) {
                             executeOnClick("none", true);
                         }
                         callbacksMap.put("onClick", new SharedString().valueOf("none"));
                     } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
-                            && awtEvent.getModifiersEx() ==  MouseEvent.ALT_DOWN_MASK
-                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
+                            && awtEvent.getModifiersEx() == MouseEvent.ALT_DOWN_MASK
+                            && SwingUtilities.isLeftMouseButton((MouseEvent) awtEvent)) {
                         //alt events
                         if (respondsToMouseEvents) {
                             executeOnClick("alt", true);
@@ -977,7 +995,7 @@ public class EZScriptComponent extends CellComponent {
 
                     } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
                             && awtEvent.getModifiersEx() == MouseEvent.CTRL_DOWN_MASK
-                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
+                            && SwingUtilities.isLeftMouseButton((MouseEvent) awtEvent)) {
                         //ctrl events
                         if (respondsToMouseEvents) {
                             executeOnClick("ctrl", true);
@@ -989,7 +1007,7 @@ public class EZScriptComponent extends CellComponent {
 
                     } else if (awtEvent.getID() == MouseEvent.MOUSE_CLICKED
                             && awtEvent.getModifiersEx() == MouseEvent.SHIFT_DOWN_MASK
-                            && SwingUtilities.isLeftMouseButton((MouseEvent)awtEvent)) {
+                            && SwingUtilities.isLeftMouseButton((MouseEvent) awtEvent)) {
                         //shift events
                         if (respondsToMouseEvents) {
                             executeOnClick("shift", true);
@@ -1083,13 +1101,13 @@ public class EZScriptComponent extends CellComponent {
                         //scriptEngine.eval(script.getValue(), scriptBindings);
                         //Need to add this script to the script editor panel.
                         clearCallbacks();
-                        
-                        executor.submit(new Runnable() { 
+
+                        executor.submit(new Runnable() {
                             public void run() {
                                 evaluateScript(script.getValue());
                             }
                         });
-                        
+
 //                        
 //                        new Thread(new Runnable() {
 //
@@ -1169,7 +1187,6 @@ public class EZScriptComponent extends CellComponent {
         public void actionPerformed(ContextMenuItemEvent event) {
             if (event.getContextMenuItem().getLabel().equals("Script")) {
                 SwingUtilities.invokeLater(new Runnable() {
-
                     public void run() {
                         dialog.setResizable(false);
 
@@ -1201,9 +1218,9 @@ public class EZScriptComponent extends CellComponent {
                 String name = eventMessage.getEventName();
 
                 if (triggerCellEvents.containsKey(name)) {
-                    
-                    logger.warning(cell.getName() + " RECEIVED TRIGGER: "+eventMessage.getEventName());
-                    
+
+                    logger.warning(cell.getName() + " RECEIVED TRIGGER: " + eventMessage.getEventName());
+
                     threadedExecute(triggerCellEvents.get(name));
                     //triggerCellEvents.get(name).setArguments(eventMessage.getArguments());
                     //triggerCellEvents.get(name).run();
@@ -1216,9 +1233,9 @@ public class EZScriptComponent extends CellComponent {
     //</editor-fold>
 
     public void triggerLocalCell(CellID cellID, String label, Object[] args) {
-        
-        logger.warning(this.cell.getName()+" IS LOCALLY TRIGGERING: "+label);
-        
+
+        logger.warning(this.cell.getName() + " IS LOCALLY TRIGGERING: " + label);
+
         //obtain primary session so we can get the cell cache.
         WonderlandSession session = LoginManager.getPrimary().getPrimarySession();
 
@@ -1242,7 +1259,7 @@ public class EZScriptComponent extends CellComponent {
         //check to see if the trigger we're executing is relevant. That is to 
         //say, a trigger has been registered with that name.
         if (triggers.containsKey(label)) {
-            logger.warning("EXECUTING TRIGGER: "+label+" FOR CELL: "+tmpCell.getName());
+            logger.warning("EXECUTING TRIGGER: " + label + " FOR CELL: " + tmpCell.getName());
             ez.threadedExecute(ez.triggerCellEvents.get(label));
         } else {
             //fail gracefully.
@@ -1254,7 +1271,7 @@ public class EZScriptComponent extends CellComponent {
     public void triggerCell(CellID cellID, String label, Object[] args) {
 
         String name = cell.getCellCache().getCell(cellID).getName();
-        logger.warning("SENDING TRIGGER: "+label+" TO CELL: "+name);
+        logger.warning("SENDING TRIGGER: " + label + " TO CELL: " + name);
         channelComponent.send(new CellTriggerEventMessage(cellID, label, args));
     }
 
@@ -1349,7 +1366,6 @@ public class EZScriptComponent extends CellComponent {
         TextAreaOutputStream output = new TextAreaOutputStream(window.getDetailsArea());
         e.printStackTrace(new PrintStream(output));
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
                 HUD mainHUD = HUDManagerFactory.getHUDManager().getHUD("main");
                 HUDComponent c = mainHUD.createComponent(window);
@@ -1369,29 +1385,28 @@ public class EZScriptComponent extends CellComponent {
     public Collection<String> getRemoteTriggerList() {
         return this.triggerCellEvents.keySet();
     }
-    
+
     public Collection<String> getLocalTriggerList() {
         return this.localTriggerEvents.keySet();
     }
-    
+
     public void executeRemoteTrigger(String name) {
-        if(triggerCellEvents.containsKey(name)) {
+        if (triggerCellEvents.containsKey(name)) {
             threadedExecute(triggerCellEvents.get(name));
         } else {
-            logger.warning("NO TRIGGER: "+name+" FOUND FOR CELL: "+cell.getName());
+            logger.warning("NO TRIGGER: " + name + " FOUND FOR CELL: " + cell.getName());
         }
     }
-    
+
     public void executeLocalTrigger(String name) {
 
-        if(localTriggerEvents.containsKey(name)) {
+        if (localTriggerEvents.containsKey(name)) {
             threadedExecute(localTriggerEvents.get(name));
         } else {
-            logger.warning("NO TRIGGER: "+name+" FOUND FOR CELL: "+cell.getName());
+            logger.warning("NO TRIGGER: " + name + " FOUND FOR CELL: " + cell.getName());
         }
     }
-    
-    
+
     //<editor-fold defaultstate="collapsed" desc="getters/setters">
     public boolean isInitiatesKeyEvents() {
         return initiatesKeyEvents;

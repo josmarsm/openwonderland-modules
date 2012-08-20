@@ -21,222 +21,282 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.EventBridgeSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.GlobalSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.EventBridge;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.Global;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.ReturnableScriptMethod;
-import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.annotation.*;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
-import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.BridgeGenerator;
-import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.GlobalsGenerator;
-import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.MethodGenerator;
-import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.ReturnableMethodGenerator;
+import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.*;
+import org.jdesktop.wonderland.modules.ezscript.client.virtuals.VirtualObjectFactorySPI;
 
 /**
  *
  * @author JagWire
  */
 public enum ScriptedObjectDataSource {
-   INSTANCE;
-   
-   private ArrayList<EventBridgeSPI> bridges;
-   private ArrayList<ReturnableScriptMethodSPI> returnables;
-   private ArrayList<ScriptMethodSPI> voids;
-   private ArrayList<CellFactorySPI> cellFactories;
-   private ArrayList<GlobalSPI> globals;
-   
-   private ScriptEngineManager manager = null;
-   private ScriptEngine engine = null;
-   private Bindings clientBindings = null;
-   private Bindings cellBindings = null;
-   
-   private static final Logger logger = Logger.getLogger(ScriptedObjectDataSource.class.getName());
-   
-   private boolean initialized = false;
-   
-   ScriptedObjectDataSource() {
-       
-   }
 
-    public void initialize() {
-        
-        if(initialized)
-            return;
-        
-        
+    INSTANCE;
+    private ArrayList<EventBridgeSPI> bridges;
+    private ArrayList<ReturnableScriptMethodSPI> returnables;
+    private ArrayList<ScriptMethodSPI> voids;
+    private ArrayList<CellFactorySPI> cellFactories;
+    private ArrayList<GlobalSPI> globals;
+//   private ArrayList<VirtualObjectFactorySPI> virtuals;
+    private ScriptEngineManager manager = null;
+    private ScriptEngine engine = null;
+    private Bindings clientBindings = null;
+    private Bindings cellBindings = null;
+    private static final Logger logger = Logger.getLogger(ScriptedObjectDataSource.class.getName());
+    private boolean initialized = false;
+
+    private ScriptedObjectDataSource() {
+        initialize();
+
+    }
+
+    private synchronized void initialize() {
+
+//        System.out.println("[ScriptedObjectDataSource] INSIDE INITIALIZE!");
+//        if(initialized)
+//            return;
+
+//        initialized = true;
+
         ScannedClassLoader loader = LoginManager.getPrimary().getClassloader();
 
+//        logger.warning("RETRIEVING BRIDGES!");
         bridges = listFromIterator(instances(loader, EventBridge.class, EventBridgeSPI.class));
-        
-//        bridges = listFromIterator(loader.getInstances(EventBridge.class, EventBridgeSPI.class));
+
+//        logger.warning("RETRIEVING RETURNABLES!");
         returnables = listFromIterator(instances(loader,
-                                                ReturnableScriptMethod.class,
-                                                ReturnableScriptMethodSPI.class));
-//        returnables = listFromIterator(loader.getInstances(ReturnableScriptMethod.class,
-//                ReturnableScriptMethodSPI.class));
+                ReturnableScriptMethod.class,
+                ReturnableScriptMethodSPI.class));
+//        logger.warning("RETRIEVING VOIDS!");
         voids = listFromIterator(instances(loader,
-                                            ScriptMethod.class,
-                                            ScriptMethodSPI.class));
-//        voids = listFromIterator(loader.getInstances(ScriptMethod.class, ScriptMethodSPI.class));
+                ScriptMethod.class,
+                ScriptMethodSPI.class));
+//        logger.warning("RETRIVING CELL FACTORIES!");
         cellFactories = listFromIterator(instances(loader, CellFactory.class, CellFactorySPI.class));
-//        cellFactories = listFromIterator(loader.getInstances(CellFactory.class, CellFactorySPI.class));
-        
+
+//        logger.warning("RETRIEVING GLOBALS!");
         globals = listFromIterator(instances(loader, Global.class, GlobalSPI.class));
-        
-        logger.warning("OBTAINED SCRIPTED OBJECT DATA!");
-        
+
+//        logger.warning("OBTAINED SCRIPTED OBJECT DATA!");
+
         manager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
         engine = manager.getEngineByName("JavaScript");
         clientBindings = engine.createBindings();
         cellBindings = engine.createBindings();
-        
+
         clientBindings.putAll(generateBindings());
-        logger.warning("CLIENT BINDINGS SIZE: "+clientBindings.size());
+//        logger.warning("CLIENT BINDINGS SIZE: "+clientBindings.size());
         cellBindings.putAll(cloneBindings(clientBindings));
-        logger.warning("CELL BINDINGS SIZE: "+cellBindings.size());
-        
-        
-        initialized = true;
+//        logger.warning("CELL BINDINGS SIZE: "+cellBindings.size());
+
+
+
     }
-   
+
     private <T> Iterator<T> instances(ScannedClassLoader loader, Class annotation, Class spi) {
-       return loader.getInstances(annotation, spi);
+        return loader.getInstances(annotation, spi);
     }
-    
-    
-    public Bindings getClientBindings() {
+
+    public synchronized Bindings getClientBindings() {
         Bindings bindings = engine.createBindings();
         bindings.putAll(clientBindings);
-        
+
         return bindings;
     }
-    
-    public Bindings getCellBindings() {
+
+    public synchronized Bindings getCellBindings() {
         Bindings bindings = engine.createBindings();
         bindings.putAll(cellBindings);
-        
+
         return bindings;
     }
-    public ArrayList<EventBridgeSPI> getBridges() {
+
+    public synchronized ArrayList<EventBridgeSPI> getBridges() {
         return bridges;
     }
 
-    public ArrayList<CellFactorySPI> getCellFactories() {
+    public synchronized ArrayList<CellFactorySPI> getCellFactories() {
         return cellFactories;
     }
 
-    public ArrayList<ReturnableScriptMethodSPI> getReturnables() {
+    public synchronized ArrayList<ReturnableScriptMethodSPI> getReturnables() {
         return returnables;
     }
 
-    public ArrayList<ScriptMethodSPI> getVoids() {
+    public synchronized ArrayList<ScriptMethodSPI> getVoids() {
         return voids;
     }
-    
+
     private <T> ArrayList listFromIterator(Iterator<T> iter) {
         ArrayList<T> list = new ArrayList<T>();
-        
-        while(iter.hasNext()) {
+
+        while (iter.hasNext()) {
             list.add(iter.next());
         }
-                
-        return list;                
+
+        return list;
     }
-    
-    private void bindScript(String script, Bindings bindings) {
+
+    private synchronized void bindScript(String script, Bindings bindings) {
         try {
             engine.eval(script, bindings);
         } catch (ScriptException ex) {
             Logger.getLogger(ScriptedObjectDataSource.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
-    
+
     public ScriptEngine getClientScriptEngine() {
         return engine;
     }
-    private Bindings cloneBindings(Bindings bs) {
+
+    private synchronized Bindings cloneBindings(Bindings bs) {
         Bindings bindings = engine.createBindings();
         bindings.putAll(bs);
-        
+
         return bindings;
     }
-    
-    private Bindings generateBindings() {
+
+    private synchronized Bindings generateBindings() {
         Bindings bindings = engine.createBindings();
+
+        generateCommandFactory(bindings);
+        
+        
         
         generateVoidMethods(bindings);
         generateNonVoidMethods(bindings);
         generateCellFactories(bindings);
-        generateBridges(bindings);
+//        generateBridges(bindings);
         generateGlobals(bindings);
-        
+//        generateVirtuals(bindings);
+
         return bindings;
     }
-    
+
     private void generateBridges(Bindings scriptBindings) {
 
         BridgeGenerator bridgeGenerator = new BridgeGenerator();
-        
-        for(EventBridgeSPI bridge:  getBridges()) {
+
+        for (EventBridgeSPI bridge : getBridges()) {
             bridgeGenerator.setActiveBridge(bridge);
             bindScript(bridgeGenerator.generateScriptBinding(),
-                       scriptBindings);
+                    scriptBindings);
             bridge.initialize(engine, scriptBindings);
         }
     }
-    
+
     private void generateNonVoidMethods(Bindings scriptBindings) {
         //grab all returnablesa
-        ReturnableMethodGenerator returnableGenerator
-                = new ReturnableMethodGenerator(engine, scriptBindings);
+        ReturnableMethodGenerator returnableGenerator = new ReturnableMethodGenerator(engine, scriptBindings);
 
-        
-        for(final ReturnableScriptMethodSPI returnable:  getReturnables()) {
+
+        for (ReturnableScriptMethodSPI returnable : getReturnables()) {
             returnableGenerator.setActiveMethod(returnable);
+            
+//            System.out.println("[EZSCRIPT] Generating function: "+returnable.getFunctionName());
+
+            
+            
             bindScript(returnableGenerator.generateScriptBinding(),
-                       scriptBindings);
+                    scriptBindings);
         }
     }
-    
-    private void generateCellFactories(Bindings scriptBindings) {                
-        ReturnableMethodGenerator generator
-                = new ReturnableMethodGenerator(engine, scriptBindings);
-        
-        for( CellFactorySPI factory:  getCellFactories()) {
+
+    private void generateCellFactories(Bindings scriptBindings) {
+        ReturnableMethodGenerator generator = new ReturnableMethodGenerator(engine, scriptBindings);
+
+        for (CellFactorySPI factory : getCellFactories()) {
             final ReturnableScriptMethodSPI returnable = new GeneratedCellMethod(factory);
             generator.setActiveMethod(returnable);
+            
+//            System.out.println("[EZSCRIPT] Generating function: "+returnable.getFunctionName());
+
+            
             bindScript(generator.generateScriptBinding(),
-                       scriptBindings);
+                    scriptBindings);
 
         }
     }
-    
+
     private void generateVoidMethods(Bindings scriptBindings) {
-        
+
         //grab all global void methods
-        MethodGenerator methodGenerator
-                = new MethodGenerator(engine, scriptBindings);
-        
-        for(final ScriptMethodSPI method:  getVoids()) {
+        MethodGenerator methodGenerator = new MethodGenerator(engine, scriptBindings);
+
+        for (final ScriptMethodSPI method : getVoids()) {
             methodGenerator.setActiveMethod(method);
+//            System.out.println("[EZSCRIPT] Generating function: "+method.getFunctionName());
+
             bindScript(methodGenerator.generateScriptBinding(),
-                      scriptBindings);
+                    scriptBindings);
 
         }
     }
 
     private void generateGlobals(Bindings scriptBindings) {
-        GlobalsGenerator globalGenerator
-                = new GlobalsGenerator(engine, scriptBindings);
-        for(final GlobalSPI global: getGlobals()) {
+        GlobalsGenerator globalGenerator = new GlobalsGenerator(engine, scriptBindings);
+        for (final GlobalSPI global : getGlobals()) {
             globalGenerator.setActiveGlobal(global);
+            
+//            System.out.println("[EZSCRIPT] Generating GLOBAL: "+global.getName());
+
+            
             bindScript(globalGenerator.generateScriptBinding(),
-                        scriptBindings);
+                    scriptBindings);
         }
     }
 
-    private ArrayList<GlobalSPI> getGlobals() {
+    public synchronized ArrayList<GlobalSPI> getGlobals() {
         return globals;
     }
-   
+//    private void generateVirtuals(Bindings bindings) {
+//        VirtualObjectGenerator generator 
+//                = new VirtualObjectGenerator(engine, bindings);
+//        
+//        for(final VirtualObjectFactorySPI v: getVirtuals()) {
+//            generator.setActiveVirtualObject(v);
+//            bindScript(generator.generateScriptBinding(), bindings);
+//        }
+//    }
+//    private ArrayList<VirtualObjectFactorySPI> getVirtuals() {
+//        return virtuals;
+//    }
+    
+    private String generateCommandFactory(Bindings bindings) {
+        
+        String void_factory = "function command_factory(iface) {\n"
+                + "\t return function() {\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
+                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t }\n"
+                + "\t\t iface.setArguments(args);\n"
+                + "\t\t iface.run();\n"
+                + "\t }\n"
+                + "}\n";
+        
+//        System.out.println(void_factory);
+        
+        String returnable_factory = "function returnable_factory(iface) {\n"
+                + "\t return function() {\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
+                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t }\n"
+                + "\t\t iface.setArguments(args);\n"
+                + "\t\t iface.run();\n"
+                + "\t\t return iface.returns();\n"
+                + "\t }\n"
+                + "}\n";
+        
+        
+        
+        bindScript(void_factory, bindings);
+        
+        bindScript(returnable_factory, bindings);
+        
+        return void_factory;
+        
+    }
 }

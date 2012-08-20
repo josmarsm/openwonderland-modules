@@ -29,20 +29,26 @@ public class ReturnableMethodGenerator implements GeneratorSPI {
     
         
     public String generateScriptBinding() {
-        bindings.put("this"+method.getFunctionName(), method);
+        bindings.put("I"+method.getFunctionName(), method);
         
-        String scriptx  = "function " + method.getFunctionName()+"() {\n"
-            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
-            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
-            + "\t\targs[i] = arguments[i];\n"
-            + "\t}\n"
-            + "\tthis"+method.getFunctionName()+".setArguments(args);\n"
-            + "\tthis"+method.getFunctionName()+".run();\n"
+//        String scriptx  = "var "+method.getFunctionName()+" = function() {\n"
+//            + "\tvar args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+//            + "\tfor(var i = 0; i < arguments.length; i++) {\n"
+//            + "\t\targs[i] = arguments[i];\n"
+//            + "\t}\n"
+//            + "\tI"+method.getFunctionName()+".setArguments(args);\n"
+//            + "\tI"+method.getFunctionName()+".run();\n"
+//
+//            + "\tvar tmp = I"+method.getFunctionName()+".returns();\n"
+//            + "\treturn tmp;\n"
+//            +"}";
 
-            + "\tvar tmp = this"+method.getFunctionName()+".returns();\n"
-            + "\treturn tmp\n;"
-            +"}";
-
+        String iface = "I"+method.getFunctionName();
+        String scriptx = "var "+method.getFunctionName()+" = returnable_factory("+iface+")";
+        
+        
+        
+//        System.out.println(scriptx);
         return scriptx;
     }
     
