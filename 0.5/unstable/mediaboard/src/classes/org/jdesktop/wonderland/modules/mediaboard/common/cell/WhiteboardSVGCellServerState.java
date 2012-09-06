@@ -29,7 +29,7 @@ import org.jdesktop.wonderland.modules.appbase.common.cell.App2DCellServerState;
  * 
  * @author nsimpson
  */
-@XmlRootElement(name = "whiteboard-cell-svg")
+@XmlRootElement(name = "mediaboard-cell")
 @ServerState
 public class WhiteboardSVGCellServerState extends App2DCellServerState {
 
