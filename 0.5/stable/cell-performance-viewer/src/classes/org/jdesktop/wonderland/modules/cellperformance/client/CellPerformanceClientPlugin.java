@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.client.ClientContext;
 import org.jdesktop.wonderland.client.ClientPlugin;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager;
 import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetStat;
-import org.jdesktop.wonderland.client.assetmgr.AssetManager.AssetStatisticsSPI;
+import org.jdesktop.wonderland.client.assetmgr.AssetStatisticsSPI;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.cache.CellCacheBasicImpl;
