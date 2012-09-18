@@ -1,0 +1,54 @@
+
+<project basedir="." default="run" name="red5.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.red5.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- import common setup -->
+    <import file="${current.dir}/build-tools/build-scripts/run-setup.xml"/>
+
+    <!-- import core setup -->
+    <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
+
+    <target name="run" depends="-find-properties">
+        <pathconvert property="red5.classpath">
+            <path location="${current.dir}/boot.jar"/>
+            <path location="${current.dir}/conf"/>
+        </pathconvert>
+
+        <java fork="true" classname="org.red5.server.Bootstrap">
+            <classpath>
+                <pathelement path="${red5.classpath}"/>
+            </classpath>
+
+            <jvmarg value="-Dpython.home=${current.dir}/lib"/>
+            <jvmarg value="-Dred5.home=${current.dir}"/>
+
+            <arg value="${wonderland.web.server.url}"/>
+            <syspropertyset refid="commandline.properties"/>
+        </java>
+    </target>
+
+    <target name="-find-properties">
+        <!-- Generate a set containing all properties passed on the
+             commandline.  The way we do this is a little strange, since
+             we want to ignore ant internal properties.  So we take
+             the inverese of what we want, add in the ant properties,
+             and then take the inverse of the whole thing.
+        -->
+        <propertyset id="noncommandline.properties" negate="true">
+            <propertyref builtin="commandline"/>
+        </propertyset>
+        <propertyset id="ant.internal.properties">
+            <propertyref prefix="ant"/>
+            <propertyref name="basedir"/>
+        </propertyset>
+        <propertyset id="commandline.properties" negate="true">
+            <propertyset refid="ant.internal.properties"/>
+            <propertyset refid="noncommandline.properties"/>
+        </propertyset>
+    </target>
+</project>

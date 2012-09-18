@@ -1,0 +1,18 @@
+Video Cube Example
+
+This cell is an example of how to render video onto arbitrary surfaces using
+the code from the OpenWonderland video player module. Before installing this
+module, make sure the latest version of the videoplayer module is installed as
+well.
+
+To use this module, you will need to hard-code the set of videos to play.
+The videos are set up in
+src/classes/org/jdesktop/wonderland/modules/videocube/client/VideoCubeCell.java.
+They may be specified using any valid OpenWonderland URL type, including
+http://, wlcontent:// or wla://. The videos may be of any type supported by
+the video player.
+
+Rendering of video on the surface is done by the VideoCubeRenderer. In
+particular, the compute() method of the VideoProcessor resamples the video
+to the correct format to prepare it for display. The commit() method of
+the processor updates a texture with the video data.

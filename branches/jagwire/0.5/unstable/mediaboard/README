@@ -1,0 +1,39 @@
+MEDIABOARD README
+<jagwire>
+
+
+
+INSTALLATION OF MEDIABOARD
+The installation of the mediaboard requires installation of the javacv
+libraries. Please see the README in wonderland-modules/unstable/javacv-integration
+for more information and installation instructions. The mediaboard camera
+functionality WILL NOT WORK without the javacv-integration libraries installed.
+
+In addition, a server wanting to use the mediaboard should:
+* Have authentication enabled
+* A group entitled "media" should be created, and all users added
+* Have a groups/ directory added to the content folder on the server
+--This can be done via the web administration page
+* Inside the groups/ directory, there should be a media directory
+added.
+
+********************
+* IMPORTANT!!!!    *
+********************
+Double check that via the "Manage content" tab in the web administration
+page that you can see the following links: 
+* checksums
+* groups
+* modules
+* system
+* users
+
+When clicking the groups link, make sure you can see the following links:
+* media
+
+When clicking the media link, make sure you can see the following links:
+* boards
+* images
+* photos
+* videos
+

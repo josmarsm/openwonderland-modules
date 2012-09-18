@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>TreeHillSkylineHex-110m-perged.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-almostempty-world/TreeHillSkylineHex-110m-perged.kmz/TreeHillSkylineHex-110m-perged.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <position-component>
+        <translation>
+            <x>0</x>
+            <y>10.99</y>
+            <z>0</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>95.26278686523438</x>
+            <y>11.0</y>
+            <z>109.99998474121094</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>2.7052605</angle>
+        </rotation>
+    </position-component>
+</model-cell>

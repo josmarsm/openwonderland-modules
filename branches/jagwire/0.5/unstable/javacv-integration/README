@@ -1,0 +1,28 @@
+INSTALLATION OF JAVACV
+<jagwire>
+The following files should be moved to your wonderland-core/ext/common directory.
+- javacv.jar
+- javacpp.jar
+
+Don't forget to edit wonderland-core/build-tools/build-scripts/classpath.xml
+to include the path to javacv.jar and javacpp.jar within the
+wonderland.lib.classpath section.
+
+PATCHING CORE-SETUP.XML
+Move the core-setup.diff into your wonderland-trunk directory and issue
+the following command:
+
+patch -p0 < core-setup.diff
+
+INSTALLATION OF JAVACV.ZIP
+
+Within the following directories within zip/ you will find javacv.zip:
+- win32/
+- win64/
+- macosx/
+
+In order for the webcam tests found within the client-test project to pass,
+you will need to move the javacv.zip of your respective platform into the
+wonderland-core/ext/zip/<your-platform> directory. Afterward, you will need
+to clean and build your wonderland build. Any questions or comments should
+be posted to the openwonderland google group.

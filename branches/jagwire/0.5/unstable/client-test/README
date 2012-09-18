@@ -1,0 +1,30 @@
+Wonderland Client Test
+----------------------
+
+The Wonderland client test is a standalone web application designed to test
+if a given computer is capable of running Wonderland, and diagnose problems
+if it is not.
+
+The Wonderland client test installs as a regular module on the Wonderland
+web server. Once installed, it can be accessed by url at:
+
+http://<wonderland_server>:<wonderland_port>/client-test/client-test
+
+Clicking on "Launch" will start the test.
+
+After tests are run, the log can be uploaded to the Wonderland server.
+Logs can be accessed by administrators using the "Client Test Logs"
+link in the Wonderland Web Administration UI.
+
+JAVACV INTEGRATION
+------------------
+
+The client-test module depends on the javacv-integration libraries found in
+wonderland-modules/unstable.
+
+Please follow the instructions found in javacv-integration/README
+
+REQUIRED CORE VERSION
+---------------------
+
+The client test requires Wonderland core revision 4785 (24-Jan-2012) or later.

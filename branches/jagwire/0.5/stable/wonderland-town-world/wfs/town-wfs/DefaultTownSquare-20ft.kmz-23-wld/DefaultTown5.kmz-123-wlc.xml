@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>DefaultTown5.kmz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-town-world/DefaultTown5.kmz/DefaultTown5.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <position-component>
+        <translation>
+            <x>-54.498093</x>
+            <y>21.202667</y>
+            <z>-126.21747</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>163.41400146484375</x>
+            <y>22.707603454589844</y>
+            <z>236.65670776367188</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-1.0</y>
+            <z>0.0</z>
+            <angle>0.054832898</angle>
+        </rotation>
+    </position-component>
+</model-cell>

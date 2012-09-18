@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>owl_3d_demoworld_014_auditorium.dae.gz</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-auditorium-world/owl_3d_demoworld_014_auditorium.dae/owl_3d_demoworld_014_auditorium.dae.gz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+        <TransparencyMode>INVERSE</TransparencyMode>
+    </model-cell-component>
+    <position-component>
+        <translation>
+            <x>-12.961324</x>
+            <y>-14.939714</y>
+            <z>-36.572998</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>32.99164962768555</x>
+            <y>12.440472602844238</y>
+            <z>46.84868621826172</z>
+        </bounds>
+        <scale>
+            <x>0.50000006</x>
+            <y>0.50000006</y>
+            <z>0.50000006</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>1.5707963</angle>
+        </rotation>
+    </position-component>
+</model-cell>

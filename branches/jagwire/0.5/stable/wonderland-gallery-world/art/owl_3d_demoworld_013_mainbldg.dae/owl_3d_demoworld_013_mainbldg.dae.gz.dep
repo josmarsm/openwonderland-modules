@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<deployed-model>
+    <version>1</version>
+    <modelURL>wla://wonderland-gallery-world/owl_3d_demoworld_013_mainbldg.dae/owl_3d_demoworld_013_mainbldg.dae.gz</modelURL>
+    <loaderDataURL>wla://wonderland-gallery-world/owl_3d_demoworld_013_mainbldg.dae/owl_3d_demoworld_013_mainbldg.dae.gz.ldr</loaderDataURL>
+    <modelBGScale>
+        <x>1.0</x>
+        <y>1.0</y>
+        <z>1.0</z>
+    </modelBGScale>
+    <modelBGTranslation>
+        <x>-1.2438965</x>
+        <y>-13.209964</y>
+        <z>-80.00001</z>
+    </modelBGTranslation>
+    <modelBGRotation>
+        <x>-0.99999994</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>1.5707964</angle>
+    </modelBGRotation>
+    <modelBounds>
+        <boundsType>BOX</boundsType>
+        <center_x>0.0</center_x>
+        <center_y>0.0</center_y>
+        <center_z>0.0</center_z>
+        <dimension_x>45.758686</dimension_x>
+        <dimension_y>8.055123</dimension_y>
+        <dimension_z>25.311012</dimension_z>
+    </modelBounds>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+</deployed-model>

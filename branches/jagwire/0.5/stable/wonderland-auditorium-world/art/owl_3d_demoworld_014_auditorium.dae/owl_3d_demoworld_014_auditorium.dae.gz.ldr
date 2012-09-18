@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loader-data>
+    <version>1</version>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+    <deployedTextures key="textures/marblewhite0063_1_l_tile_128.png" value="textures/marblewhite0063_1_l_tile_128.png"/>
+    <deployedTextures key="textures/terr_concrete.jpg" value="textures/terr_concrete.jpg"/>
+    <deployedTextures key="textures/carpet0012_2_512.jpg" value="textures/carpet0012_2_512.jpg"/>
+    <deployedTextures key="textures/tilesplain0021_2_s_01_512.jpg" value="textures/tilesplain0021_2_s_01_512.jpg"/>
+</loader-data>

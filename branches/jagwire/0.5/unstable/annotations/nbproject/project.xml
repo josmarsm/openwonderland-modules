@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>wonderland-annotations-module</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>build</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="run">
+                    <target>deploy</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>build</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src/classes</label>
+                        <location>src/classes</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="run"/>
+                    <action>
+                        <label>Deploy Module to Server</label>
+                        <target>deploy</target>
+                    </action>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>src/classes</package-root>
+                <classpath mode="compile">../trunk/core/ext/common/mtgame.jar:../trunk/core/ext/jme20/target/jme-audio.jar:../trunk/core/ext/jme20/target/jme-awt.jar:../trunk/core/ext/jme20/target/jme-collada.jar:../trunk/core/ext/jme20/target/jme-editors.jar:../trunk/core/ext/jme20/target/jme-effects.jar:../trunk/core/ext/jme20/target/jme-font.jar:../trunk/core/ext/jme20/target/jme-gamestates.jar:../trunk/core/ext/jme20/target/jme-model.jar:../trunk/core/ext/jme20/target/jme-scene.jar:../trunk/core/ext/jme20/target/jme-swt.jar:../trunk/core/ext/jme20/target/jme-terrain.jar:../trunk/core/ext/jme20/target/jme-xml.jar:../trunk/core/ext/jme20/target/jme.jar:../trunk/core/ext/sgs/sgs-client-0.9.8/lib/sgs-client.jar:../trunk/core/ext/sgs/sgs-client-0.9.8/lib/sgs-shared-1.3.jar:../trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-0.9.8.jar:../trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-server-api-0.9.8.jar:../trunk/core/ext/sgs/sgs-server-dist-0.9.8/lib/sgs-shared-1.3.jar:../trunk/core/build/lib/wonderland-client.jar:../trunk/core/build/lib/wonderland-common.jar:../trunk/core/build/lib/wonderland-server.jar:../trunk/lib/jaxb/activation.jar:../trunk/lib/jaxb/jaxb-api.jar:../trunk/lib/jaxb/jaxb-xjc.jar:../trunk/lib/jaxb/jsr173_1.0_api.jar:../trunk/modules/foundation/sharedstate/build/server/sharedstate-server.jar:../trunk/modules/foundation/sharedstate/build/client/sharedstate-client.jar:lib/apacheds-all-1.5.5-SNAPSHOT.jar:/Users/Matt/trunk/metadata/build/client/metadata-module-client.jar:/Users/Matt/trunk/metadata/build/server/metadata-module-server.jar:/Users/Matt/trunk/wonderland-trunk/modules/foundation/hud/build/client/hud-client.jar:/Users/Matt/trunk/wonderland-trunk/modules/world/context-menu/build/client/contextmenu-client.jar:/Users/Matt/trunk/wonderland-trunk/modules/world/affordances/build/client/affordances-client.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+        <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
+            <module name="org-netbeans-modules-editor-indent"/>
+        </preferences>
+    </configuration>
+</project>

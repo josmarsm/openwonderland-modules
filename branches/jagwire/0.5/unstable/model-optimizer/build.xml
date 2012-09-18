@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="model-optimizer" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.model-optimizer}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-unstable.properties"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <pathconvert property="module-web.classpath">
+        <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
+        <path location="${wonderland.dir}/core/ext/jme20/target/jme.jar"/>
+        <path location="${wonderland.dir}/core/ext/common/mtgame.jar"/>
+        
+        <path location="${modules.dir}/foundation/content-repository/build/lib/contentrepo-spi.jar"/>
+        <path location="${modules.dir}/tools/webdav/build/lib/webdav-spi.jar"/>
+        <path location="${modules.dir}/world/jmecolladaloader/build/client/jmecolladaloader-client.jar"/>
+        <path location="${modules.dir}/world/kmzloader/build/client/kmzloader-client.jar"/>
+        
+    </pathconvert>
+
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-web,
+                                                -model-optimizer-jar"/>
+                                                
+    <target name="-model-optimizer-jar">
+        <mkdir dir="${build.dir}/lib"/>
+        
+        <jar jarfile="${build.dir}/lib/optimizations.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="${module.src}/web/optimizations/**"/>
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        <property name="jarPrefix" value="WEB-INF/classes/${module.src}/web/modelloaderjars"/>
+        
+        <module name="${module.name}" majorVersion="0" minorVersion="5" 
+                jarfile="${module.dist.dir}/${module.name}.jar" 
+                moduleDescription="${module.description}" 
+                builddir="${build.dir}">
+
+            <!--client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                    </fileset>
+                </clientjar> 
+            </client-->
+
+            <!--server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server-->
+
+            <part name="web">
+                
+                
+                <jar name="${module.name}.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/**"/>
+                        <exclude name="${module.src}/web/optimization/**"/>
+                        <include name="${module.src}/common/**"/>
+                    </zipfileset>
+                    <fileset dir="${current.dir}/web"/>
+                    
+                    <!-- config files -->
+                    <zipfileset dir="${current.dir}/src/classes" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/conf/**"/>
+                    </zipfileset>
+                    
+                    <zipfileset dir="${build.dir}/lib" prefix="${jarPrefix}">
+                        <include name="optimizations.jar"/>
+                    </zipfileset>
+                    
+                    <zipfileset dir="${wonderland.dir}/core/build/lib" prefix="${jarPrefix}">
+                        <include name="wonderland-client.jar"/>
+                        <include name="wonderland-common.jar"/>
+                    </zipfileset>
+                    
+                    <zipfileset dir="${wonderland.dir}/core/ext/jme20/target" prefix="${jarPrefix}">
+                        <include name="jme.jar"/>
+                        <include name="jme-awt.jar"/>
+                        <include name="jme-collada.jar"/>
+                        <include name="jme-xml.jar"/>
+                    </zipfileset>  
+                    
+                    <zipfileset dir="${wonderland.dir}/core/ext/common" prefix="${jarPrefix}">
+                        <include name="mtgame.jar"/>
+                    </zipfileset>
+                   
+                    <zipfileset dir="${modules.dir}/world/jmecolladaloader/build/client" prefix="${jarPrefix}"/>
+                    <zipfileset dir="${modules.dir}/world/kmzloader/build/client" prefix="${jarPrefix}"/>
+                    <zipfileset dir="${modules.dir}/foundation/content-repository/build/lib" prefix="${jarPrefix}"/>
+                    <zipfileset dir="${modules.dir}/tools/webdav/build/lib" prefix="${jarPrefix}"/>
+                </jar>
+            </part>
+        </module>
+    </target>                                  
+                                           
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

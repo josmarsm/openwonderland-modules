@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Radio.kmz</name>
+    <metadata/>
+    <tooltip-cell-component>
+        <text>Right-click on radio to play</text>
+        <timeout>-1</timeout>
+    </tooltip-cell-component>
+    <audio-treatment-component>
+        <muted>false</muted>
+        <speaking>false</speaking>
+        <groupId></groupId>
+        <treatmentType>URL</treatmentType>
+        <treatment>http://listen.radionomy.com/radio-mozart</treatment>
+        <volume>0.05999999865889549</volume>
+        <playWhen>MANUAL</playWhen>
+        <playOnce>false</playOnce>
+        <extent>24.0</extent>
+        <useCellBounds>false</useCellBounds>
+        <fullVolumeAreaPercent>25.0</fullVolumeAreaPercent>
+        <distanceAttenuated>true</distanceAttenuated>
+        <falloff>50.0</falloff>
+        <showBounds>false</showBounds>
+    </audio-treatment-component>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>3.04693</x>
+            <y>0.88683134</y>
+<z>2.174</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>0.39729830622673035</x>
+            <y>0.44057488441467285</y>
+            <z>0.6455690860748291</z>
+        </bounds>
+        <scale>
+            <x>0.59999996</x>
+            <y>0.59999996</y>
+            <z>0.59999996</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-1.0</y>
+            <z>0.0</z>
+            <angle>0.7043801</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-combined-world/Radio.kmz/Radio.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>false</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+</model-cell>

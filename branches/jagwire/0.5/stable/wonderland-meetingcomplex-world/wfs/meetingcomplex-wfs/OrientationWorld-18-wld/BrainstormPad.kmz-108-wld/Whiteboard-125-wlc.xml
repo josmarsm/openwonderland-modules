@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<whiteboard-cell-svg>
+    <name>Whiteboard</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>5.462</x>
+            <y>3.61</y>
+            <z>2.573</z>
+        </translation>
+        <bounds>
+            <type>SPHERE</type>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>-1.0</y>
+            <z>0.0</z>
+            <angle>1.8662999</angle>
+        </rotation>
+    </position-component>
+    <pixelScaleX>0.01</pixelScaleX>
+    <pixelScaleY>0.01</pixelScaleY>
+    <preferredWidth>800</preferredWidth>
+    <preferredHeight>600</preferredHeight>
+    <svgDocumentXML>&lt;svg contentScriptType="text/ecmascript" xmlns:xlink="http://www.w3.org/1999/xlink" zoomAndPan="magnify" contentStyleType="text/css" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" version="1.0"&gt;&lt;text x="245" fill="rgb(0,0,0)" id="31279593082947" font-size="30" y="91"&gt;Brainstorming Area&lt;/text&gt;&lt;rect x="236" y="47" fill-opacity="0" fill="rgb(255,0,0)" width="276" height="64" id="31279593095220" stroke="rgb(255,0,0)" stroke-width="3.0"/&gt;&lt;/svg&gt;</svgDocumentXML>
+</whiteboard-cell-svg>

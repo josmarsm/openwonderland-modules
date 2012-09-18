@@ -1,0 +1,184 @@
+Open Wonderland SQL Service
+---------------------------
+
+This service adds a manager to the Darkstar server that allows direct 
+interaction with a SQL database.
+
+
+Building the module
+-------------------
+
+In order to build the sql service, you will need a library that provides
+a JDBC driver for the particular database you would like to connect to. 
+SQL driver libraries are available for most major databases. For example,
+the driver for MySQL is available from here:
+
+http://dev.mysql.com/downloads/connector/j/
+
+Once you have downloaded a driver jar file for the database you intend
+to use, place the jar in the sql-module/lib directory. To build the 
+module, use "ant dist" from the sql-module/ directory. To deploy the module to
+your server, use "ant deploy" from the sql-module/ directory.
+
+
+Configuring the database connection
+-----------------------------------
+
+After the sql module is deployed, you will need to configure the Darkstar
+server to connect to your database. This is done by creating a database
+configuration file, typically in the ~/.wonderland-server/0.5-dev/ directory
+on your Wonderland server. The file is a standard Java properties file, with
+the following properties (the given example is for mysql):
+
+-----------
+# the classname of the driver from the driver library
+driver=com.mysql.jdbc.Driver
+
+# the URL of the database server and database to connect to.
+# The exact format of this string will vary with different drivers. See
+# the driver documentation for details. 
+url=jdbc:mysql://localhost/wonderland_sql_service
+
+# the username to connect to the database as
+username=username
+
+# the password to connect to the database with
+password=password
+-----------
+
+Now that the file is created, you will need to tell the Darkstar server 
+where to find it. In the Wonderland web management UI, click the "edit"
+link next to the "Darkstar Server" entry on the server management page.
+Add a new property called "sqlservice.properties.file" with the full 
+path to the properties file created above. For example:
+"/home/jonathankap/.wonderland-server/0.5-dev/mysql.properties"
+
+After all this configuration is complete, restart the Darkstar server to
+make the sql service available.
+
+
+Using the SQL service
+---------------------
+
+The SQL service provides a Darkstar manager object for performing SQL
+queries. Other modules may add dependencies to this module and then
+use the SQL manager to perform queries. Once the SQL module is installed,
+the following code can be used in any Darkstar server code to get the
+SQL manager:
+
+SqlManager manager = AppContext.getManager(SqlManager.class);
+
+The main SqlManager method for interacting with the database is:
+
+public <T> void execute(SqlRunnable<T> runnable, SqlCallback<T> callback);
+
+This method takes two objects: a SqlRunnable and an SqlCallback. Due to
+Darkstar transaction limitations, a SQL query cannot be performed directly
+within a Darkstar transaction. Instead, the query specified by the
+SqlRunnable is executed on a separate thread, and the result is
+passed into the given SqlCallback. If the SqlCallback is null, no notification
+is given of the result of the query.
+
+Example 1 below demonstrates how to execute a simple query against the SQL
+database and returns a Timestamp as a result. Note the BaseSqlRunnable class
+which implements most of the logic required by an SqlRunnable. In most cases,
+SqlRunnable objects should extend BaseSqlRunnable.
+
+SqlManager also provides two shortcut methods to simply invoke a SQL
+query or update. These are:
+
+public void executeQuery(String query, SqlCallback<ResultSet> callback);
+public void executeUpdate(String update, SqlCallback<Integer> callback);
+
+These methods simply call execute() with a default SqlRunnable. An example
+of using a simple insert is shown in example 2 below.
+
+For a more complete example, see the sql-service-test module.
+
+
+Example 1. Query code
+----------------------
+
+// execute a query and print out the result
+SqlManager manager = AppContext.getManager(SqlManager.class);
+manager.execute(new LastLoginQuery(username),
+                new LastLoginCallback(username));
+
+/**
+ * A class to perform a query by username, and return the
+ * result as a timestamp.
+ */
+static class LastLoginQuery extends BaseSqlRunnable<Timestamp> {
+    private String username;
+      
+    public LastLoginQuery(String username) {
+        this.username = username;
+    }
+
+    /**
+     * Perform a timestamp query, and return the first result
+     */
+    @Override
+    public Timestamp execute(Connection conn) throws Exception {
+        Statement s = conn.createStatement();
+        try {
+            ResultSet rs = s.executeQuery(
+                        "SELECT timestamp FROM logins WHERE userid='" +
+                        username + "' ORDER BY desc LIMIT 1");
+                
+            if (rs.next()) {
+                // if there was a result, return the first value
+                // as a timestamp
+                return rs.getTimestamp("timestamp");
+            } else {
+                return null;
+            }
+        } finally {
+            // make sure to clean up
+            s.close();
+        }
+    }
+}
+
+/**
+ * A callback that prints out the result of a Timestamp query.
+ */
+static class LastLoginCallback 
+        implements SqlCallback<Timestamp>, Serializable
+{
+    private String username;
+
+    public LastLoginCallback(String username) {
+        this.username = username;
+    }
+
+    /**
+     * Handle a result
+     */ 
+    public void handleResult(Timestamp t) {
+        if (t == null) {
+            logger.warning("First login for " + username);
+        } else {
+            logger.warning("Last login for " + username + " is " +
+                           new java.util.Date(t.getTime()));
+        }
+    }
+
+    /**
+     * Handle an error
+     */
+    public void handleError(Throwable t) {
+        logger.log(Level.WARNING, "Error getting last login for " +
+                   username, t);
+    }
+} 
+
+
+Example 2. A simple insert
+--------------------------
+
+// insert login information into a database
+String insert = "INSERT into logins (userid, type) values ('" +
+                username + "', 'login')";
+AppContext.getManager(SqlManager.class).executeUpdate(insert, null);
+

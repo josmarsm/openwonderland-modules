@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xremwin-cell>
+    <name>14</name>
+    <metadata/>
+    <position-component>
+        <translation>
+            <x>0.695</x>
+            <y>2.87318</y>
+            <z>53.3789</z>
+        </translation>
+        <bounds>
+            <type>SPHERE</type>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>1.5707963</angle>
+        </rotation>
+    </position-component>
+    <pixelScaleX>0.01</pixelScaleX>
+    <pixelScaleY>0.01</pixelScaleY>
+    <appName>Open Office</appName>
+    <launchLocation>server</launchLocation>
+    <bestView>false</bestView>
+</xremwin-cell>

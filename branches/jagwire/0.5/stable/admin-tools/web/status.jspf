@@ -1,0 +1,57 @@
+
+<script type="text/javascript">
+    var numberOfUsers = 0;
+    
+    function countList(users) {
+        numberOfUsers = 0;
+        for(var i in users) {
+            if(users[i].name == "admin" ||
+                users[i].name == "webserver" ||
+                users[i].name == "sasxprovider" ||
+                users[i].name == "darkstar" ||
+                users[i].name == "cmu-player") 
+            {
+                continue;
+            }
+           
+            numberOfUsers += 1;
+        }
+        
+        $("#user-count").html(usersLink());
+    }
+    
+    var orig_updateServices = window.updateServices;
+    window.updateServices = function() {
+        orig_updateServices();
+        
+        $.ajax({
+            type: 'GET',
+            url: '../admin-tools/admin-tools/resources/users/list',
+            dataType: 'json',
+            success: function(data) {
+                countList(data.users);
+            }
+        });
+    }
+    
+    var orig_process = window.processStatus;
+    window.processStatus = function(service) {
+        orig_process(service);
+        
+        if(service.name == "Darkstar Server") {
+            service.status_text += "<span id='user-count'>" + usersLink() + "</span>";
+        }
+    }
+    
+    function usersLink() {
+        return '<a style="padding-left:7px;"' +
+                   'href="/wonderland-web-front/admin?pageURL=/admin-tools/admin-tools"' +
+                   'target="_top">(' + numberOfUsers + ' users)</a>';
+    }
+    
+    $(function() {
+        updateServices();
+    });
+</script>
+
+

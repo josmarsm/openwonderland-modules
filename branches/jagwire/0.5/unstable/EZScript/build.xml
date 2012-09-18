@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-ezscript-module" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-sample-module}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-stable.properties"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <!-- this module depends on the content repository module -->
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${modules.dir}/foundation/animationbase/lib/trident.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/tools/security-group/build/lib/client/securitygroups-client.jar"/>
+        <path location="${modules.dir}/tools/xapps-config/build/client/xapps-config-client.jar"/>
+	<path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
+        <path location="${modules.dir}/world/containercell/build/lib/client/container-cell-client.jar"/>
+	<path location="${current.dir}/lib/jbullet.jar"/>
+	<path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+	<path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${current.dir}/../../stable/pdfviewer/build/client/pdfviewer-client.jar"/>
+<!--        OpenCV for Java, integration below -->
+        <path location="${wonderland.dir}/core/ext/common/javacpp.jar"/>
+        <path location="${wonderland.dir}/core/ext/common/javacv.jar"/>
+<!--       all paths below  needed for videoplayer manipulation -->
+        <path location="${current.dir}/../../stable/videoplayer/build/client/videoplayer-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
+        
+        
+    </pathconvert>
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+    </pathconvert>
+
+    <target name="build" depends="-module-init, -module-compile-common,
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="2012" minorVersion="8" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+            <client dir="${current.dir}/lib">
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**"/>
+                        <include name="${module.src}/client/methods/resources/**"/>
+                    </fileset>
+                </clientjar>
+                <include name="lti-civil-no_s_w_t.jar"/>
+                <include name="lti-civil-noutils.jar"/>
+                <include name="lti-civil.jar" />
+                <include name="javacv.jar" />
+                <include name="javacpp.jar" />
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+<!--            <art dir="${current.dir}/art"/>-->
+        </module>
+    </target>
+
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

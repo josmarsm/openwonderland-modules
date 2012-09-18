@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-cmu-module" default="dist" basedir=".">
+
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+
+    <property file="${current.dir}/cmu.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <property name="cmu-player.build.dir" value="build/player"/>
+    <property name="cmu-player.zipname" value="cmu-player-dist.zip"/>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <!-- classpath modifications -->
+    <pathconvert property="module-client.classpath">
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${wonderland.dir}/modules/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${current.dir}/lib/foundation.jar"/>
+        <path location="${current.dir}/lib/moveandturn.jar"/>
+        <path location="${current.dir}/lib/ide.jar"/>
+        <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-weblib.classpath">
+        <path location="${web.dir}/asset/dist/wonderland-asset-core.jar"/>
+        <path location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+        <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${web.dir}/utils/dist/wonderland-web-utils.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-common.jar"/>
+    </pathconvert>
+
+    <pathconvert property="cmu-player.classpath">
+        <path location="${current.dir}/lib/foundation.jar"/>
+        <path location="${current.dir}/lib/moveandturn.jar"/>
+        <path location="${current.dir}/lib/ide.jar"/>
+        <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        <path location="${current.dir}/lib/stage.jar"/>
+        <path location="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar"/>
+    </pathconvert>
+       
+    <target name="build" depends="-module-init, -module-compile-common,
+                                                -module-compile-server,
+                                                -module-compile-client,
+                                                -cmu-compile-player,
+                                                -cmu-compile-weblib"/>
+
+    <target name="-cmu-compile-weblib" depends="-module-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/weblib/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${module-weblib.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
+<target name="-cmu-compile-player" depends="-module-init, -module-compile-common">
+    <wl-compile>
+        <compile-classes>
+            <include name="${module.src}/player/**"/>
+            <include name="${module.src}/common/**"/>
+        </compile-classes>
+        <compile-classpath>
+            <pathelement path="${cmu-player.classpath}"/>
+            <pathelement path="${core-client.classpath}"/>
+        </compile-classpath>
+    </wl-compile>
+</target>
+
+    <target name="-cmu-jar-player" depends="-cmu-compile-player">
+        <mkdir dir="${current.dir}/${cmu-player.build.dir}"/>
+        <jar destfile="${current.dir}/${cmu-player.build.dir}/cmu-player.jar">
+            <fileset dir="${build.classes.dir}">
+                <include name="${module.src}/player/**"/>
+                <include name="${module.src}/common/**"/>
+            </fileset>
+        </jar>
+
+        <!-- create the run environment for the runner -->
+        <zip destfile="${current.dir}/${cmu-player.build.dir}/${cmu-player.zipname}">
+            <!-- include the top-level run.xml file -->
+            <fileset file="${current.dir}/player/run.xml"/>
+            <!-- include the WL-modified jar file -->
+            <zipfileset file="${current.dir}/${cmu-player.build.dir}/cmu-player.jar" prefix="lib"/>
+            <!-- include the full player -->
+            <zipfileset file="${current.dir}/lib/foundation.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/moveandturn.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/ide.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/lg_walkandtouch.jar" prefix="lib"/>
+            <zipfileset file="${current.dir}/lib/stage.jar" prefix="lib"/>
+            <!-- include content repository stuff -->
+            <zipfileset file="${wonderland.dir}/modules/foundation/content-repository/build/client/contentrepo-client.jar" prefix="modules"/>
+            <zipfileset file="${wonderland.dir}/modules/tools/webdav/build/client/webdav-client.jar" prefix="modules"/>
+            <zipfileset dir="${wonderland.dir}/modules/tools/webdav/lib/" prefix="modules">
+                <include name="*.jar"/>
+            </zipfileset>
+            <!-- include necessary core libraries -->
+            <zipfileset dir="${wonderland.dir}/core/ext/common/" prefix="core/lib/common">
+                <include name="derby.jar"/>
+                <include name="stun.jar"/>
+                <include name="commons-httpclient*.jar"/>
+                <include name="commons-codec*.jar"/>
+                <include name="commons-logging*.jar"/>
+            </zipfileset>
+            <zipfileset dir="${wonderland.dir}/core/ext/" prefix="core/lib">
+                <include name="linux/**"/>
+                <include name="linux64/**"/>
+                <include name="macosx/**"/>
+                <include name="solaris/**"/>
+                <include name="win32/**"/>
+                <include name="win64/**"/>
+            </zipfileset>
+        </zip>
+    </target>
+
+    <target name="dist" depends="build, -cmu-jar-player">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="${module.name}" majorVersion="0" minorVersion="1" jarfile="${module.dist.dir}/${module.jarname}.jar"
+                moduleDescription="${module.description}" builddir="${build.dir}">
+
+            <requires name="content-repository" version="0" minorVersion="5"/>
+            <requires name="webdav" version="0" minorVersion="5"/>
+
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**/*.png"/>
+                    </fileset>
+                </clientjar>
+            </client>
+                
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+
+            <part name="weblib">
+                <jar name="cmuplayer-runner" basedir="${build.classes.dir}">
+                    <include name="${module.src}/weblib/**"/>
+                    <include name="${module.src}/common/**"/>
+                </jar>
+            </part>
+
+            <part name="runner" dir="${current.dir}/${cmu-player.build.dir}">
+                <include name="${cmu-player.zipname}"/>
+            </part>
+        </module>
+    </target>
+
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

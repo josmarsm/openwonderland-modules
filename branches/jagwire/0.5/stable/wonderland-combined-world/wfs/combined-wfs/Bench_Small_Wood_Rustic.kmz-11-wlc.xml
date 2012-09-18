@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Bench_Small_Wood_Rustic.kmz</name>
+    <metadata/>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>-2.185</x>
+            <y>0.25733036</y>
+<z>1.364</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>0.36619868874549866</x>
+            <y>0.25</y>
+            <z>0.37959396839141846</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>-0.0</z>
+            <angle>3.14376</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-combined-world/Bench_Small_Wood_Rustic.kmz/Bench_Small_Wood_Rustic.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>false</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+</model-cell>

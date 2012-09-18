@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="dist" name="wonderland-modules-stable"> 
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-modules-stable}"/>
+    
+    <!-- all projects with no dependencies (build first) -->
+    <fileset dir="${current.dir}" id="nodep.projects">
+        <include name="*/**/build.xml"/>
+    
+        <!-- exclude projects with dependencies -->
+        <exclude name="best-view/**/build.xml"/>
+ 
+        <!-- special case: ignore video -->
+        <exclude name="videoplayer/**/build.xml"/>
+    </fileset> 
+   
+    <!-- ordered list of projects with dependencies -->
+    <filelist dir="${current.dir}" id="dep.projects">
+        <file name="best-view/build.xml"/>
+    </filelist>
+
+    <!-- video projects -->
+    <filelist dir="${current.dir}" id="video.projects">
+       <file name="videoplayer/build.xml"/>
+    </filelist>
+
+    <target name="dist" depends="-modules-stable-dist-build,
+                                 -modules-stable-dist-check-video,
+                                 -modules-stable-dist-build-video,
+                                 -modules-stable-dist-copy-selected,
+                                 -modules-stable-dist-copy-video,
+                                 -modules-stable-dist-copy-all"/>
+    <target name="-modules-stable-dist-build">
+        <!-- build all projects -->
+        <build-subprojects fileset="nodep.projects" target="dist"/>
+        <build-subprojects filelist="dep.projects" target="dist"/>
+
+        <!-- create the dist directory that is used by the wonderland project
+             build scripts to find modules to include in a core build
+        -->
+        <mkdir dir="dist"/>
+    </target>
+
+    <target name="-modules-stable-dist-check-video">
+        <!-- check if the video client library exists -->
+        <condition property="video.available">
+            <available file="${current.dir}/../../wonderland-video/build/lib/wonderland-video.jar"/>
+        </condition>
+    </target>
+   
+    <target name="-modules-stable-dist-build-video" if="video.available">
+        <build-subprojects filelist="video.projects" target="dist"/>
+    </target>
+
+    <!--
+         copy only the selected modules to the dist directory.  This is the
+         default action, unless the modules.include.all property is set
+    -->
+    <target name="-modules-stable-dist-copy-selected" unless="modules.include.all">
+        <copy todir="dist">
+            <filelist dir=".">
+                <file name="wonderland-almostempty-world/dist/wonderland-almostempty-world.jar"/>
+                <file name="wonderland-auditorium-world/dist/wonderland-auditorium-world.jar"/>
+                <file name="wonderland-combined-world/dist/wonderland-combined-world.jar"/>
+                <file name="wonderland-gallery-world/dist/wonderland-gallery-world.jar"/>
+                <file name="wonderland-japanesepavilion-world/dist/wonderland-japanesepavilion-world.jar"/>
+                <file name="wonderland-meetingcomplex-world/dist/wonderland-meetingcomplex-world.jar"/>
+                <file name="wonderland-town-world/dist/wonderland-town-world.jar"/>
+                <file name="pdfviewer/dist/pdfviewer.jar"/>
+                <file name="telepointer/dist/telepointer.jar"/>
+                <file name="whiteboard/dist/whiteboard.jar"/>
+                <file name="image-viewer/dist/imageviewer.jar"/>
+                <file name="audiorecorder-module/dist/audiorecorder.jar"/>
+                <file name="stickynote/dist/stickynote.jar"/>
+                <file name="clickablelink/dist/clickable-link.jar"/>
+		<file name="quick-reference/dist/quick-reference.jar"/>
+                <file name="quickstartguide/dist/quickstartguide.jar"/>
+                <file name="admin-tools/dist/admin-tools.jar"/>
+                <file name="poster/dist/poster.jar"/>
+                <file name="tooltip-component/dist/tooltip-component.jar"/>
+                <file name="microphone/dist/microphone.jar"/>
+                <file name="best-view/dist/best-view.jar"/>
+                <file name="sittingComponent/dist/Sittable.jar"/>
+            </filelist>
+            <mapper type="flatten"/>
+        </copy> 
+    </target>
+
+    <target name="-modules-stable-dist-copy-video" if="video.available">
+        <copy todir="dist">
+            <filelist dir=".">
+                <file name="videoplayer/dist/videoplayer.jar"/>
+            </filelist>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+
+    <!-- copy all the modules into a common dist directory -->
+    <target name="-modules-stable-dist-copy-all" if="modules.include.all">
+        <mkdir dir="dist"/>
+        <copy todir="dist">
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+                <exclude name="/dist/**"/>
+            </fileset>
+            <mapper type="flatten"/>
+        </copy>
+    </target>
+    
+    <!-- clean all sub-projects -->
+    <target name="clean">
+        <!-- delete dist directory -->
+        <delete dir="dist" failonerror="false"/>
+        
+        <!-- clean sub-projects -->
+        <build-subprojects fileset="nodep.projects" target="clean"/>
+        <build-subprojects filelist="dep.projects" target="clean"/>
+        <build-subprojects filelist="video.projects" target="clean"/>
+ 
+        <!-- delete leftover module dist directories. This will guarantee
+             that modules that have been deleted do not show up in our
+             builds due to leftover dist directories -->
+        <delete>
+            <fileset dir=".">
+                <include name="**/dist/*.jar"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <fileset dir="${current.dir}" id="empty.fileset">
+        <exclude name="**"/>
+    </fileset>
+    <filelist id="empty.filelist"/>
+
+    <!-- macro to iterate across all subprojects -->
+    <macrodef name="build-subprojects">
+        <!-- the reference id of the fileset to iterate over -->
+        <attribute name="fileset" default="empty.fileset"/>
+        <attribute name="filelist" default="empty.filelist"/>
+ 
+        <!-- the build target to run -->
+        <attribute name="target"/>
+        <sequential>
+            <subant target="@{target}" inheritall="false">
+                <fileset refid="@{fileset}"/>
+                <filelist refid="@{filelist}"/>
+            </subant>
+        </sequential>
+    </macrodef>
+</project>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Auditorium</name>
+    <metadata/>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-auditorium-world/MountainLakeTerrainGrassStoneFlat.kmz/MountainLakeTerrainGrassStoneFlat.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+    <interaction-component>
+        <collidable>true</collidable>
+        <selectable>false</selectable>
+    </interaction-component>
+    <position-component>
+        <translation>
+<x>-927.0767</x>
+            <y>38.690002</y>
+<z>1007.1616</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>175.87594604492188</x>
+            <y>19.629119873046875</y>
+            <z>131.07351684570312</z>
+        </bounds>
+        <scale>
+            <x>1.9999999</x>
+            <y>1.9999999</y>
+            <z>1.9999999</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>0.99999994</y>
+            <z>0.0</z>
+            <angle>1.5707963</angle>
+        </rotation>
+    </position-component>
+</model-cell>

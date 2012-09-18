@@ -1,0 +1,70 @@
+Red5 Server Integration module
+------------------------------
+
+This module is designed to integrate the Red5 video server as a server component
+in OpenWonderland. For more on Red5, see http://red5.googlecode.com/
+
+
+BUILDING
+---------
+
+Before you build this module, you must checkout and build the Red5 server using
+the following steps:
+
+1. create a directory for red5
+   # mkdir red5-latest
+   # cd red5-latest
+
+2. checkout the main red5 source
+   # svn co http://red5.googlecode.com/svn/java/server/trunk red5
+
+3. build red5
+   # cd red5
+   # ant dist
+
+4. checkout red5 examples
+   # export RED5_HOME=`pwd`
+   # cd ..
+   # svn co http://red5.googlecode.com/svn/java/example/trunk red5-example
+
+5. build the oflaDemo
+   # cd red5-example/oflaDemo
+   # ant
+
+
+UPDATING THE MODULE build.xml
+-----------------------------
+
+Once Red5 is built according to the instructions above, open build.xml in
+this directory and edit the value of the red5.dir property to point to
+the full path to red5.
+
+
+BUILDING AND INSTALLING THE RED5 MODULE
+---------------------------------------
+
+After the red5.dir property is updated, simply use "ant dist" to build the
+red5 integration module. You can use "ant deploy" or upload the module to
+the OpenWonderland server using the Web UI.
+
+
+CONFIGURING THE RED5 SERVER
+---------------------------
+
+Once the red5 module is installed in OpenWonderland, open the web administration
+UI to the "Manage Server" page and do the following:
+
+1. Click on the "edit" link next to "Server Components".
+2. Select "Add Component" at the bottom of the screen
+3. Enter the following values:
+
+Component Name:  Red5 Video Server
+Component Class: org.jdesktop.wonderland.modules.red5.weblib.Red5Runner
+Location:        Local
+
+4. Click OK, then Save.
+
+At this point, the Red5 server should be visible on the "Manage Server" page.
+You can start and stop it using the controls on the page, and view the log
+using the "log" link. You can also edit startup properties using the "edit"
+link.

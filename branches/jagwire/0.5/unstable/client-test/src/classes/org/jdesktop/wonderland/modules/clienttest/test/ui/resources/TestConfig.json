@@ -1,0 +1,94 @@
+[
+    "org.jdesktop.wonderland.modules.clienttest.test.ui.IntroSection",
+    [ "org.jdesktop.wonderland.modules.clienttest.test.ui.TestsSection", 
+        {   "title" : "Network_Tests",
+            "tests" : [
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.TCPPortsTest",
+                [ "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.TCPBandwidthTest",
+                    { "failRate" : "400000", 
+                      "warningRate" : "1000000" }
+                ],
+                [ "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.WebdavTest",
+                    { "libraries" : [ "wlj://webdav/client/webdavclient4j-core-0.92.jar",
+                                      "wlj://webdav/client/jdom-1.0.jar"],
+                    }
+                ],
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.UDPPortsTest",
+              
+            ]
+        }
+    ],
+    [ "org.jdesktop.wonderland.modules.clienttest.test.ui.GraphicsTestsSection", 
+        {   "title" : "Graphics_Tests",
+            "tests" : [
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelInstructions",
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelTest",
+                    { "name" : "3D Model Basic", 
+                      "url" : "wla://client-test/cube.kmz",
+                      "reference" : "wla://client-test/cube.png",
+                      "model" : "models/untitled.dae",
+                      "location" : [ 0, -1, 10 ],
+                      "rotation" : [ 0, 45, 0 ]
+                      "lighting" : false}],
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelTest",
+                    { "name" : "3D Model Complex 1", 
+                      "url" : "wla://client-test/PlymouthPA.zip",
+                      "reference" : "wla://client-test/PlymouthPA.png",
+                      "model" : "models/Plymouth 14.dae",
+                      "location" : [ -2, -1, 3 ],
+                      "rotation" : [ 0, 90, 0 ]
+                      "lighting" : false}],
+               ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelTest",
+                    { "name" : "3D Model Complex 2", 
+                      "url" : "wla://client-test/Bus.kmz",
+                      "reference" : "wla://client-test/Bus.png",
+                      "model" : "models/warehouse_model.dae",
+                      "location" : [ 4, -3, 2.8 ],
+                      "rotation" : [ 0, 90, 0 ]
+                      "lighting" : false}],
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelTest",
+                    { "name" : "3D Model Complex 3", 
+                      "url" : "wla://client-test/Hogwarts.kmz",
+                      "reference" : "wla://client-test/Hogwarts.png",
+                      "model" : "models/warehouse_model.dae",
+                      "location" : [ -300, -1, 700 ],
+                      "rotation" : [ 0, 90, 0 ]
+                      "lighting" : false}],
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ModelTest",
+                    { "name" : "3D Model Animated", 
+                      "url" : "wla://client-test/Ingrid.zip",
+                      "reference" : "wla://client-test/Ingrid-animated.gif",
+                      "model" : "ingrid.dae",
+                      "location" : [ 0, -0.5, 8 ],
+                      "rotation" : [ 0, 180, 0 ]
+                      "lighting" : false}],
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.ShaderTest",
+                    { "name" : "3D Model With Shader", 
+                      "url" : "wla://wonderland-meetingcomplex-world/OrientationWorld.mtg",
+                      "reference" : "wla://client-test/OrientationWorld.png",
+                      "model" : "wla://client-test/OrientationWorld.mtg",
+                      "location" : [ 3, -2, 7 ],
+                      "rotation" : [ 0, 180, 0 ]
+                      "lighting" : false}],
+                ["org.jdesktop.wonderland.modules.clienttest.test.ui.tests.AvatarTest",
+                    { "name" : "Avatar",
+                      "libraries" : [ "wlj://avatarbase/client/avatars.jar",
+                                      "wlj://avatarbase/client/avatarbase-client.jar"],
+                      "reference" : "wla://client-test/Avatar.png",
+                      "avatar" : "wla://client-test/FemaleStaffer-3_1.xml"
+                  }],
+            ]
+        }
+    ],
+    [ "org.jdesktop.wonderland.modules.clienttest.test.ui.TestsSection", 
+        {   "title" : "Audio_Tests",
+            "tests" : [
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.LocalRecordingTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.LocalPlaybackTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.RemoteAudioTest",
+                "org.jdesktop.wonderland.modules.clienttest.test.ui.tests.RemoteEchoTest",
+            ]
+        }
+    ],
+    "org.jdesktop.wonderland.modules.clienttest.test.ui.ResultsSection"
+]

@@ -1,0 +1,17 @@
+<whiteboard-cell-svg>
+  <position-component>
+    <origin>
+        <x>5.0</x>
+        <y>7.0</y>
+        <z>30.0</z>
+    </origin>
+    <rotation>
+        <x>0.0</x>
+        <y>1.0</y>
+        <z>0.0</z>
+	<angle>3.141569</angle>
+    </rotation>
+  </position-component>
+  <preferredWidth>1280</preferredWidth>
+  <preferredHeight>1024</preferredHeight>
+</whiteboard-cell-svg>

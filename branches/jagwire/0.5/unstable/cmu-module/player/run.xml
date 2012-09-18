@@ -1,0 +1,66 @@
+
+<project basedir="." default="run" name="cmuplayer.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.cmuplayer.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- import common setup -->
+    <import file="${current.dir}/build-tools/build-scripts/run-setup.xml"/>
+
+    <!-- import core setup -->
+    <import file="${current.dir}/core/build-tools/build-scripts/core-setup.xml"/>
+
+    <target name="run" depends="-find-properties">
+        <!-- generate the modules classpath -->
+        <pathconvert property="modules.classpath">
+            <path>
+                <fileset dir="${current.dir}">
+                    <include name="modules/**"/>
+                </fileset>
+            </path>
+        </pathconvert>
+
+        <pathconvert property="cmu-player.classpath">
+            <path location="${current.dir}/lib/moveandturn.jar"/>
+            <path location="${current.dir}/lib/foundation.jar"/>
+            <path location="${current.dir}/lib/ide.jar"/>
+            <path location="${current.dir}/lib/lg_walkandtouch.jar"/>
+        </pathconvert>
+
+        <java fork="true" classname="org.jdesktop.wonderland.modules.cmu.player.ProgramManager">
+            <classpath>
+                <path location="${current.dir}/lib/cmu-player.jar"/>
+                <pathelement path="${cmu-player.classpath}"/>
+                <pathelement path="${modules.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+            </classpath>
+            <jvmarg value="-Djava.library.path=${current.dir}/core/lib/${ostype}/native/"/>
+            <arg value="${wonderland.web.server.url}"/>
+            <arg value="cmu-player"/>
+            <syspropertyset refid="commandline.properties"/>
+        </java>
+    </target>
+
+    <target name="-find-properties">
+        <!-- Generate a set containing all properties passed on the
+             commandline.  The way we do this is a little strange, since
+             we want to ignore ant internal properties.  So we take
+             the inverese of what we want, add in the ant properties,
+             and then take the inverse of the whole thing.
+        -->
+        <propertyset id="noncommandline.properties" negate="true">
+            <propertyref builtin="commandline"/>
+        </propertyset>
+        <propertyset id="ant.internal.properties">
+            <propertyref prefix="ant"/>
+            <propertyref name="basedir"/>
+        </propertyset>
+        <propertyset id="commandline.properties" negate="true">
+            <propertyset refid="ant.internal.properties"/>
+            <propertyset refid="noncommandline.properties"/>
+        </propertyset>
+    </target>
+</project>

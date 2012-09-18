@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<image-viewer-cell>
+    <name>OWLWebSiteLink.png</name>
+    <metadata/>
+    <cell-performance-component/>
+    <clickableLink-component>
+        <linkURL>http://openwonderland.org</linkURL>
+    </clickableLink-component>
+    <position-component>
+        <translation>
+<x>-2.30355</x>
+            <y>0.9384502</y>
+<z>1.35972</z>
+        </translation>
+        <bounds>
+            <type>SPHERE</type>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </bounds>
+        <scale>
+            <x>0.25</x>
+            <y>0.25</y>
+            <z>0.25</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>2.0151398</angle>
+        </rotation>
+    </position-component>
+    <image-uri>wla://wonderland-combined-world/OWLWebSiteLink.png</image-uri>
+</image-viewer-cell>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>pdfviewer-module</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>pdfviewer-module</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>pdfviewer-module</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>dist</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>dist</target>
+                </action>
+                <action name="run.single">
+                    <script>nbproject/ide-file-targets.xml</script>
+                    <target>run-selected-file-in-classes</target>
+                    <context>
+                        <property>run.class</property>
+                        <folder>src/classes</folder>
+                        <pattern>\.java$</pattern>
+                        <format>java-name</format>
+                        <arity>
+                            <one-file-only/>
+                        </arity>
+                    </context>
+                </action>
+            </ide-actions>
+            <export>
+                <type>jar</type>
+                <location>dist/pdfviewer.jar</location>
+                <build-target>dist</build-target>
+            </export>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src/classes</label>
+                        <location>src/classes</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy to Server</label>
+                        <target>deploy</target>
+                    </action>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>src/classes</package-root>
+                <classpath mode="compile">../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/core/ext/common/jbullet.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/modules/foundation/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/foundation/sharedstate/build/server/sharedstate-server.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client-cell.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client.jar:../../../wonderland/modules/foundation/appbase/build/server/appbase-server.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:lib/PDFRenderer.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar</classpath>
+                <built-to>dist/pdfviewer.jar</built-to>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+        <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
+            <module name="org-netbeans-modules-editor-indent">
+                <node name="CodeStyle">
+                    <property name="usedProfile" value="default"/>
+                    <node name="project">
+                        <property name="tab-size" value="8"/>
+                        <property name="text-limit-width" value="80"/>
+                    </node>
+                </node>
+                <node name="text">
+                    <node name="x-java">
+                        <node name="CodeStyle">
+                            <node name="project"/>
+                        </node>
+                    </node>
+                </node>
+            </module>
+        </preferences>
+    </configuration>
+</project>

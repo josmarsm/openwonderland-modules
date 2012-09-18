@@ -1,0 +1,697 @@
+DataDir 
+TextureDir /textures
+
+Geometry geometries_0-Material28
+	Shader DiffuseMapAO
+	ShaderUniform DiffuseMap terr_boulders_3.png 0
+	ShaderUniform AmbientOccMap terr_boulders_3_AO.tga 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 100.0
+
+Geometry geometries_0-Material1
+	Shader DiffuseMapAO
+	ShaderUniform DiffuseMap terr_boulders_2.png 0
+	ShaderUniform AmbientOccMap terr_boulders_2_AO.tga 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 100.0
+
+Geometry geometries_0-Material
+	Shader DiffuseMapAO
+	ShaderUniform DiffuseMap terr_boulders_1.png 0
+	ShaderUniform AmbientOccMap terr_boulders_1_AO.tga 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 100.0
+
+Geometry geometries_0-bldg_earth_wall
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_earth_wall.png 0
+	ShaderUniform NormalMap bldg_earth_wall_N.png 1
+	ShaderUniform SpecularMap bldg_earth_wall_S.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-white_brick
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_brick_002.png 0
+	ShaderUniform NormalMap bldg_brick_N_002.png 1
+	ShaderUniform SpecularMap bldg_brick_S_002.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_1-white_brick
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_brick_002.png 0
+	ShaderUniform NormalMap bldg_brick_N_002.png 1
+	ShaderUniform SpecularMap bldg_brick_S_002.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-main_wall
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_wall_green.png 0
+	ShaderUniform NormalMap bldg_wall_N.png 1
+	ShaderUniform SpecularMap bldg_wall_S.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_1-main_wall
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_wall_green.png 0
+	ShaderUniform NormalMap bldg_wall_N.png 1
+	ShaderUniform SpecularMap bldg_wall_S.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-stucco
+	Shader DiffuseNormalMap
+	ShaderUniform DiffuseMap bldg_stucco.png 0
+	ShaderUniform NormalMap bldg_stucco_N.png 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_1-stucco
+	Shader DiffuseNormalMap
+	ShaderUniform DiffuseMap bldg_stucco.png 0
+	ShaderUniform NormalMap bldg_stucco_N.png 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_1-pink_wall
+	Shader DiffuseNormalMap
+	ShaderUniform DiffuseMap bldg_pink_wall.png 0
+	ShaderUniform NormalMap bldg_pink_wall_N.png 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_2-scene_material1
+	Shader DiffuseMap
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	ShaderUniform DiffuseMap bldg_main.png 0
+
+Geometry geometries_0-bldg_shelterA_001
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_shelterA_001.jpg 0
+	ShaderUniform NormalMap bldg_shelterA_N_001.jpg 1
+	ShaderUniform SpecularMap bldg_shelterA_S_001.jpg 2
+#	ShaderUniform AmbientOccMap bldg_shelterA_001_AO.png 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material36
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap obj_kiosk.jpg 0
+	ShaderUniform NormalMap obj_kiosk_N.jpg 1
+	ShaderUniform SpecularMap obj_kiosk_S.jpg 2
+#	ShaderUniform AmbientOccMap obj_ApplicationKiosk_AO.tga 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-material_sign_trans_001_jpg
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap sign_trans_001.jpg 0
+	ShaderUniform NormalMap obj_kiosk_N.jpg 1
+	ShaderUniform SpecularMap obj_kiosk_S.jpg 2
+#	ShaderUniform AmbientOccMap obj_kiosk_AO.png 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material35
+	Shader DiffuseMap
+	ShaderUniform DiffuseMap obj_lamp.jpg 0
+#	ShaderUniform AmbientOccMap obj_lamp_AO.tga 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-MaterialLibrary13.obj_sculptureA_obj_sculptureA
+	Shader DiffuseMap
+	ShaderUniform DiffuseMap obj_sculptureA.jpg 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material33
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap obj_trashcan_D_001.jpg 0
+	ShaderUniform NormalMap obj_trashcan_N_001.jpg 1
+	ShaderUniform SpecularMap obj_trashcan_S_001.jpg 2
+#	ShaderUniform AmbientOccMap obj_trashcan_AO.tga 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-dirt
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap terr_dirt.jpg 0
+	ShaderUniform NormalMap terr_dirt_N.jpg 1
+	ShaderUniform SpecularMap terr_dirt_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-main_floor
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_floor_wood.png 0
+	ShaderUniform NormalMap bldg_floor_wood_N.png 1
+	ShaderUniform SpecularMap bldg_floor_wood_S.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-path
+	Shader DiffuseNormalMap
+	ShaderUniform DiffuseMap terr_sidewalk_002.png 0
+	ShaderUniform NormalMap terr_sidewalk_N_002.png 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-gravel
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap terr_pebbles_002.png 0
+	ShaderUniform NormalMap terr_pebbles_N_002.png 1
+	ShaderUniform SpecularMap terr_pebbles_S_002.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-floor
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap bldg_floor_002.png 0
+	ShaderUniform NormalMap bldg_floor_N_002.png 1
+	ShaderUniform SpecularMap bldg_floor_S_002.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-grass
+	Shader DiffuseNormalMap
+	ShaderUniform DiffuseMap terr_grass_001.png 0
+	ShaderUniform NormalMap terr_grass_N_001.png 1
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material38
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap terr_water_001.png 0
+	ShaderUniform NormalMap terr_water_N_001.png 1
+	ShaderUniform SpecularMap terr_water_S_001.png 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material30
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap terr_dirt_D.jpg 0
+	ShaderUniform NormalMap terr_dirt_N.jpg 1
+	ShaderUniform SpecularMap terr_dirt_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material31
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_plant_D_001.jpg 0
+	ShaderUniform NormalMap veg_plant_N_001.jpg 1
+	ShaderUniform SpecularMap veg_plant_S_001.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material32
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap obj_ConcreteDirty_D.jpg 0
+	ShaderUniform NormalMap obj_ConcreteDirty_N.jpg 1
+	ShaderUniform SpecularMap obj_ConcreteDirty_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_lilly
+	Shader DiffuseNormalSpecMapAlpha
+	ShaderUniform DiffuseMap veg_lilly_001_D.png 0
+	ShaderUniform NormalMap veg_lilly_001_N.png 1
+	ShaderUniform SpecularMap veg_lilly_001_S.png 2
+#	ShaderUniform AmbientOccMap veg_lilly_001_AO.png 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material2
+	Shader DiffuseNormalSpecMapAlpha
+	ShaderUniform DiffuseMap veg_shrub_D_002.png 0
+	ShaderUniform NormalMap veg_shrub_N_002.png 1
+	ShaderUniform SpecularMap veg_shrub_S_002.png 2
+#	ShaderUniform AmbientOccMap veg_shrub_002_AO.png 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_shub_003_veg_shrub_003_tga
+	Shader DiffuseNormalSpecMapAlpha
+	ShaderUniform DiffuseMap veg_shrub_D_003.png 0
+	ShaderUniform NormalMap veg_shrub_N_003.png 1
+	ShaderUniform SpecularMap veg_shrub_S_003.png 2
+#	ShaderUniform AmbientOccMap veg_shrub_003_AO.png 3
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_treeLOD2_001
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_treeGreen_001.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-MaterialLibrary25.veg_branches
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_yellowTree.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-MaterialLibrary26.veg_branches
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_redtree_001.tga 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_YellowTreeLOD2_001
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap VEG_yellowTree_001.tga 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_treeRed_LOD2_001
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_redtree_001.tga 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-Material29
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_treeWall_001.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_1-Material29
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_treeWall_001.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_2-Material29
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_treeWall_001.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_3-Material29
+	Shader DiffuseMapAlpha
+	ShaderUniform DiffuseMap veg_treeWall_001.png 0
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMapAlpha
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_trunkLOD5
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_trunkLOD3
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-MaterialLibrary26.veg_trunk
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-MaterialLibrary27.veg_trunk
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry veg_treeTrunk_001-Geometry-veg_treeTrunk_001
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Geometry geometries_0-veg_trunkLOD6
+	Shader DiffuseNormalSpecMap
+	ShaderUniform DiffuseMap veg_bark_D.jpg 0
+	ShaderUniform NormalMap veg_bark_N.jpg 1
+	ShaderUniform SpecularMap veg_bark_S.jpg 2
+	ShaderUniform ambientMaterialColor 0.2 0.2 0.2 1
+	ShaderUniform diffuseMaterialColor 0.8 0.8 0.8 1
+	ShaderUniform specularMaterialColor 0 0 0 1
+	LowShader DiffuseMap
+	LowShaderDist 10.0
+
+Instance Terrain org.jdesktop.mtgame.ColladaInstance 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 terrain.dae.gz
+Instance Building org.jdesktop.mtgame.ColladaInstance 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 building.dae.gz
+Instance Shelter0 org.jdesktop.mtgame.ColladaInstance 58.7851556277 0.0 35.3650066835 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter1 org.jdesktop.mtgame.ColladaInstance 51.3480291879 0.0 28.2109763992 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter2 org.jdesktop.mtgame.ColladaInstance 42.9324586138 0.0 28.2395400891 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter3 org.jdesktop.mtgame.ColladaInstance 9.64554589463 0.0 27.2855855968 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter4 org.jdesktop.mtgame.ColladaInstance 44.9173600103 0.0 -6.92888474813 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter5 org.jdesktop.mtgame.ColladaInstance 26.6468347747 0.0 -16.1591301213 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter6 org.jdesktop.mtgame.ColladaInstance 30.7071451003 0.0 15.1690015628 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter7 org.jdesktop.mtgame.ColladaInstance 58.75 0.0 43.25 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+Instance Shelter8 org.jdesktop.mtgame.ColladaInstance 0.0 0.0 -8.20545213485 0.0 1.0 0.0 0.0 1.0 1.0 1.0 shelter.dae.gz
+
+Instance Lamp0 org.jdesktop.mtgame.ColladaInstance 44.4560120529 5.89399737654 45.0809248755 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp1 org.jdesktop.mtgame.ColladaInstance 42.2008328121 7.10344637421 47.532455445 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp2 org.jdesktop.mtgame.ColladaInstance 40.3533849222 8.36309881892 48.9729779139 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp3 org.jdesktop.mtgame.ColladaInstance 40.081701409 8.96992191456 51.3104294672 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp4 org.jdesktop.mtgame.ColladaInstance 38.2885902217 9.59550468954 53.3760843283 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp5 org.jdesktop.mtgame.ColladaInstance 40.1360381116 8.94681468951 54.8709661356 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp6 org.jdesktop.mtgame.ColladaInstance 42.1736644608 8.35841091681 53.4032639975 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp7 org.jdesktop.mtgame.ColladaInstance 44.5916477285 7.09334666317 53.4032639975 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp8 org.jdesktop.mtgame.ColladaInstance 40.842415246 8.3645123215 57.3986753735 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp9 org.jdesktop.mtgame.ColladaInstance 42.2551695147 7.10919262079 59.3284318884 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp10 org.jdesktop.mtgame.ColladaInstance 46.1402437538 5.89399737654 60.2253609728 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp11 org.jdesktop.mtgame.ColladaInstance 33.7814456729 7.80842178791 53.4243494839 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp12 org.jdesktop.mtgame.ColladaInstance 26.645489138 7.80842178791 53.4243494839 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp13 org.jdesktop.mtgame.ColladaInstance 19.3834598331 7.80842178791 53.4243494839 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp14 org.jdesktop.mtgame.ColladaInstance 12.0726920764 7.80842178791 53.4243494839 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp15 org.jdesktop.mtgame.ColladaInstance 3.8471857421 8.35841091681 53.4032639975 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp16 org.jdesktop.mtgame.ColladaInstance 1.42920247442 7.09334666317 53.4032639975 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp17 org.jdesktop.mtgame.ColladaInstance 3.76568068814 7.10919262079 59.3284318884 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp18 org.jdesktop.mtgame.ColladaInstance 5.17843495689 8.3645123215 57.3986753735 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp19 org.jdesktop.mtgame.ColladaInstance 5.88481209127 8.94681468951 54.8709661356 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp20 org.jdesktop.mtgame.ColladaInstance 7.73225998119 9.59550468954 53.3760843283 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp21 org.jdesktop.mtgame.ColladaInstance 5.93914879392 8.96992191456 51.3104294672 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp22 org.jdesktop.mtgame.ColladaInstance 5.6674652807 8.36309881892 48.9729779139 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp23 org.jdesktop.mtgame.ColladaInstance 3.82001739078 7.10344637421 47.532455445 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp24 org.jdesktop.mtgame.ColladaInstance -0.00357412530114 5.89399737654 46.4981454634 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp25 org.jdesktop.mtgame.ColladaInstance -0.119393550947 5.89399737654 60.2253609728 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp26 org.jdesktop.mtgame.ColladaInstance -8.04673795939 7.39922897857 66.6527926138 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp27 org.jdesktop.mtgame.ColladaInstance -7.88163114011 7.39922897857 55.6804134608 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp28 org.jdesktop.mtgame.ColladaInstance -12.952769161 7.39922897857 54.925325003 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp29 org.jdesktop.mtgame.ColladaInstance -18.1616015979 7.39922897857 56.0982763185 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp30 org.jdesktop.mtgame.ColladaInstance -9.38137794754 9.61623723874 48.956234473 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp31 org.jdesktop.mtgame.ColladaInstance -16.2126922066 9.61623723874 48.956234473 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp32 org.jdesktop.mtgame.ColladaInstance -23.9319341051 9.61623723874 48.956234473 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp33 org.jdesktop.mtgame.ColladaInstance -23.9319341051 9.61623723874 40.5736366103 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp34 org.jdesktop.mtgame.ColladaInstance -16.2126922066 9.61623723874 40.5736366103 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp35 org.jdesktop.mtgame.ColladaInstance -9.38137794754 9.61623723874 40.5736366103 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+Instance Lamp36 org.jdesktop.mtgame.ColladaInstance 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 obj_lamp.dae.gz
+
+Instance Trashcan0 org.jdesktop.mtgame.ColladaInstance 3.72127490181 -0.0410803216684 -5.42776288323 0.0 1.0 0.0 -2.39613953278 1.0 1.0 1.0 obj_trashcan.dae.gz
+Instance Trashcan1 org.jdesktop.mtgame.ColladaInstance 47.0487255243 -0.0410803216684 -12.4191784604 0.0 1.0 0.0 -3.33598876692 1.0 1.0 1.0 obj_trashcan.dae.gz
+Instance Trashcan2 org.jdesktop.mtgame.ColladaInstance 12.8650612302 -0.0636989430071 24.8016251534 0.0 1.0 0.0 -2.01417940069 1.0 1.0 1.0 obj_trashcan.dae.gz
+Instance Trashcan3 org.jdesktop.mtgame.ColladaInstance 54.6375279739 -0.0636989430071 25.3442156484 0.0 1.0 0.0 -1.82274312444 1.0 1.0 1.0 obj_trashcan.dae.gz
+Instance Trashcan4 org.jdesktop.mtgame.ColladaInstance 48.1269332777 -0.0636989430071 48.6653383009 0.0 1.0 0.0 -0.673737936037 1.0 1.0 1.0 obj_trashcan.dae.gz
+Instance Trashcan5 org.jdesktop.mtgame.ColladaInstance 36.1862925212 -0.0636989430071 32.4315537633 0.0 1.0 0.0 -0.673737936037 1.0 1.0 1.0 obj_trashcan.dae.gz
+
+Instance Boulder01 org.jdesktop.mtgame.ColladaInstance 35.0704210287 0.0 17.5764163651 0.0 1.0 0.0 0.0979187853484 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder02 org.jdesktop.mtgame.ColladaInstance 41.0720651125 0.0 6.69963751552 0.0 1.0 0.0 -1.13219574259 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder03 org.jdesktop.mtgame.ColladaInstance 49.177493136 0.0 -2.40302903625 0.0 1.0 0.0 -0.107767298764 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder04 org.jdesktop.mtgame.ColladaInstance 47.0543333758 0.046983143313 -14.4874667645 0.0 1.0 0.0 0.530053785495 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder05 org.jdesktop.mtgame.ColladaInstance 36.2434018548 0.134913870587 -20.5594133507 0.0 1.0 0.0 1.51113561264 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder06 org.jdesktop.mtgame.ColladaInstance 23.0499104908 0.0 -19.6602504955 0.0 1.0 0.0 1.84116939215 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder07 org.jdesktop.mtgame.ColladaInstance 10.3872565755 0.0997325993683 -15.0754690346 0.0 1.0 0.0 1.90570276168 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder08 org.jdesktop.mtgame.ColladaInstance -2.7633031963 0.13669975562 -12.9824864255 0.0 1.0 0.0 1.90922662857 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder09 org.jdesktop.mtgame.ColladaInstance -7.98133928101 0.0 4.04727537275 0.0 1.0 0.0 3.71421412617 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder010 org.jdesktop.mtgame.ColladaInstance 2.49577856351 -0.394775756448 10.4827408696 0.0 1.0 0.0 4.39826887126 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder011 org.jdesktop.mtgame.ColladaInstance 14.1790682515 -0.396211724595 16.3397362632 0.0 1.0 0.0 4.03720516285 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder012 org.jdesktop.mtgame.ColladaInstance 11.1990314714 -1.21897380101 34.1626608185 0.0 1.0 0.0 4.84753334763 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder013 org.jdesktop.mtgame.ColladaInstance 5.48629028831 -0.0365124403734 26.2519479779 0.0 1.0 0.0 3.13604598902 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder014 org.jdesktop.mtgame.ColladaInstance 15.0358836518 -0.211929735373 19.4646416338 0.0 1.0 0.0 2.55378234359 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder015 org.jdesktop.mtgame.ColladaInstance -9.20834552481 0.1234191558 -8.2371935716 0.0 1.0 0.0 2.56923114246 1.0 1.0 1.0 boulder1.dae.gz
+Instance Boulder10 org.jdesktop.mtgame.ColladaInstance 35.6770407278 0.0 13.2750854469 0.0 1.0 0.0 -0.216178900503 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder11 org.jdesktop.mtgame.ColladaInstance 35.9637480463 0.0 21.4356884192 0.0 1.0 0.0 0.0806728038413 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder12 org.jdesktop.mtgame.ColladaInstance 44.4414255777 0.0 4.04200949841 0.0 1.0 0.0 -0.896638098673 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder13 org.jdesktop.mtgame.ColladaInstance 49.6222138366 0.0 -6.90713266708 0.0 1.0 0.0 -0.00118132541945 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder14 org.jdesktop.mtgame.ColladaInstance 44.0078649207 0.0 -17.5275845875 0.0 1.0 0.0 1.04270759961 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder15 org.jdesktop.mtgame.ColladaInstance 31.5317993836 0.0 -20.8892231405 0.0 1.0 0.0 1.62509088773 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder16 org.jdesktop.mtgame.ColladaInstance 18.6172117685 0.0 -18.1790245964 0.0 1.0 0.0 1.98877793536 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder17 org.jdesktop.mtgame.ColladaInstance 5.80288464573 0.0671656779981 -14.27023877 0.0 1.0 0.0 1.70192845848 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder18 org.jdesktop.mtgame.ColladaInstance -10.3901551523 0.0797640077534 -4.05081976832 0.0 1.0 0.0 3.14758444335 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder19 org.jdesktop.mtgame.ColladaInstance -5.1992655027 0.0 7.64427395453 0.0 1.0 0.0 4.02761742746 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder110 org.jdesktop.mtgame.ColladaInstance 6.59161923033 -0.48739648173 12.4666514821 0.0 1.0 0.0 4.44500925126 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder111 org.jdesktop.mtgame.ColladaInstance 15.9155553888 -1.46306221583 33.7896556622 0.0 1.0 0.0 4.88917547773 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder112 org.jdesktop.mtgame.ColladaInstance 6.03760995043 -0.761833142616 30.6408150421 0.0 1.0 0.0 3.68871493914 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder113 org.jdesktop.mtgame.ColladaInstance 10.7071500854 -0.00469102139298 21.2501910812 0.0 1.0 0.0 1.58765856324 1.0 1.0 1.0 boulder2.dae.gz
+Instance Boulder20 org.jdesktop.mtgame.ColladaInstance 37.8778620432 0.00655185743045 9.31413358841 0.0 1.0 0.0 -0.857248616225 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder21 org.jdesktop.mtgame.ColladaInstance 47.5358306375 -0.0117867823372 1.13699023322 0.0 1.0 0.0 -0.492212600269 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder22 org.jdesktop.mtgame.ColladaInstance 49.0576026923 0.0 -10.7712926625 0.0 1.0 0.0 0.569430075668 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder23 org.jdesktop.mtgame.ColladaInstance 40.0118465144 0.0673274454181 -19.3674281487 0.0 1.0 0.0 1.35932474843 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder24 org.jdesktop.mtgame.ColladaInstance 27.0274142041 0.0519775824869 -20.5716977525 0.0 1.0 0.0 1.78793206589 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder25 org.jdesktop.mtgame.ColladaInstance 14.3750632334 0.0 -16.4884812342 0.0 1.0 0.0 1.94873908963 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder26 org.jdesktop.mtgame.ColladaInstance 1.29872283807 0.00885216405121 -13.6499039186 0.0 1.0 0.0 1.73646922733 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder27 org.jdesktop.mtgame.ColladaInstance -9.60648296738 0.0741015636919 0.450308887565 0.0 1.0 0.0 3.37339050159 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder28 org.jdesktop.mtgame.ColladaInstance -1.33551148094 -0.097764733313 9.44853773283 0.0 1.0 0.0 4.5503514826 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder29 org.jdesktop.mtgame.ColladaInstance 10.8655911201 -0.547608220775 13.8458877195 0.0 1.0 0.0 4.22123643133 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder210 org.jdesktop.mtgame.ColladaInstance 20.4810610083 -1.54677417719 33.1457497251 0.0 1.0 0.0 4.77545599188 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder211 org.jdesktop.mtgame.ColladaInstance 8.50211832197 -1.18315673125 33.3570716231 0.0 1.0 0.0 4.39307562905 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder212 org.jdesktop.mtgame.ColladaInstance 7.03248877557 -0.0754398004792 22.8997379849 0.0 1.0 0.0 2.43314443933 1.0 1.0 1.0 boulder3.dae.gz
+Instance Boulder213 org.jdesktop.mtgame.ColladaInstance -6.36659008256 0.0741015636919 -11.2214387488 0.0 1.0 0.0 2.20277815769 1.0 1.0 1.0 boulder3.dae.gz
+
+Instance Plant0 org.jdesktop.mtgame.ColladaInstance 11.9272610424 0.0 41.5656805077 0.0 1.0 0.0 0.867184904397 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant1 org.jdesktop.mtgame.ColladaInstance 19.2226570212 0.0 41.5824200378 0.0 1.0 0.0 0.867184904397 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant2 org.jdesktop.mtgame.ColladaInstance 26.6719472375 0.0 41.7011832804 0.0 1.0 0.0 0.985110817939 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant3 org.jdesktop.mtgame.ColladaInstance 33.9426641453 0.0 41.6711153431 0.0 1.0 0.0 2.52638219472 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant4 org.jdesktop.mtgame.ColladaInstance 33.8590521479 0.0 59.6970069565 0.0 1.0 0.0 2.52638219472 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant5 org.jdesktop.mtgame.ColladaInstance 26.5430023748 0.0 59.6133601276 0.0 1.0 0.0 3.0294852501 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant6 org.jdesktop.mtgame.ColladaInstance 19.3105645992 0.0 59.8224771997 0.0 1.0 0.0 3.54140587481 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant7 org.jdesktop.mtgame.ColladaInstance 11.9109028287 0.0 59.9897708574 0.0 1.0 0.0 3.54140587481 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant8 org.jdesktop.mtgame.ColladaInstance 2.37913512435 0.0 57.5640128212 0.0 1.0 0.0 3.54140587481 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant9 org.jdesktop.mtgame.ColladaInstance 2.37913512435 0.0 48.9902128659 0.0 1.0 0.0 3.54140587481 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant10 org.jdesktop.mtgame.ColladaInstance 44.7908731047 0.0 49.2363155315 0.0 1.0 0.0 3.54140587481 1.0 1.0 1.0 house_plant.dae.gz
+Instance Plant11 org.jdesktop.mtgame.ColladaInstance 44.7908731047 0.0 57.8101154868 0.0 1.0 0.0 3.94291694115 1.0 1.0 1.0 house_plant.dae.gz
+
+Instance Lilly0 org.jdesktop.mtgame.ColladaInstance 8 -1.2 1 0.0 1.0 0.0 80 1.0 1.0 1.0 lilly_01.dae.gz
+Instance Lilly1 org.jdesktop.mtgame.ColladaInstance 22 -1.2 5 0.0 1.0 0.0 60 1.0 1.0 1.0 lilly_01.dae.gz
+Instance Lilly2 org.jdesktop.mtgame.ColladaInstance 8 -1.2 2.5 0.0 1.0 0.0 15 1.0 1.0 1.0 lilly_01.dae.gz
+
+Instance Shrub0 org.jdesktop.mtgame.ColladaInstance 34.7803837012 0.0 34.2579481149 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub1 org.jdesktop.mtgame.ColladaInstance 34.7803837012 0.0 31.918276496 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub2 org.jdesktop.mtgame.ColladaInstance 39.014556598 0.0 25.4755981013 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub3 org.jdesktop.mtgame.ColladaInstance 52.9028349787 0.0 23.6508598624 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub4 org.jdesktop.mtgame.ColladaInstance 57.1880791639 0.0 21.7136248424 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub5 org.jdesktop.mtgame.ColladaInstance 62.0650097848 0.0 23.3817994429 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub6 org.jdesktop.mtgame.ColladaInstance 64.2883163913 0.0 27.937889212 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub7 org.jdesktop.mtgame.ColladaInstance 63.8604959898 0.0 33.3235385722 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub8 org.jdesktop.mtgame.ColladaInstance 66.2615613022 0.0 36.7684476711 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub9 org.jdesktop.mtgame.ColladaInstance 55.1671586646 0.0 45.4838365648 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub10 org.jdesktop.mtgame.ColladaInstance 67.6557375953 0.0 45.5083396376 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub11 org.jdesktop.mtgame.ColladaInstance 54.8285973185 0.104598439274 56.3130875718 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub12 org.jdesktop.mtgame.ColladaInstance 47.0871411338 0.104598439274 56.3130875718 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub13 org.jdesktop.mtgame.ColladaInstance 34.5599637917 0.0 3.74975673631 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub14 org.jdesktop.mtgame.ColladaInstance 38.575712299 0.0 -9.8149066757 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub15 org.jdesktop.mtgame.ColladaInstance 33.9349521789 0.0 -12.1612658577 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub16 org.jdesktop.mtgame.ColladaInstance 17.3615426708 -0.15266857024 -11.0532629106 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub17 org.jdesktop.mtgame.ColladaInstance 11.4980873378 -0.186036952684 -8.77208037258 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub18 org.jdesktop.mtgame.ColladaInstance 6.93762207882 -0.210997747606 -5.64360146323 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub19 org.jdesktop.mtgame.ColladaInstance 5.50433299742 -0.244376348096 -1.92853275838 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub20 org.jdesktop.mtgame.ColladaInstance 4.46194093823 -0.147064898904 1.85171259042 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub21 org.jdesktop.mtgame.ColladaInstance 3.02865185683 -0.18431667628 4.98019149977 0.0 1.0 0.0 -1.02092018428 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub22 org.jdesktop.mtgame.ColladaInstance 1.92111029393 -0.131973449817 8.43455362885 0.0 1.0 0.0 -1.02092018428 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub23 org.jdesktop.mtgame.ColladaInstance 40.5058334746 0.0 -5.41951107886 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub24 org.jdesktop.mtgame.ColladaInstance 38.7302042642 0.0 -0.508373506366 0.0 1.0 0.0 0.0 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub25 org.jdesktop.mtgame.ColladaInstance 30.2079314134 0.0 7.30249455471 0.0 1.0 0.0 -0.717807261946 0.1 0.1 0.1 red_shrub.dae.gz
+Instance Shrub26 org.jdesktop.mtgame.ColladaInstance 26.982073696 0.0 10.7173241106 0.0 1.0 0.0 -0.717807261946 0.1 0.1 0.1 red_shrub.dae.gz
+
+Instance Shrub27 org.jdesktop.mtgame.ColladaInstance 21.7141630615 -0.0164373813911 26.7660509112 0.0 1.0 0.0 0.548822759031 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub28 org.jdesktop.mtgame.ColladaInstance 23.7416193561 -0.0164373813911 26.6453187147 0.0 1.0 0.0 0.432939400536 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub29 org.jdesktop.mtgame.ColladaInstance 26.0587122643 -0.0164373813911 26.3072685646 0.0 1.0 0.0 1.65609255676 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub30 org.jdesktop.mtgame.ColladaInstance 28.3758051724 -0.0164373813911 26.1140970503 0.0 1.0 0.0 0.498473673483 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub31 org.jdesktop.mtgame.ColladaInstance 30.7170344649 -0.0164373813911 25.7277540216 0.0 1.0 0.0 0.516784228904 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub32 org.jdesktop.mtgame.ColladaInstance 32.8375657061 -0.0164373813911 25.1402853574 0.0 1.0 0.0 0.516784228904 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub33 org.jdesktop.mtgame.ColladaInstance 34.909161611 -0.0164373813911 24.4696671445 0.0 1.0 0.0 1.38290776084 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub34 org.jdesktop.mtgame.ColladaInstance 25.895785596 0.0 17.6084941193 0.0 1.0 0.0 2.70697444656 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub35 org.jdesktop.mtgame.ColladaInstance 24.054060324 0.0 18.5799901677 0.0 1.0 0.0 2.70697444656 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub36 org.jdesktop.mtgame.ColladaInstance 22.2250732959 0.0 18.9680179356 0.0 1.0 0.0 -0.638517245719 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub37 org.jdesktop.mtgame.ColladaInstance 19.6004337571 0.0 19.4677365566 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub38 org.jdesktop.mtgame.ColladaInstance 17.1894479465 0.0 19.5012364204 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub39 org.jdesktop.mtgame.ColladaInstance -0.116787045888 -0.333545624658 7.69043189786 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub40 org.jdesktop.mtgame.ColladaInstance 39.8442823388 -0.333545624658 -8.29908849284 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub41 org.jdesktop.mtgame.ColladaInstance 36.6489067666 -0.333545624658 -11.3701390325 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub42 org.jdesktop.mtgame.ColladaInstance 31.5792696698 -0.333545624658 -12.8955153593 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub43 org.jdesktop.mtgame.ColladaInstance 2.48409087099 -0.333545624658 6.39746512967 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub44 org.jdesktop.mtgame.ColladaInstance 3.85223044868 -0.333545624658 3.39933950821 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub45 org.jdesktop.mtgame.ColladaInstance 4.95977201158 -0.333545624658 -0.185375908757 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub46 org.jdesktop.mtgame.ColladaInstance 5.93701456708 -0.333545624658 -4.0307979015 0.0 1.0 0.0 0.579638944931 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub47 org.jdesktop.mtgame.ColladaInstance 8.93389173726 -0.333545624658 -6.89857023507 0.0 1.0 0.0 1.35516708755 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub48 org.jdesktop.mtgame.ColladaInstance 14.6369739391 -0.333545624658 -9.73122648938 0.0 1.0 0.0 -0.491837667902 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub49 org.jdesktop.mtgame.ColladaInstance 20.5904689581 -0.333545624658 -11.767035974 0.0 1.0 0.0 0.671434359677 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub50 org.jdesktop.mtgame.ColladaInstance -4.71299616932 0.0 -9.35318528571 0.0 1.0 0.0 0.926952084228 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub51 org.jdesktop.mtgame.ColladaInstance 32.8957795026 0.0 32.2584669113 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub52 org.jdesktop.mtgame.ColladaInstance 30.6134998197 0.0 32.8848609802 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub53 org.jdesktop.mtgame.ColladaInstance 9.28499646709 0.0 30.7179762378 0.0 1.0 0.0 1.09462860246 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub54 org.jdesktop.mtgame.ColladaInstance 9.89066338678 0.0 23.5513900685 0.0 1.0 0.0 1.31237545071 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub55 org.jdesktop.mtgame.ColladaInstance 28.6669226257 0.0 9.07511002165 0.0 1.0 0.0 -0.473330602095 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub56 org.jdesktop.mtgame.ColladaInstance 34.0446373358 -0.0164373813911 21.3380576141 0.0 1.0 0.0 1.38290776084 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub57 org.jdesktop.mtgame.ColladaInstance 37.2754725054 0.0 1.12984664497 0.0 1.0 0.0 0.241406243705 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub58 org.jdesktop.mtgame.ColladaInstance 39.8624174715 0.0 -2.49049055685 0.0 1.0 0.0 3.19400872852 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub59 org.jdesktop.mtgame.ColladaInstance 31.9939919642 -0.0393683495334 5.44589969593 0.0 1.0 0.0 1.30209792006 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub60 org.jdesktop.mtgame.ColladaInstance 13.7738847147 0.0 22.8009729982 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub61 org.jdesktop.mtgame.ColladaInstance 65.6827387134 0.0 34.7120236183 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub62 org.jdesktop.mtgame.ColladaInstance 64.4362460145 0.0 30.1505726597 0.0 1.0 0.0 0.923058631895 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub63 org.jdesktop.mtgame.ColladaInstance 64.1391807693 0.0 25.0380321726 0.0 1.0 0.0 0.280604116914 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub64 org.jdesktop.mtgame.ColladaInstance 58.9492982765 0.0 21.0983492747 0.0 1.0 0.0 0.280604116914 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub65 org.jdesktop.mtgame.ColladaInstance 54.3986787026 0.0 21.7977753064 0.0 1.0 0.0 0.280604116914 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub66 org.jdesktop.mtgame.ColladaInstance 65.7580768283 0.0 44.4143936411 0.0 1.0 0.0 2.90525615349 1.0 1.0 1.0 green_shrub.dae.gz
+Instance Shrub67 org.jdesktop.mtgame.ColladaInstance 38.091099875 0.0 31.6235277088 0.0 1.0 0.0 -1.01065227414 1.0 1.0 1.0 green_shrub.dae.gz
+
+Instance Tree0 org.jdesktop.mtgame.ColladaInstance 9.29619027427 2.4456611704 -16.5107351542 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+Instance Tree1 org.jdesktop.mtgame.ColladaInstance 45.4417910209 3.01097523789 -19.501788976 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+Instance Tree2 org.jdesktop.mtgame.ColladaInstance 54.675039869 2.32501849254 -4.47008739977 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+Instance Tree3 org.jdesktop.mtgame.ColladaInstance 69.5614450414 4.00294299445 31.7121163857 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+Instance Tree4 org.jdesktop.mtgame.ColladaInstance 10.042578209 2.90019034365 18.2970544935 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+Instance Tree5 org.jdesktop.mtgame.ColladaInstance 0.220466879943 -0.224216014922 72.0041546213 0.0 1.0 0.0 0.0 1.0 1.0 1.0 green_tree.dae.gz
+
+Instance Tree6 org.jdesktop.mtgame.ColladaInstance 18.1910856688 2.77431626983 -25.3809870137 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree7 org.jdesktop.mtgame.ColladaInstance 73.7619365169 3.8400704919 53.9132817606 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree8 org.jdesktop.mtgame.ColladaInstance 63.7082362202 3.99202950864 20.0130841796 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree9 org.jdesktop.mtgame.ColladaInstance 50.8101395312 -0.461027245634 72.0939696428 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree10 org.jdesktop.mtgame.ColladaInstance 60.3316849457 2.77431626983 -17.2716299501 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree11 org.jdesktop.mtgame.ColladaInstance -4.24128608092 2.26806367016 -17.2003805968 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+Instance Tree12 org.jdesktop.mtgame.ColladaInstance 0.749387770476 2.32653645393 13.0286126576 0.0 1.0 0.0 0.0 1.0 1.0 1.0 yellow_tree.dae.gz
+
+Instance Tree13 org.jdesktop.mtgame.ColladaInstance 22.3288291126 -0.276169897596 79.712773154 0.0 1.0 0.0 0.0 1.0 1.0 1.0 red_tree.dae.gz
+Instance Tree14 org.jdesktop.mtgame.ColladaInstance 44.594533836 4.24187160324 16.8325449158 0.0 1.0 0.0 0.0 1.0 1.0 1.0 red_tree.dae.gz
+Instance Tree15 org.jdesktop.mtgame.ColladaInstance -10.2132042948 0.46665329116 17.2458423868 0.0 1.0 0.0 0.0 1.0 1.0 1.0 red_tree.dae.gz
+Instance Tree16 org.jdesktop.mtgame.ColladaInstance -12.8345194952 0.746801842239 -16.6045969721 0.0 1.0 0.0 0.0 1.0 1.0 1.0 red_tree.dae.gz
+Instance Tree17 org.jdesktop.mtgame.ColladaInstance 30.1868874924 2.53197464333 -26.7146395657 0.0 1.0 0.0 0.0 1.0 1.0 1.0 red_tree.dae.gz
+
+Instance TreeWall org.jdesktop.mtgame.ColladaInstance 10.0 0.0 35.0 0.0 1.0 0.0 0.0 1.4 1.0 1.4 tree_wall.dae.gz
+Instance TreeWall1 org.jdesktop.mtgame.ColladaInstance 10.0 0.0 35.0 0.0 1.0 0.0 2.09 1.41 1.0 1.41 tree_wall.dae.gz
+
+Instance Water org.jdesktop.mtgame.JMEWaterInstance 0.0 -1.3 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 100 100 Terrain
+#Instance Water org.jdesktop.mtgame.JMEWaterInstance 0.0 -1.3 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 100 100

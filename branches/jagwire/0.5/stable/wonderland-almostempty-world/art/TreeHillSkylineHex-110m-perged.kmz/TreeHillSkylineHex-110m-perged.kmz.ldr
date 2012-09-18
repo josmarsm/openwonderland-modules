@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loader-data>
+    <version>1</version>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</modelLoaderClassname>
+    <deployedTextures value="./untitled/texture0.png" key="./untitled/texture0.png"/>
+    <deployedTextures value="./untitled/texture1.png" key="./untitled/texture1.png"/>
+</loader-data>

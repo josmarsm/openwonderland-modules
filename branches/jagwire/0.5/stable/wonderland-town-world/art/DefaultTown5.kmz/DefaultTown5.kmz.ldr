@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loader-data>
+    <version>1</version>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.kmzloader.client.KmzLoader</modelLoaderClassname>
+    <deployedTextures value="./untitled/texture31.jpg" key="./untitled/texture31.jpg"/>
+    <deployedTextures value="./untitled/texture7.jpg" key="./untitled/texture7.jpg"/>
+    <deployedTextures value="./untitled/texture25.jpg" key="./untitled/texture25.jpg"/>
+    <deployedTextures value="./untitled/texture23.jpg" key="./untitled/texture23.jpg"/>
+    <deployedTextures value="./untitled/texture5.jpg" key="./untitled/texture5.jpg"/>
+    <deployedTextures value="./untitled/texture19.jpg" key="./untitled/texture19.jpg"/>
+    <deployedTextures value="./untitled/texture4.jpg" key="./untitled/texture4.jpg"/>
+    <deployedTextures value="./untitled/texture10.jpg" key="./untitled/texture10.jpg"/>
+    <deployedTextures value="./untitled/texture12.bmp" key="./untitled/texture12.bmp"/>
+    <deployedTextures value="./untitled/texture18.jpg" key="./untitled/texture18.jpg"/>
+    <deployedTextures value="./untitled/texture0.jpg" key="./untitled/texture0.jpg"/>
+    <deployedTextures value="./untitled/texture9.jpg" key="./untitled/texture9.jpg"/>
+    <deployedTextures value="./untitled/texture21.jpg" key="./untitled/texture21.jpg"/>
+    <deployedTextures value="./untitled/texture3.jpg" key="./untitled/texture3.jpg"/>
+    <deployedTextures value="./untitled/texture27.jpg" key="./untitled/texture27.jpg"/>
+    <deployedTextures value="./untitled/texture15.jpg" key="./untitled/texture15.jpg"/>
+    <deployedTextures value="./untitled/texture6.jpg" key="./untitled/texture6.jpg"/>
+    <deployedTextures value="./untitled/texture1.jpg" key="./untitled/texture1.jpg"/>
+    <deployedTextures value="./untitled/texture11.jpg" key="./untitled/texture11.jpg"/>
+    <deployedTextures value="./untitled/texture8.jpg" key="./untitled/texture8.jpg"/>
+    <deployedTextures value="./untitled/texture24.jpg" key="./untitled/texture24.jpg"/>
+    <deployedTextures value="./untitled/texture26.jpg" key="./untitled/texture26.jpg"/>
+    <deployedTextures value="./untitled/texture2.jpg" key="./untitled/texture2.jpg"/>
+    <deployedTextures value="./untitled/texture30.jpg" key="./untitled/texture30.jpg"/>
+    <deployedTextures value="./untitled/texture20.jpg" key="./untitled/texture20.jpg"/>
+    <deployedTextures value="./untitled/texture17.jpg" key="./untitled/texture17.jpg"/>
+    <deployedTextures value="./untitled/texture29.jpg" key="./untitled/texture29.jpg"/>
+    <deployedTextures value="./untitled/texture14.jpg" key="./untitled/texture14.jpg"/>
+    <deployedTextures value="./untitled/texture22.jpg" key="./untitled/texture22.jpg"/>
+    <deployedTextures value="./untitled/texture16.jpg" key="./untitled/texture16.jpg"/>
+    <deployedTextures value="./untitled/texture13.jpg" key="./untitled/texture13.jpg"/>
+    <deployedTextures value="./untitled/texture28.jpg" key="./untitled/texture28.jpg"/>
+</loader-data>

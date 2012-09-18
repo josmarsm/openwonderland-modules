@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>timeline</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>timeline</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>timeline</label>
+                    <location>.</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>src/classes</label>
+                    <type>java</type>
+                    <location>src/classes</location>
+                    <encoding>UTF-8</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <target>package</target>
+                </action>
+                <action name="clean">
+                    <target>clean</target>
+                </action>
+                <action name="rebuild">
+                    <target>clean</target>
+                    <target>package</target>
+                </action>
+                <action name="run">
+                    <target>deploy</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>src/classes</label>
+                        <location>src/classes</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="run"/>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
+            <compilation-unit>
+                <package-root>src/classes</package-root>
+                <classpath mode="compile">../../../wonderland/lib/jaxb/jaxb-api.jar:../../../wonderland/lib/jaxb/jsr173_1.0_api.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-shared-1.7.jar:../../../wonderland/core/ext/sgs/sgs-client-0.9.10/sgs-client-0.9.10.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/jme20/target/jme-awt.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/modules/foundation/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/foundation/sharedstate/build/server/sharedstate-server.jar:../../../wonderland/modules/tools/audio-manager/lib/voicelib.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/web/runner/dist/wonderland-runner-api.jar:../../../wonderland/web/runner/dist/wonderland-runner-core.jar:../../../wonderland/web/modules/dist/wonderland-modules-api.jar:../../../wonderland/web/modules/dist/wonderland-modules-core.jar:../../../wonderland/web/asset/dist/wonderland-asset-core.jar:../../../wonderland/web/utils/dist/wonderland-web-utils.jar:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/modules/world/jmecolladaloader/build/client/jmecolladaloader-client.jar:../layout-api/build/lib/layout-api.jar:../layout/build/server/layout-server.jar:../../stable/stickynote/build/client/stickynote-client.jar:../../stable/stickynote/build/server/stickynote-server.jar:../../../wonderland/modules/world/containercell/build/lib/server/container-cell-server.jar:../../stable/clickablelink/build/server/clickable-link-server.jar:../../stable/image-viewer/build/server/imageviewer-server.jar</classpath>
+                <source-level>1.5</source-level>
+            </compilation-unit>
+        </java-data>
+    </configuration>
+</project>

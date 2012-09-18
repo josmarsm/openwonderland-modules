@@ -1,0 +1,53 @@
+
+<project basedir="." default="run" name="openoffice.run">
+    <!-- set the build-scripts directory to the current directory -->
+    <dirname property="current.dir" file="${ant.file.openoffice.run}"/>
+
+    <!-- override to fix library locations in core -->
+    <property name="core.lib.dir" location="${current.dir}/core/lib"/>
+    <property name="core.build.lib.dir" location="${current.dir}/core/lib"/>
+
+    <!-- set the operating system test properties -->
+    <condition property="isMac">
+        <os family="mac" />
+    </condition>
+
+    <condition property="isWindows">
+        <os family="windows" />
+    </condition>
+
+    <condition property="isUnix">
+        <and>
+          <os family="unix" />
+          <not>
+              <os family="mac" />
+          </not>
+       </and>
+    </condition>
+
+    <!-- define the operating system specific targets -->
+    <target name="doMac" if="isMac">
+        <echo message="Came into the Mac target" />
+        <chmod file="${current.dir}/startMacOO.sh" perm="ugo+x"/>
+        <exec dir="${current.dir}" executable="./startMacOO.sh"/>
+    </target>
+
+    <target name="doWindows" if="isWindows">
+        <exec dir="." executable="cmd">
+            <arg value="/c"/>
+            <arg value="startWinOO.bat"/>
+            <arg value="-p"/>
+        </exec>
+    </target>
+
+    <target name="doUnix" if="isUnix">
+        <chmod file="${current.dir}/startUnixOO.sh" perm="ugo+x"/>
+        <exec dir="${current.dir}" executable="./startUnixOO.sh"/>
+    </target>
+
+    <target name="run" depends="doMac, doWindows, doUnix">
+        <echo message="run target"/>
+    </target>
+
+    
+</project>

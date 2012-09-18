@@ -1,0 +1,65 @@
+This module can load scenes from CMU's educational IDE Alice into the
+virtual world.
+
+REQUIREMENTS:
+
+You will need a running Wonderland server, and a copy of Alice 3
+(http://kenai.com/projects/alice/downloads).
+
+BINARY INSTALLATION:
+
+If you downloaded the CMU module as a binary cmu-module.jar file, you
+can use the Wonderland web administration UI to install the module.
+On the Wonderland server administration page, select "Manage Modules".
+At the top of the page you will be able to specify the module to install,
+and upload the module to the server. Once the module is uploaded,
+continute to the configuration step below.
+
+SOURCE INSTALLATION:
+
+If you have a copy of the wonderland-modules source code, the CMU
+module can be found in the wonderland-modules/unstable/cmu-module
+directory. Check that the cmu.module.properties is configured correctly
+(see the file for more information on how to configure it). With the
+Wonderland server running, run 'ant deploy' in the module directory
+to install the module on your server. Alternately, you can use
+"ant dist" to build the module binary in the dist/ directory, and install it
+as described above.
+
+CONFIGURE THE CMU SERVER COMPONENT:
+
+Go to the Manage Server page on the web interface (in the
+Server Administration section), click "edit" in the top left next to
+"Server Components", and then choose "Add Component."
+Enter the following:
+
+Component Name: CMU Runner
+Component Class: org.jdesktop.wonderland.modules.cmu.weblib.CMUPlayerRunner
+Location: Local
+
+Choose OK, then Save. Click "Restart All" to ensure that all components are
+up and running.
+
+COPY THE ALICE ARTWORK:
+
+The Alice 3 gallery must be copied to a place where it is accessible to the CMU
+module.
+
+To obtain the gallery, install Alice 3 (http://kenai.com/projects/alice/downloads).
+The gallery will be installed in the Alice 3 installation directory in a subdirectory
+named "gallery". Copy this entire directory to the CMU module directory.
+
+The CMU module directory can be found on the Wonderland server in the user's
+home directory, in a subdirectory called .wonderland-server/0.5-dev/run/cmu_runner.
+The gallery would be created as a subdirectory of the cmu_runner directory.
+
+Alice 3 can be safely uninstalled after the gallery is copied.
+
+DRAG AND DROP ALICE FILES:
+
+Now that the server is configured, you can simply drag and drop .a3p files generated
+in Alice 3 into your Wonderland client.
+
+You can see status and errors from the CMU module in the server administration web UI.
+Under the "Manage Server" section, you can see a line for the "CMU Runner", which
+lets you view the log for the CMU server components.

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Arch-rustic.kmz</name>
+    <metadata/>
+    <cell-performance-component/>
+    <position-component>
+        <translation>
+<x>6.38683</x>
+            <y>1.7135473</y>
+<z>18.2969</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.3005942106246948</x>
+            <y>1.1658904552459717</y>
+            <z>0.0927644819021225</z>
+        </bounds>
+        <scale>
+            <x>1.5</x>
+            <y>1.5</y>
+            <z>1.5</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+    <model-cell-component>
+        <deployedModelURL>wla://wonderland-combined-world/Arch-rustic.kmz/Arch-rustic.kmz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+    </model-cell-component>
+</model-cell>

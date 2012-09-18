@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="marbleous-module-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="./build/classes/:lib/xml-apis.jar:lib/xml-apis-ext.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/modules/foundation/appbase/build/classes"/>
+            </classpath>
+        </java>
+    </target>
+</project>

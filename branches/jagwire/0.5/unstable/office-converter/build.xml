@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="wonderland-${module.name}-module" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.wonderland-${module.name}-module}"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <!--jars for weblib -->
+    <pathconvert property="module-weblib.classpath">
+        <path location="${web.dir}/modules/dist/wonderland-modules-core.jar"/>
+        <path location="${web.dir}/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${core.dir}/build/lib/wonderland-common.jar"/>
+    </pathconvert>
+
+    <!--Add jars for client-->
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="lib/jodconverter-2.2.2.jar"/>
+        <path location="lib/commons-io-1.4.jar"/>
+        <path location="lib/httpcore-4.1.jar"/>
+        <path location="lib/httpclient-4.1.1.jar"/>
+    </pathconvert>
+
+    <target name="build" depends="-module-init, -module-compile-client,
+                                                -openoffice-compile-weblib,
+                                                -openoffice-package-server"/>
+
+    <target name="-openoffice-compile-weblib" depends="-module-init, -module-compile-common">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/weblib/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${module-weblib.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
+    <target name="-openoffice-package-server">
+        <mkdir dir="${build.dir}/openoffice"/>
+        <zip file="${build.dir}/openoffice/openoffice-dist.zip">
+            <fileset dir="${current.dir}/runner"/>
+        </zip>
+    </target>
+
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.jarname}.jar"
+                moduleDescription="${module.description}" builddir="${build.dir}">
+
+            <requires name="content-repository" version="0" minorVersion="5"/>
+            <client dir="${current.dir}/lib">
+                <include name="*.jar"/>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                </clientjar>
+            </client>
+
+            <part name="weblib">
+                <jar name="${module.name}-weblib" basedir="${build.classes.dir}">
+                    <include name="${module.src}/weblib/**"/>
+                    <include name="${module.src}/common/**"/>
+                </jar>
+            </part>
+
+            <part name="runner" dir="${build.dir}/openoffice">
+                <include name="openoffice-dist.zip"/>
+            </part>
+            
+            <!--Add WAR file to be deployed-->
+            <part name="web" dir="lib">
+                <include name="converter.war"/>
+            </part>
+        </module>
+    </target>
+
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

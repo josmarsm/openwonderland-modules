@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="client-test-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="debug-selected-file-in-classes">
+        <fail unless="debug.class">Must set property 'debug.class'</fail>
+        <path id="cp">
+            <pathelement path="../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/modules/world/avatarbase/build/client/avatarbase-client.jar:../../../wonderland/modules/world/avatarbase/build/server/avatarbase-server.jar:../../../wonderland/modules/world/avatarbase/lib/avatars.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/core/ext/common/vecmath.jar:../../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../../wonderland/modules/foundation/security/build/lib/client/security-client.jar:../../../wonderland/modules/foundation/security/build/lib/server/security-server.jar:../../../wonderland/modules/tools/audio-manager/lib/voicelib.jar:../../../wonderland/modules/tools/audio-manager/build/lib/client/audiomanager-client.jar:../../../wonderland/modules/tools/presence-manager/build/lib/server/presencemanager-server.jar:../../../wonderland/modules/tools/presence-manager/build/lib/client/presencemanager-client.jar:../../../wonderland/web/lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../../../wonderland/web/lib/restlib/jsr311-api-1.1.1.jar:../../../wonderland/modules/foundation/darkstar-api/build/lib/darkstar-api.jar:../../../wonderland/web/front/dist/wonderland-webadmin-core.jar"/>
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="client-test" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <java classname="${debug.class}" fork="true">
+            <classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement location="build/lib/client-test-ui.jar"/>
+            </classpath>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="${module-ui.classpath}"/>
+                <pathelement path="${core-client.classpath}"/>
+                <pathelement location="build/lib/client-test-ui.jar"/>
+            </classpath>
+        </java>
+    </target>
+</project>

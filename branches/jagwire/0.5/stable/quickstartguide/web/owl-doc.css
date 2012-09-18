@@ -1,0 +1,86 @@
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: 'Trebuchet MS';	
+    }
+	    
+th.tableTitle {
+    background-color: #62a1e1;
+    color: white;
+    padding: 10px;
+    font-size: 18pt;
+    }    
+
+#sectionHead {
+    background-color: #bbd2e9;
+    padding: 2px;
+    margin-right: -10px;
+    margin-left: -10px;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: black;
+    font-size: 12pt;
+    font-weight: bold;
+    }
+
+#sectionDescription {
+    font-style: italic;
+    font-size: 12pt;
+    padding: 0px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    } 
+
+td.verticalRule {
+    background-color: #62a1e1;
+    width: 2px;
+    padding: 0px;
+    }    
+
+tr {
+    border: 3px solid #62a1e1;
+}
+
+td {
+    padding: 10px;
+    font-size: 10pt;
+    vertical-align: top;
+    border-right: 3px solid #62a1e1;
+    border-left: 3px solid #62a1e1;
+    }
+    
+#step {
+    text-indent: -25px; 
+    padding-left: 25px;
+    margin-bottom: 20px;
+    }
+    
+#stepNoHang {
+    text-indent: 0px; 
+    }
+    
+#pix {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+   }
+   
+#tipName {
+    font-weight: bold;
+    font-size: 12pt;
+    margin-top: 0px;
+}
+
+#tip {
+    font-weight: normal;
+    font-size: 10pt;
+    padding-left: 25px;
+    margin-bottom: 10px;
+}
+
+#tipPix {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 0px;
+   }
