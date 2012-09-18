@@ -24,7 +24,7 @@ import java.awt.event.MouseWheelEvent;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;

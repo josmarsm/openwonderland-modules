@@ -19,8 +19,8 @@ package org.jdesktop.wonderland.modules.rockwellcollins.stickynote.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

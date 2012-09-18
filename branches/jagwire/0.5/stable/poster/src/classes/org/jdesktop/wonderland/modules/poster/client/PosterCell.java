@@ -38,7 +38,7 @@ import java.awt.Rectangle;
 import java.util.ResourceBundle;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -99,7 +99,7 @@ public class PosterCell extends App2DCell {
      * {@inheritDoc}
      */
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         if (increasing && status == CellStatus.ACTIVE) {
             SwingUtilities.invokeLater(new Runnable() {

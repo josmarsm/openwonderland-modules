@@ -24,7 +24,7 @@ import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.common.message
 import org.jdesktop.wonderland.modules.rockwellcollins.stickynote.server.cell.StickyNoteCellMO;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 import org.jdesktop.wonderland.server.cell.AbstractComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;

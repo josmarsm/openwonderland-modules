@@ -60,7 +60,7 @@ import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServ
 import org.jdesktop.wonderland.modules.microphone.common.MicrophoneComponentServerState.TalkArea;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ProximityComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ProximityComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

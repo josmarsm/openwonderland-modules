@@ -27,7 +27,7 @@ import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentClient
 import org.jdesktop.wonderland.modules.sitting.common.SittingCellComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.InteractionComponentMO;
+import org.jdesktop.wonderland.server.cell.component.InteractionComponentMO;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 

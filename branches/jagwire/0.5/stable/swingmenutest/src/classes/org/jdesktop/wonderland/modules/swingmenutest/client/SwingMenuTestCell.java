@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.swingmenutest.client;
 
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
@@ -66,7 +66,7 @@ public class SwingMenuTestCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
         switch (status) {

@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;

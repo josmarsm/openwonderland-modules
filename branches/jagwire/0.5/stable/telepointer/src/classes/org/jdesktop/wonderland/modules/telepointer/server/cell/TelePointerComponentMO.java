@@ -17,13 +17,16 @@
  */
 package org.jdesktop.wonderland.modules.telepointer.server.cell;
 
-import org.jdesktop.wonderland.server.cell.*;
+//import org.jdesktop.wonderland.server.cell.*;
 import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.modules.telepointer.common.cell.messages.TelePointerMessage;
-import org.jdesktop.wonderland.server.cell.ChannelComponentMO.ComponentMessageReceiver;
+import org.jdesktop.wonderland.server.cell.CellComponentMO;
+import org.jdesktop.wonderland.server.cell.CellMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO.ComponentMessageReceiver;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
+import org.jdesktop.wonderland.server.cell.component.ChannelComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 import org.jdesktop.wonderland.server.comms.WonderlandClientSender;
 

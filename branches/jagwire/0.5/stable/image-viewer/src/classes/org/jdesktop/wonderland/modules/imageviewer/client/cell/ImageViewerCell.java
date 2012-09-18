@@ -18,7 +18,7 @@
 package org.jdesktop.wonderland.modules.imageviewer.client.cell;
 
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.common.ExperimentalAPI;

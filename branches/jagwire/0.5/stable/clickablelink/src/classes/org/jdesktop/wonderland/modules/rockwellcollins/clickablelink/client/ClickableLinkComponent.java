@@ -25,7 +25,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jdesktop.mtgame.Entity;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
 import org.jdesktop.wonderland.client.help.WebBrowserLauncher;
