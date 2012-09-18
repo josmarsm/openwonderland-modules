@@ -41,9 +41,9 @@ import com.jme.math.Vector3f;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellCache;
-import org.jdesktop.wonderland.client.cell.ProximityComponent;
-import org.jdesktop.wonderland.client.cell.ProximityListener;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
+import org.jdesktop.wonderland.client.cell.component.ProximityComponent;
+import org.jdesktop.wonderland.client.cell.component.ProximityListener;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItem;
@@ -167,7 +167,7 @@ public class VideoPlayerCell extends App2DCell
      * This is called when the status of the cell changes.
      */
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
         switch (status) {

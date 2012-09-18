@@ -20,7 +20,7 @@ package org.jdesktop.wonderland.modules.sample.client;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.Cell.RendererType;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.CellRenderer;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuActionListener;
@@ -86,7 +86,7 @@ public class SampleCell extends Cell {
     }
 
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
         switch (status) {
             case ACTIVE:

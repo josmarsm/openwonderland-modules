@@ -49,7 +49,7 @@ import org.jdesktop.wonderland.common.cell.CallID;
 import org.jdesktop.wonderland.common.cell.CellID;
 
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
+import org.jdesktop.wonderland.server.cell.component.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;

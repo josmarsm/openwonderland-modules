@@ -19,7 +19,7 @@ package org.jdesktop.wonderland.modules.pdfviewer.client.cell;
 
 import com.jme.math.Vector2f;
 import java.util.logging.Logger;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.common.cell.CellID;
 import org.jdesktop.wonderland.modules.appbase.client.cell.App2DCell;
@@ -84,7 +84,7 @@ public class PDFViewerCell extends App2DCell implements SharedMapListenerCli {
      * This is called when the status of the cell changes.
      */
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
         switch (status) {

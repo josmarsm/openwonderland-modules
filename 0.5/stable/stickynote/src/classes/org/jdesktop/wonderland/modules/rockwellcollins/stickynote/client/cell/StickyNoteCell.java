@@ -22,7 +22,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 import javax.swing.JColorChooser;
 import javax.swing.SwingUtilities;
-import org.jdesktop.wonderland.client.cell.CellCache;
+import org.jdesktop.wonderland.client.cell.cache.CellCache;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
 import org.jdesktop.wonderland.client.comms.WonderlandSession;
 import org.jdesktop.wonderland.client.contextmenu.ContextMenuItemEvent;
@@ -91,7 +91,7 @@ public class StickyNoteCell extends App2DCell {
      * This is called when the status of the cell changes.
      */
     @Override
-    protected void setStatus(CellStatus status, boolean increasing) {
+    public void setStatus(CellStatus status, boolean increasing) {
         super.setStatus(status, increasing);
 
         switch (status) {

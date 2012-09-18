@@ -18,13 +18,17 @@
 package org.jdesktop.wonderland.modules.telepointer.client.cell;
 
 import java.awt.event.MouseEvent;
-import org.jdesktop.wonderland.client.cell.*;
+//import org.jdesktop.wonderland.client.cell.*;
 import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
 import org.jdesktop.wonderland.client.ClientContext;
+import org.jdesktop.wonderland.client.cell.Cell;
 import org.jdesktop.wonderland.client.cell.annotation.UsesCellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.MovableAvatarComponent;
 import org.jdesktop.wonderland.client.cell.view.AvatarCell;
 import org.jdesktop.wonderland.client.input.Event;
 import org.jdesktop.wonderland.client.input.EventClassFocusListener;

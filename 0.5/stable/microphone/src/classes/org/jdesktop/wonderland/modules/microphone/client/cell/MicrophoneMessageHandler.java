@@ -39,7 +39,7 @@ package org.jdesktop.wonderland.modules.microphone.client.cell;
 
 import java.util.logging.Logger;
 
-import org.jdesktop.wonderland.client.cell.ChannelComponent;
+import org.jdesktop.wonderland.client.cell.component.ChannelComponent;
 
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 

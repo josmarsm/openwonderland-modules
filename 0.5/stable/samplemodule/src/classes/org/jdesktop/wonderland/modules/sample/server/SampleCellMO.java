@@ -23,7 +23,7 @@ import org.jdesktop.wonderland.modules.sample.common.SampleCellClientState;
 import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.common.cell.state.CellClientState;
 import org.jdesktop.wonderland.common.cell.state.CellServerState;
-import org.jdesktop.wonderland.common.cell.state.ViewComponentServerState;
+import org.jdesktop.wonderland.common.cell.component.state.ViewComponentServerState;
 import org.jdesktop.wonderland.modules.sample.common.SampleCellServerState;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 

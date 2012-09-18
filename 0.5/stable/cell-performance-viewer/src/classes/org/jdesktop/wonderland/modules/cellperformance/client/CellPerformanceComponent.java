@@ -23,7 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.client.cell.Cell;
-import org.jdesktop.wonderland.client.cell.CellComponent;
+import org.jdesktop.wonderland.client.cell.component.CellComponent;
 import org.jdesktop.wonderland.client.cell.CellStatistics.CellStat;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
 
