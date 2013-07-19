@@ -1162,6 +1162,32 @@ public class EZScriptComponent extends CellComponent {
             }
         }
     }
+    
+    public void executeScript(final String script) {
+        try {
+            //execute script typed in Scripting Editor
+            System.out.println("executing script externally...");
+            //scriptEngine.eval(script.getValue(), scriptBindings);
+            //Need to add this script to the script editor panel.
+            clearCallbacks();
+
+            executor.submit(new Runnable() {
+                public void run() {
+//                    evaluateScript(script);
+                    synchronized (scriptEngine) {
+                        try {
+                            scriptEngine.eval(script, scriptBindings);
+                        } catch (Exception e) {
+                            processException(e);
+                        }
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     class ProximityListenerImpl implements ProximityListener {
 

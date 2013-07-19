@@ -12,7 +12,6 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -24,7 +23,6 @@ import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.*;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.GeneratedCellMethod;
 import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.*;
-import org.jdesktop.wonderland.modules.ezscript.client.virtuals.VirtualObjectFactorySPI;
 
 /**
  *
