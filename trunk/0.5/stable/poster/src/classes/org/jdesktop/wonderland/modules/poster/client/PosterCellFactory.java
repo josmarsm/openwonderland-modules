@@ -38,6 +38,8 @@ package org.jdesktop.wonderland.modules.poster.client;
 import com.jme.bounding.BoundingSphere;
 import com.jme.math.Vector3f;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
@@ -76,6 +78,7 @@ public class PosterCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = PosterCellFactory.class.getResource("resources/Poster-icon.png");
+        return Toolkit.getDefaultToolkit().getImage(url);
     }
 }

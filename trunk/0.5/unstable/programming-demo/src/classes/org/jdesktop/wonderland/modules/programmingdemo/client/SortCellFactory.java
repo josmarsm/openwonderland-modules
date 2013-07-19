@@ -18,6 +18,8 @@
 package org.jdesktop.wonderland.modules.programmingdemo.client;
 
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.net.URL;
 import java.util.Properties;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
@@ -50,6 +52,7 @@ public class SortCellFactory implements CellFactorySPI {
     }
 
     public Image getPreviewImage() {
-        return null;
+        URL url = SortCellFactory.class.getResource("resources/Programming-demo-icon.png");
+        return Toolkit.getDefaultToolkit().getImage(url);
    }
 }

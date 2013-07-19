@@ -49,7 +49,7 @@ public class ImageViewerCellFactory implements CellFactorySPI {
     private static Logger logger = Logger.getLogger(ImageViewerCellFactory.class.getName());
 
     public String[] getExtensions() {
-        return new String[] { "png", "jpg", "jpeg", "gif" };
+        return new String[] { "png", "jpg", "jpeg", "gif","bmp" };
     }
 
     public <T extends CellServerState> T getDefaultCellServerState(Properties props) {
