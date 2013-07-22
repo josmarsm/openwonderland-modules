@@ -52,6 +52,7 @@ import org.jdesktop.wonderland.server.cell.CellMO;
 import org.jdesktop.wonderland.server.cell.ProximityListenerSrv;
 
 import com.jme.bounding.BoundingVolume;
+import com.sun.mpk20.voicelib.app.*;
 import com.sun.mpk20.voicelib.app.AudioGroupPlayerInfo.ChatType;
 import com.sun.sgs.app.ManagedReference;
 import com.sun.sgs.app.Task;
@@ -222,14 +223,25 @@ public abstract class MicrophoneBaseProximityListener implements ProximityListen
         updateAudioGroup(callId, cur);
     }
 
-    protected void updateAudioGroup(String callId, Status status) {
-        VoiceManager vm = AppContext.getManager(VoiceManager.class);
+    protected void updateAudioGroup(final String callId, Status status) {
 
+        VoiceManager vm = AppContext.getManager(VoiceManager.class);
         // map the call ID to a player
         Player player = vm.getPlayer(callId);
         if (player == null) {
             logger.warning("Can't find player for " + callId);
-            return;
+            
+            //Create Player
+            PlayerSetup ps = new PlayerSetup();
+            ps.isLivePlayer=true;
+            ps.isOutworlder=false;
+            ps.isVirtualPlayer=false;
+            ps.orientation=90;
+            player = vm.createPlayer(callId,ps);
+            player.setMasterVolume(1);
+            //return;
+        } else {
+            logger.warning("Can find player for " + callId);
         }
 
         logger.fine("Player " + callId + " status " + status + " for " + name);
