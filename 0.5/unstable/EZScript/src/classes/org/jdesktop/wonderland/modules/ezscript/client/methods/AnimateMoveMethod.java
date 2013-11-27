@@ -22,6 +22,7 @@ import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
 import org.jdesktop.wonderland.common.ExperimentalAPI;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
@@ -47,7 +48,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
     private float z;
     private float seconds;
     private Semaphore lock;
-
+    
     private static Logger logger = Logger.getLogger(AnimateMoveMethod.class.getName());
     
     public String getFunctionName() {
@@ -126,6 +127,55 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
                     return null;
         } else {
             return cell.getComponent(MovableComponent.class);
+        }
+    }
+    
+    private AnotherMovableComponent amc;
+    public AnotherMovableComponent getAnotherMovable(final Cell cell) {
+        if (cell.getComponent(AnotherMovableComponent.class) != null) {
+            return cell.getComponent(AnotherMovableComponent.class);
+        }
+
+        final Semaphore movableLock = new Semaphore(0);
+        //<editor-fold defaultstate="collapsed" desc="legacy">
+//        new Thread(new Runnable() {
+//            
+//            public void run() {
+//                //try and add MovableComponent manually
+//                String className = "org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO";
+//                CellServerComponentMessage cscm =
+//                        CellServerComponentMessage.newAddMessage(
+//                        cell.getCellID(), className);
+//                logger.warning("Requesting AnotherMovableComponent...");
+//                
+//                ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+//                if (response instanceof ErrorMessage) {
+//                    logger.log(Level.WARNING, "Unable to add movable component "
+//                            + "for Cell " + cell.getName() + " with ID "
+//                            + cell.getCellID(),
+//                            ((ErrorMessage) response).getErrorCause());
+//                    
+//                    logger.warning("AnotherMovableComponent request failed!");
+//                    movableLock.release();
+//                    
+//                } else {
+//                    logger.warning("returning AnotherMovableComponent");
+//                    movableLock.release();
+//                    amc = cell.getComponent(AnotherMovableComponent.class);
+//                }
+//            }
+//        }).start();
+        //</editor-fold>
+
+        try {
+            logger.warning("Acquiring lock in getMovable()!");
+            if(!cell.getStatus().equals(CellStatus.DISK)) {
+                movableLock.acquire();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return amc;
         }
     }
 
@@ -208,7 +258,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             }
 
             transform.setTranslation(translate);
-            getMovable(cell).localMoveRequest(transform);
+            getAnotherMovable(cell).localMoveRequest(transform,false);
             //cell.setLocalTransform(transform, ChangeSource.LOCAL);
         }
     }

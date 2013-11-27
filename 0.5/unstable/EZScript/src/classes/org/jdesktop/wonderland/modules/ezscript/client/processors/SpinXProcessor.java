@@ -15,6 +15,7 @@ import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
 import org.jdesktop.wonderland.client.cell.Cell;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellServerComponentMessage;
 import org.jdesktop.wonderland.common.messages.ErrorMessage;
@@ -83,7 +84,7 @@ public class SpinXProcessor extends ProcessorComponent {
         angles[0] += increment;
         //1 revolution = (3.14 * 2) ~ 6.28
         //
-        System.out.println("current (X) radians: " + angles[0]);
+        //logger.info("current (X) radians: " + angles[0]);
         //quaternion.fromAngles(0.0f, increment, 0.0f);
         quaternion = new Quaternion(new float[]{angles[0], angles[1], angles[2]});
         frameIndex += 1;
@@ -105,15 +106,17 @@ public class SpinXProcessor extends ProcessorComponent {
          * confusing.
          */
         
-        getMovable(cell).localMoveRequest(transform, true);
-
+        AnotherMovableComponent amc = getMovable(cell);
+        if(amc!=null) {
+            amc.localMoveRequest(transform, false);
+        }
     }
 
     public AnotherMovableComponent getMovable(final Cell cell) {
         if (cell.getComponent(AnotherMovableComponent.class) != null) {
             return cell.getComponent(AnotherMovableComponent.class);
         }
-
+        
         final Semaphore movableLock = new Semaphore(0);
         //<editor-fold defaultstate="collapsed" desc="legacy">
 //        new Thread(new Runnable() {
@@ -145,9 +148,13 @@ public class SpinXProcessor extends ProcessorComponent {
 //        }).start();
         //</editor-fold>
 
+        
         try {
             logger.warning("Acquiring lock in getMovable()!");
-            movableLock.acquire();
+            System.out.println("cell.getStatus() : "+cell.getStatus());
+            if(!cell.getStatus().equals(CellStatus.DISK)) {
+                movableLock.acquire();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

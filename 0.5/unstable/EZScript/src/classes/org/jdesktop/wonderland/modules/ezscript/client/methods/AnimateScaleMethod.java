@@ -8,6 +8,7 @@ package org.jdesktop.wonderland.modules.ezscript.client.methods;
 import com.jme.math.Quaternion;
 import com.jme.scene.Node;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 import org.jdesktop.mtgame.NewFrameCondition;
 import org.jdesktop.mtgame.ProcessorArmingCollection;
 import org.jdesktop.mtgame.ProcessorComponent;
@@ -18,9 +19,11 @@ import org.jdesktop.wonderland.client.cell.MovableComponent;
 import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.SceneWorker;
 import org.jdesktop.wonderland.client.jme.cellrenderer.BasicRenderer;
+import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ScriptMethodSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.annotation.ScriptMethod;
+import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableComponent;
 /**
  * Usage: animateScale(cell, scale, seconds);
  */
@@ -85,6 +88,55 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
             return cell.getComponent(MovableComponent.class);
         }
         return null;
+    }
+    
+    private AnotherMovableComponent amc;
+    public AnotherMovableComponent getAnotherMovable(final Cell cell) {
+        if (cell.getComponent(AnotherMovableComponent.class) != null) {
+            return cell.getComponent(AnotherMovableComponent.class);
+        }
+
+        final Semaphore movableLock = new Semaphore(0);
+        //<editor-fold defaultstate="collapsed" desc="legacy">
+//        new Thread(new Runnable() {
+//            
+//            public void run() {
+//                //try and add MovableComponent manually
+//                String className = "org.jdesktop.wonderland.modules.ezscript.server.cell.AnotherMovableComponentMO";
+//                CellServerComponentMessage cscm =
+//                        CellServerComponentMessage.newAddMessage(
+//                        cell.getCellID(), className);
+//                logger.warning("Requesting AnotherMovableComponent...");
+//                
+//                ResponseMessage response = cell.sendCellMessageAndWait(cscm);
+//                if (response instanceof ErrorMessage) {
+//                    logger.log(Level.WARNING, "Unable to add movable component "
+//                            + "for Cell " + cell.getName() + " with ID "
+//                            + cell.getCellID(),
+//                            ((ErrorMessage) response).getErrorCause());
+//                    
+//                    logger.warning("AnotherMovableComponent request failed!");
+//                    movableLock.release();
+//                    
+//                } else {
+//                    logger.warning("returning AnotherMovableComponent");
+//                    movableLock.release();
+//                    amc = cell.getComponent(AnotherMovableComponent.class);
+//                }
+//            }
+//        }).start();
+        //</editor-fold>
+
+        try {
+            //Logger.warning("Acquiring lock in getMovable()!");
+            if(!cell.getStatus().equals(CellStatus.DISK)) {
+                movableLock.acquire();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return amc;
+        }
     }
 
     class ScaleProcessor extends ProcessorComponent {
@@ -157,7 +209,7 @@ public class AnimateScaleMethod implements ScriptMethodSPI {
                 lock.release();
             }
            transform.setScaling(currentScale);
-            getMovable(cell).localMoveRequest(transform);
+            getAnotherMovable(cell).localMoveRequest(transform);
 
         }
     }
