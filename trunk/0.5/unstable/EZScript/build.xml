@@ -57,7 +57,7 @@
     <target name="dist" depends="build">
         <mkdir dir="${module.dist.dir}"/>
 
-        <module name="${module.name}" majorVersion="2012" minorVersion="8" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+        <module name="${module.name}" majorVersion="2013" minorVersion="1" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
             <client dir="${current.dir}/lib">
                 <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
                     <include name="${module.src}/client/**"/>
