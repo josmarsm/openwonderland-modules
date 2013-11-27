@@ -40,7 +40,7 @@ public class SpinYProcessor extends SpinXProcessor {
         angles[1] += increment;
         //1 revolution = (3.14 * 2) ~ 6.28
         
-        logger.warning("CURRENT (Y) radians:" + angles[1]);
+        //logger.info("CURRENT (Y) radians:" + angles[1]);
         //quaternion.fromAngles(0.0f, increment, 0.0f);
         quaternion = new Quaternion(new float[]{angles[0], angles[1], angles[2]});
         frameIndex += 1;
