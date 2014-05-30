@@ -4,8 +4,6 @@ package org.jdesktop.wonderland.modules.stereoview.client;
 
 import com.jme.image.Texture;
 import com.jme.image.Texture.Type;
-import com.jme.math.Quaternion;
-import com.jme.math.Vector3f;
 import com.jme.scene.CameraNode;
 import com.jme.scene.Node;
 import com.jme.scene.state.jogl.JOGLTextureState;
@@ -17,18 +15,16 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.logging.Logger;
 import javax.media.opengl.GL;
+import javax.media.opengl.GL2;
 import javax.media.opengl.glu.GLU;
-import org.jdesktop.mtgame.Entity;
-import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.mtgame.CameraComponent;
+import org.jdesktop.mtgame.Entity;
 import org.jdesktop.mtgame.RenderManager;
 import org.jdesktop.mtgame.RenderUpdater;
 import org.jdesktop.mtgame.TextureRenderBuffer;
-import org.jdesktop.mtgame.processor.WorkProcessor.WorkCommit;
-import org.jdesktop.wonderland.client.jme.SceneWorker;
+import org.jdesktop.wonderland.client.jme.ClientContextJME;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.ViewProperties;
-import org.jdesktop.wonderland.common.cell.CellTransform;
 
 /**
  */
@@ -293,7 +289,7 @@ public class StereoViewEntity extends Entity
                             format, dataType, null);
             
             if (t.getMinificationFilter().usesMipMapLevels()) {
-                gl.glGenerateMipmapEXT(GL.GL_TEXTURE_2D);
+                gl.glGenerateMipmap(GL.GL_TEXTURE_2D);
             }
 
             readBuffer = BufferUtils.createByteBuffer(getWidth()*getHeight()*4);
@@ -302,10 +298,10 @@ public class StereoViewEntity extends Entity
 
         @Override
         public ByteBuffer getTextureData() {
-            GL gl = GLU.getCurrentGL();
+            GL2 gl = GLU.getCurrentGL().getGL2();
 
             JOGLTextureState.doTextureBind(getTexture().getTextureId(), 0, Texture.Type.TwoDimensional);
-            gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL.GL_BGRA, GL.GL_UNSIGNED_INT_8_8_8_8_REV, readBuffer.asIntBuffer());
+            gl.glGetTexImage(GL.GL_TEXTURE_2D, 0, GL.GL_BGRA, GL2.GL_UNSIGNED_INT_8_8_8_8_REV, readBuffer.asIntBuffer());
         
             //System.out.println("GetErroe: " + gl.glGetError());
             return (readBuffer);
