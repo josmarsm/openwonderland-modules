@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -47,7 +51,7 @@ public class TCPPortsTest extends BaseTest {
   
     public TestResult run() {
         try {
-            String serverURL = System.getProperty("wonderland.server.url");
+            String serverURL = System.getProperty("jnlp.wonderland.server.url");
             LOGGER.log(Level.INFO, "Connect to server {0}", serverURL);
             
             ServerDetails details = loadDetails(serverURL);

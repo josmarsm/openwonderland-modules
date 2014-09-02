@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -37,9 +41,11 @@ public enum GraphicsUtils {
     private final WorldManager worldManager;
     private final RenderBuffer rb;
     private final Canvas canvas;
-    private final WorkProcessor workProcessor;   
+    private final WorkProcessor workProcessor;
     
     private ModelTestFrame frame;
+    
+    private static int flg=0;
     
     GraphicsUtils(int width, int height) {
         worldManager = new WorldManager("ClientTest");
@@ -113,4 +119,13 @@ public enum GraphicsUtils {
          
         return frame;
     }
+
+    public static int getFlg() {
+        return flg;
+    }
+
+    public static void setFlg(int flg) {
+        GraphicsUtils.flg = flg;
+    }
+    
 }

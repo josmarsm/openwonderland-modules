@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -23,13 +27,16 @@
  */
 package org.jdesktop.wonderland.modules.clienttest.test.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 
 /**
  *
@@ -42,6 +49,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
     private boolean answered = false;
     private TestResult answer;
     private boolean loading = true;
+    private JDialog testDialog = null;
     
     /** Creates new form ModelTestFrame */
     public ModelTestFrame() {
@@ -53,6 +61,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
                 setAnswer(TestResult.NOT_RUN);
             }
         });
+        setResizable(false);
     }
     
     public void setReferenceImage(ImageIcon image) {
@@ -60,8 +69,48 @@ public class ModelTestFrame extends javax.swing.JFrame {
         repaint();
     }
     
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        testDialog.setVisible(visible);
+    }
+    
     public void setTestPane(Component component) {
-        testPanel.add(component, BorderLayout.CENTER);
+        //testPanel.add(component, BorderLayout.CENTER);
+        
+        /*
+        * open dialog for rendering test. Also add component listener.
+        */
+        testDialog = new JDialog(this, "Child", false);
+        testDialog.setUndecorated(true);
+        testDialog.add(component);
+        testDialog.pack();
+        
+        addComponentListener(new ComponentAdapter() {
+
+            public void componentMoved(ComponentEvent e) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        if(testDialog.isVisible()) {
+                        testDialog.setLocation((int)testPanel.getLocationOnScreen().getX()+13
+                        ,(int)testPanel.getLocationOnScreen().getY()+13);
+                        }
+                    }
+                });
+            }
+
+            public void componentShown(ComponentEvent e) {
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        if(testDialog.isVisible()) {
+                        testDialog.setLocation((int)testPanel.getLocationOnScreen().getX()+13
+                        ,(int)testPanel.getLocationOnScreen().getY()+13);
+                        }
+                    }
+                });
+            }
+
+        });
     }
     
     public TestResult waitForAnswer() throws InterruptedException {
@@ -136,7 +185,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
 
         setBackground(new java.awt.Color(255, 255, 255));
 
-        questionLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13));
+        questionLabel.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/jdesktop/wonderland/modules/clienttest/test/ui/resources/Bundle"); // NOI18N
         questionLabel.setText(bundle.getString("ModelTestFrame.questionLabel.text")); // NOI18N
 
@@ -171,7 +220,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         referenceHolderLayout.setVerticalGroup(
             referenceHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, referenceHolderLayout.createSequentialGroup()
-                .addComponent(referenceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .addComponent(referenceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1))
         );
@@ -194,7 +243,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
         testHolderLayout.setVerticalGroup(
             testHolderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, testHolderLayout.createSequentialGroup()
-                .addComponent(testPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+                .addComponent(testPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testLabel))
         );
@@ -234,7 +283,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
                     .addComponent(noButton)
                     .addComponent(yesButton)
                     .addComponent(cancelButton))
-                .addContainerGap())
+                .addGap(26, 26, 26))
         );
 
         pack();
@@ -269,7 +318,7 @@ public class ModelTestFrame extends javax.swing.JFrame {
     protected synchronized TestResult getAnswer() {
         return answer;
     }
-    
+
     /**
      * @param args the command line arguments
      */

@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -24,7 +28,7 @@ public class ClientTestSubstitutionHandler extends WonderlandSubstitutionHandler
     public String specializeJnlpTemplate(HttpServletRequest request, 
                                          String respath, String jnlpTemplate) 
     {
-        String bridgeProp = "<property name=\"voicebridge.info\" value=\"" +
+        String bridgeProp = "<property name=\"jnlp.voicebridge.info\" value=\"" +
                             getVoiceBridge() + "\"/>\n$$url.props\n";
         jnlpTemplate = substitute(jnlpTemplate, "$$url.props", bridgeProp.toString());
         jnlpTemplate = super.specializeJnlpTemplate(request, respath, jnlpTemplate);

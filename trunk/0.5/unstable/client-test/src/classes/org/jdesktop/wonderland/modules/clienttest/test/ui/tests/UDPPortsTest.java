@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -32,7 +36,7 @@ public class UDPPortsTest extends BaseTest {
   
     public TestResult run() {
         try {
-            String bridgeInfo = System.getProperty("voicebridge.info");
+            String bridgeInfo = System.getProperty("jnlp.voicebridge.info");
             LOGGER.log(Level.INFO, "Connect to voice bridge {0}", bridgeInfo);
             
             String addr = AudioUtils.INSTANCE.startSoftphone();

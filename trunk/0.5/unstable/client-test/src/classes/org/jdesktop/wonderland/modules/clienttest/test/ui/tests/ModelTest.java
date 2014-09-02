@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -258,7 +262,7 @@ public class ModelTest extends BaseGraphicsTest {
     }
     
     private static String getServerNameAndPort() throws MalformedURLException {
-        URL serverURL = new URL(System.getProperty("wonderland.server.url"));
+        URL serverURL = new URL(System.getProperty("jnlp.wonderland.server.url"));
         return serverURL.getHost() + ":" + serverURL.getPort();
     }
 
