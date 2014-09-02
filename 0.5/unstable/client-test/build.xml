@@ -92,6 +92,10 @@
             <fileset dir="${current.dir}/src/classes">
                 <include name="${module.src}/test/ui/resources/**"/>
             </fileset>
+            <manifest>
+                <attribute name="Permissions"
+                         value="all-permissions"/>
+            </manifest>
         </jar>
         
         <jar jarfile="build/lib/client-test-tests.jar">
@@ -198,7 +202,7 @@
     <target name="dist" depends="build, -clienttest-create-client-jar, -clienttest-prepare-jnlp">
         <mkdir dir="${module.dist.dir}"/>
 
-        <module name="${module.name}" majorVersion="0" minorVersion="5" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
+        <module name="${module.name}" majorVersion="0" minorVersion="6" jarfile="${module.dist.dir}/${module.name}.jar" moduleDescription="${module.description}" builddir="${build.dir}">
             <requires name="avatarbase" majorversion="0" minorversion="5" miniVersion="1"/>
             <requires name="security" majorversion="0" minorversion="5"/>
             <requires name="presencemanager" majorversion="0" minorversion="5"/>
@@ -253,7 +257,7 @@
                 <pathelement location="${wonderland.dir}/core/ext/softphone/softphone.jar"/>
             </classpath>
             
-            <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
+            <jvmarg line="-Djnlp.wonderland.server.url=${sgs.server}"/>
             <!--jvmarg line="-Dsoftphone.debug=true"/-->
         </java>
     </target>
@@ -276,7 +280,7 @@
             </classpath>
             <jvmarg value="-Xdebug"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
-            <jvmarg line="-Dwonderland.server.url=${sgs.server}"/>
+            <jvmarg line="-Djnlp.wonderland.server.url=${sgs.server}"/>
         </java>
     </target>
                                   
@@ -295,7 +299,7 @@
                      keystore="${wonderland.keystore}"
                      alias="${wonderland.keystore.alias}"
                      storepass="${wonderland.keystore.password}"
-                     signedjar="@{dest.jar}"/>        
+                     signedjar="@{dest.jar}" />        
         </sequential>
     </macrodef>
 </project>

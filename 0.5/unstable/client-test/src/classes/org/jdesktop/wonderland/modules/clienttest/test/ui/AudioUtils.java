@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -61,10 +65,10 @@ public enum AudioUtils {
         }
         
         if (!sc.isRunning()) {
-            String bridgeInfo = System.getProperty("voicebridge.info");
+            String bridgeInfo = System.getProperty("jnlp.voicebridge.info");
             if (bridgeInfo == null) {
                 LOGGER.warning("No bridge info. Guessing based on Wonderland server");
-                URL serverURL = new URL(System.getProperty("wonderland.server.url"));
+                URL serverURL = new URL(System.getProperty("jnlp.wonderland.server.url"));
                 bridgeInfo = "null::" + serverURL.getHost() + ":6666:5060:" +
                              serverURL.getHost() + ":6666:5060";
             }

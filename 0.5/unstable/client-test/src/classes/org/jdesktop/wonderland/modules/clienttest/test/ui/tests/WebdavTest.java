@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -33,7 +37,7 @@ public class WebdavTest extends BaseTest {
   
     public TestResult run() {
         try {
-            String serverURL = System.getProperty("wonderland.server.url");
+            String serverURL = System.getProperty("jnlp.wonderland.server.url");
             String contentURL = serverURL + "webdav/content/modules/installed/client-test/art";
             
             LOGGER.log(Level.INFO, "Connect to webdave resource {0}", contentURL);

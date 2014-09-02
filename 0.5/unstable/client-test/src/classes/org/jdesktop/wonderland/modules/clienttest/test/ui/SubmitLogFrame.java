@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011, Open Wonderland Foundation, All Rights Reserved
@@ -68,7 +72,7 @@ public class SubmitLogFrame extends javax.swing.JFrame {
     }
 
     private void doSubmit(String name, String log) throws IOException {
-        URL serverURL = new URL(System.getProperty("wonderland.server.url"));
+        URL serverURL = new URL(System.getProperty("jnlp.wonderland.server.url"));
         URL submitURL = new URL(serverURL, SUBMIT_URL);
         
         HttpURLConnection huc = (HttpURLConnection) submitURL.openConnection();
