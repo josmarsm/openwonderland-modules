@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -24,14 +28,15 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.logging.Logger;
-
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 import org.w3c.dom.Element;
 
 /**
  * Class to implement mouse listener interfaces.<br>
  * Used to control object creation and movement
+ * 
  * @author bhoran
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardMouseListener implements MouseListener,
         MouseMotionListener, MouseWheelListener {
@@ -72,8 +77,9 @@ public class WhiteboardMouseListener implements MouseListener,
         pressedPoint = new Point(e.getPoint());
 
         WhiteboardTool currentTool = whiteboardWindow.getCurrentTool();
+        whiteboardWindow.singleSelection(pressedPoint);
         if (currentTool == WhiteboardTool.SELECTOR) {
-            whiteboardWindow.singleSelection(pressedPoint);
+            //whiteboardWindow.singleSelection(pressedPoint);
         } else {
             drawing = true;
             whiteboardWindow.drawingMarker(pressedPoint);
@@ -96,10 +102,10 @@ public class WhiteboardMouseListener implements MouseListener,
                 whiteboardWindow.addNewElement(newElement, true);
             }
         }
-        if (currentTool == WhiteboardTool.SELECTOR) {
-            if (moving) {
-                whiteboardWindow.updateElement(whiteboardDocument.moveElement(whiteboardWindow.getSelection().getSelectedElement()), true);
-                whiteboardWindow.setSelection(null);
+        if (moving) {
+            for (WhiteboardSelection selection : whiteboardWindow.getSelections()) {
+                whiteboardWindow.updateElement(whiteboardDocument
+                        .moveElement(selection.getSelectedElement()), true);
             }
         }
         currentPoint = null;
@@ -111,14 +117,15 @@ public class WhiteboardMouseListener implements MouseListener,
         logger.finest("mouse dragged: " + e.getPoint());
 
         WhiteboardTool currentTool = whiteboardWindow.getCurrentTool();
-        if (currentTool == WhiteboardTool.SELECTOR) {
-            if (whiteboardWindow.getSelection() != null) {
+        if(drawing) {
+            whiteboardWindow.drawingMarker(e.getPoint());
+        } else {
+            if (whiteboardWindow.getSelections() != null) {
                 moving = true;
                 whiteboardWindow.movingMarker(e);
             }
-        } else {
-            whiteboardWindow.drawingMarker(e.getPoint());
         }
+
     }
 
     public void mouseMoved(MouseEvent e) {

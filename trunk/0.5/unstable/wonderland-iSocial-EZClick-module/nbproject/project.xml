@@ -43,11 +43,18 @@
                     <source-file>
                         <location>build.xml</location>
                     </source-file>
+                    <source-file>
+                        <location>my.module.properties</location>
+                    </source-file>
                 </items>
                 <context-menu>
                     <ide-action name="build"/>
                     <ide-action name="rebuild"/>
                     <ide-action name="clean"/>
+                    <action>
+                        <label>Deploy Module</label>
+                        <target>deploy</target>
+                    </action>
                 </context-menu>
             </view>
             <subprojects/>
@@ -55,7 +62,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src/classes</package-root>
-                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar:../../../wonderland/core/build/lib/wonderland-common.jar:../../../wonderland/core/build/lib/wonderland-server.jar:../../../wonderland/core/ext/jme20/target/jme.jar:../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar:../../../wonderland/core/ext/common/swing-layout-1.0.jar:../../../wonderland/core/ext/common/mtgame.jar:../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client-cell.jar:../../../wonderland/modules/foundation/appbase/build/client/appbase-client.jar:../../../wonderland/modules/foundation/appbase/build/server/appbase-server.jar</classpath>
+                <classpath mode="compile">../../../wonderland/core/build/lib/wonderland-client.jar;../../../wonderland/core/build/lib/wonderland-common.jar;../../../wonderland/core/build/lib/wonderland-server.jar;../../../wonderland/core/ext/jme20/target/jme.jar;../../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar;../../../wonderland/core/ext/common/swing-layout-1.0.jar;../../../wonderland/core/ext/common/mtgame.jar;../../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar;../../../wonderland/modules/foundation/appbase/build/client/appbase-client-cell.jar;../../../wonderland/modules/foundation/appbase/build/client/appbase-client.jar;../../../wonderland/modules/foundation/appbase/build/server/appbase-server.jar;../../stable/capability-bridge/build/client/capability-bridge-client.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>

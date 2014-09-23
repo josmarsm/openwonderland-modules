@@ -1,7 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
  */
+
 package org.jdesktop.wonderland.modules.ezscript.client.loaders;
 
 import java.util.logging.Level;
@@ -28,6 +28,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.Ret
 /**
  *
  * @author Ryan
+ * @author Abhishek Upadhyay
  */
 public class OptimizedLoader implements IBindingsLoader {
 
@@ -67,11 +68,23 @@ public class OptimizedLoader implements IBindingsLoader {
 
     private String generateCommandFactory(ScriptEngine engine, Bindings bindings) {
 
+        /**
+         * The rhino javascript engine is replaced by nashorn javascript engine from java8
+         * It has some different behavior. So we have changed some script here.
+         */
+        String firstArg = "";
+        if(engine.getClass().getName().equals("jdk.nashorn.api.scripting.NashornScriptEngine")) {
+            firstArg = "java.lang.Object.class";
+        } else {
+            firstArg = "java.lang.Object";
+        }
+        
         String void_factory = "function command_factory(iface) {\n"
                 + "\t return function() {\n"
-                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance("+firstArg+", arguments.length);\n"
                 + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
-                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t\t if(isNaN(parseFloat(arguments[i]))) {args[i] = arguments[i];} \n"
+                + "\t\t\t else { args[i] = parseFloat(arguments[i]); }\n"
                 + "\t\t }\n"
                 + "\t\t iface.setArguments(args);\n"
                 + "\t\t iface.run();\n"
@@ -82,9 +95,10 @@ public class OptimizedLoader implements IBindingsLoader {
 
         String returnable_factory = "function returnable_factory(iface) {\n"
                 + "\t return function() {\n"
-                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance("+firstArg+", arguments.length);\n"
                 + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
-                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t\t if(isNaN(parseFloat(arguments[i]))) {args[i] = arguments[i];} \n"
+                + "\t\t\t else { args[i] = parseFloat(arguments[i]); }\n"
                 + "\t\t }\n"
                 + "\t\t iface.setArguments(args);\n"
                 + "\t\t iface.run();\n"

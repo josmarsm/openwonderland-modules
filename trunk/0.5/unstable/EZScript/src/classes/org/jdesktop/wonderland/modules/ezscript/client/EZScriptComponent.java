@@ -1,9 +1,14 @@
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import com.jme.bounding.BoundingBox;
 import com.jme.bounding.BoundingSphere;
 import com.jme.bounding.BoundingVolume;
 import com.jme.math.Vector3f;
+import com.wonderbuilders.modules.capabilitybridge.client.CapabilityBridge;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.PrintStream;
@@ -54,7 +59,6 @@ import org.jdesktop.wonderland.common.cell.CellStatus;
 import org.jdesktop.wonderland.common.cell.CellTransform;
 import org.jdesktop.wonderland.common.cell.messages.CellMessage;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
-import org.jdesktop.wonderland.common.utils.ScannedClassLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.FriendlyErrorInfoSPI;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.IBindingsLoader;
 import org.jdesktop.wonderland.modules.ezscript.client.SPI.ReturnableScriptMethodSPI;
@@ -92,8 +96,9 @@ import org.jdesktop.wonderland.modules.sharedstate.common.SharedString;
  * Callbacks must be enabled before trying to use them.
  *
  * @author JagWire
+ * @author Abhishek Upadhyay
  */
-public class EZScriptComponent extends CellComponent {
+public class EZScriptComponent extends CellComponent implements CapabilityBridge {
 
     //<editor-fold defaultstate="collapsed" desc="Variables">
 //    private ScriptEngineManager engineManager = new ScriptEngineManager(LoginManager.getPrimary().getClassloader());
@@ -1160,6 +1165,29 @@ public class EZScriptComponent extends CellComponent {
                 }
                 return;
             }
+        }
+    }
+    
+    //for animation module
+    public void executeScript(final String script) {
+        try {
+            //execute script typed in Scripting Editor
+            //Need to add this script to the script editor panel.
+            clearCallbacks();
+
+            executor.submit(new Runnable() {
+                public void run() {
+                    synchronized (scriptEngine) {
+                        try {
+                            scriptEngine.eval(script, scriptBindings);
+                        } catch (Exception e) {
+                            processException(e);
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

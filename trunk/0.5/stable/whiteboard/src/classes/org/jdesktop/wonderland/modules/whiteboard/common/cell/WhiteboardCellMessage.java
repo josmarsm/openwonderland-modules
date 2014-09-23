@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -28,6 +32,7 @@ import org.jdesktop.wonderland.common.cell.messages.CellMessage;
  *
  * @author nsimpson
  * @author jbarratt
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardCellMessage extends CellMessage {
 
@@ -41,7 +46,11 @@ public class WhiteboardCellMessage extends CellMessage {
         ADD_ELEMENT, REMOVE_ELEMENT, UPDATE_ELEMENT,
         SET_VIEW_POSITION,
         SET_ZOOM,
-        GET_STATE, SET_STATE
+        GET_STATE, SET_STATE,
+        UPDATE_BACKGROUND_IMAGE,
+        ADD_BACKGROUND_IMAGE,
+        ADD_TEXT_ELEMENT,
+        UPDATE_TEXT_ELEMENT
     };
 
     public enum RequestStatus {

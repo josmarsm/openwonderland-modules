@@ -18,7 +18,6 @@
 
 package org.jdesktop.wonderland.modules.EZClick.server;
 
-import com.sun.sgs.app.ManagedReference;
 import java.util.logging.Logger;
 import org.jdesktop.wonderland.common.cell.ClientCapabilities;
 import org.jdesktop.wonderland.common.cell.state.CellComponentClientState;
@@ -27,7 +26,6 @@ import org.jdesktop.wonderland.modules.EZClick.common.EZClickComponentClientStat
 import org.jdesktop.wonderland.modules.EZClick.common.EZClickComponentServerState;
 import org.jdesktop.wonderland.server.cell.CellComponentMO;
 import org.jdesktop.wonderland.server.cell.CellMO;
-import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
 import org.jdesktop.wonderland.server.comms.WonderlandClientID;
 
 /**

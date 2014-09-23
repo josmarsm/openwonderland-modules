@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -25,12 +29,15 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.LinkedList;
 import java.util.List;
+import org.apache.batik.bridge.BridgeContext;
+import org.apache.batik.gvt.GraphicsNode;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author jbarratt
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardSelection {
 
@@ -41,9 +48,11 @@ public class WhiteboardSelection {
 
     public WhiteboardSelection(Element element, Rectangle2D elementBounds) {
         selectedElement = element;
-
+        selectionHandleProcess(elementBounds);
+    }
+    
+    private void selectionHandleProcess(Rectangle2D elementBounds) {
         selectedShape = WhiteboardUtils.getElementShape(selectedElement, elementBounds);
-
         if (selectedShape instanceof Line2D.Double) {
             Line2D line = (Line2D) selectedShape;
             addSelectionHandle(new Point((int) line.getX1(), (int) line.getY1()));
@@ -101,6 +110,23 @@ public class WhiteboardSelection {
         return selectionHandles;
     }
 
+    public void refreshSelection(WhiteboardDocument whiteboardDocument,BridgeContext bc) {
+        selectionHandles.clear();
+        if(selectedElement!=null) {
+            selectedElement = whiteboardDocument.getElementById(selectedElement.getAttribute("id"));
+
+            Element parent = whiteboardDocument.getSVGDocument().getDocumentElement();
+            GraphicsNode gNode = bc.getGraphicsNode(parent);
+            //setting the selection mode for the parent and its children
+            gNode.setPointerEventType(GraphicsNode.VISIBLE);
+            GraphicsNode aGraphicsNode = null;
+            aGraphicsNode = bc.getGraphicsNode(selectedElement);
+            if(aGraphicsNode!=null) {
+                selectionHandleProcess(aGraphicsNode.getBounds());
+            }
+        }
+    }
+    
     private void addSelectionHandle(Point p) {
         Rectangle r = new Rectangle((int) p.getX() - (selectionHandleSize / 2),
                 (int) p.getY() - (selectionHandleSize / 2),

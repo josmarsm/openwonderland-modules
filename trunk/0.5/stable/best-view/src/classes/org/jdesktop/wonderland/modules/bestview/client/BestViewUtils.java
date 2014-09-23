@@ -1,21 +1,24 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2011 - 2012, Open Wonderland Foundation, All Rights Reserved
  *
- * Redistributions in source code form must reproduce the above
- * copyright and this condition.
+ * Redistributions in source code form must reproduce the above copyright and
+ * this condition.
  *
- * The contents of this file are subject to the GNU General Public
- * License, Version 2 (the "License"); you may not use this file
- * except in compliance with the License. A copy of the License is
- * available at http://www.opensource.org/licenses/gpl-license.php.
+ * The contents of this file are subject to the GNU General Public License,
+ * Version 2 (the "License"); you may not use this file except in compliance
+ * with the License. A copy of the License is available at
+ * http://www.opensource.org/licenses/gpl-license.php.
  *
- * The Open Wonderland Foundation designates this particular file as
- * subject to the "Classpath" exception as provided by the Open Wonderland
- * Foundation in the License file that accompanied this code.
+ * The Open Wonderland Foundation designates this particular file as subject to
+ * the "Classpath" exception as provided by the Open Wonderland Foundation in
+ * the License file that accompanied this code.
  */
-
 package org.jdesktop.wonderland.modules.bestview.client;
 
 import com.jme.bounding.BoundingBox;
@@ -40,17 +43,23 @@ import org.jdesktop.wonderland.client.jme.JmeClientMain;
 import org.jdesktop.wonderland.client.jme.ViewManager;
 import org.jdesktop.wonderland.client.jme.cellrenderer.CellRendererJME;
 import org.jdesktop.wonderland.common.cell.CellTransform;
+import static org.jdesktop.wonderland.modules.bestview.client.BestViewUtils.getBestDistance;
+import static org.jdesktop.wonderland.modules.bestview.client.BestViewUtils.getModelBounds;
 
 /**
  * Static utilities for calculating best view
+ *
  * @author Jonathan Kaplan <jonathankap@gmail.com>
+ * @author Abhishek Upadhyay
  */
 public class BestViewUtils {
+
     private static final Logger LOGGER =
             Logger.getLogger(BestViewUtils.class.getName());
 
     /**
      * Find the best view of a cell
+     *
      * @param cell the cell to get a best view of
      * @return the position of a cell's best view
      */
@@ -68,7 +77,7 @@ public class BestViewUtils {
         if (distance < frontClip) {
             distance = frontClip;
         }
-        
+
         // calculate the look vector to this cell -- we only care about the y axis
         // rotation
         Quaternion rotation = cell.getWorldTransform().getRotation(null);
@@ -87,14 +96,15 @@ public class BestViewUtils {
 
         origin.addLocal(cell.getWorldTransform().getTranslation(null));
 
-        LOGGER.fine("Origin + " + cell.getWorldTransform().getTranslation(null) +
-                    " = " + origin);
+        LOGGER.fine("Origin + " + cell.getWorldTransform().getTranslation(null)
+                + " = " + origin);
 
         return new CellTransform(look, origin);
     }
 
     /**
      * Get the ideal distance away from the given bounds
+     *
      * @param bounds the bounds to get a distance from
      * @return the ideal distance from the given bounds
      */
@@ -121,7 +131,7 @@ public class BestViewUtils {
         float yRadius = 1.0f;
         float z = 1.0f;
         if (bounds instanceof BoundingSphere) {
-            xRadius = yRadius = z = ((BoundingSphere)bounds).radius;
+            xRadius = yRadius = z = ((BoundingSphere) bounds).radius;
         } else if (bounds instanceof BoundingBox) {
             BoundingBox bb = (BoundingBox) bounds;
             xRadius = bb.xExtent;
@@ -130,28 +140,27 @@ public class BestViewUtils {
         }
 
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Calculated distance to " + bounds + " is: " +
-                        " x: " + getDistance(xRadius, z, fovX) + " for fov " + fovX +
-                        " y: " + getDistance(yRadius, z, fovY) + " for fov " + fovY);
+            LOGGER.fine("Calculated distance to " + bounds + " is: "
+                    + " x: " + getDistance(xRadius, z, fovX) + " for fov " + fovX
+                    + " y: " + getDistance(yRadius, z, fovY) + " for fov " + fovY);
         }
-        
+
         // find the X and Y distances
         return Math.max(getDistance(xRadius, z, fovX),
-                        getDistance(yRadius, z, fovY));
+                getDistance(yRadius, z, fovY));
     }
 
     /**
      * Find the bounds of the model associated with this component's cell. If
-     * minimal bounds cannot be found, use the cell's world bounds (which
-     * are not likely to be accurate).
+     * minimal bounds cannot be found, use the cell's world bounds (which are
+     * not likely to be accurate).
      *
      * @param cell the cell to get model bounds for
      * @return the best possible bounds we can find for this object
      */
     public static BoundingVolume getModelBounds(Cell cell) {
         // find a JME renderer for the cell
-        CellRendererJME renderer = (CellRendererJME)
-                cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
+        CellRendererJME renderer = (CellRendererJME) cell.getCellRenderer(Cell.RendererType.RENDERER_JME);
         if (renderer == null) {
             return cell.getWorldBounds();
         }
@@ -176,20 +185,19 @@ public class BestViewUtils {
      * @param node the node to calculate the bounds of
      * @param transform the transform of the parent
      * @param updateTransform if true, update the transform based on the full
-     * content of the given node. If false, only update the transform based
-     * on the node's scale.
+     * content of the given node. If false, only update the transform based on
+     * the node's scale.
      * @return the calculated bounds
      */
     private static BoundingVolume getModelBounds(Node node, Matrix4f transform,
-                                                 boolean updateTransform) 
-    {
+            boolean updateTransform) {
         BoundingVolume out = null;
 
         Collection<Spatial> children = node.getChildren();
         if (children == null) {
             return out;
         }
-        
+
         if (updateTransform) {
             // transform the matrix
             transform = transform(transform, node);
@@ -200,7 +208,7 @@ public class BestViewUtils {
             transform = transform.clone();
             transform.scale(node.getLocalScale());
         }
-        
+
         // caclulate the bounds by merging the bounds of all children
         for (Spatial s : children) {
             BoundingVolume childBounds = null;
@@ -223,6 +231,7 @@ public class BestViewUtils {
     /**
      * Get the model bounds of a piece of geometry. This returns the properly
      * scaled bounds, but with no rotation or offset.
+     *
      * @param g the object to calculate the bounds of
      * @param transform the transform to apply
      * @return the scaled bounds
@@ -235,27 +244,28 @@ public class BestViewUtils {
 
     /**
      * Transform a matrix based on the transform in the given spatial.
+     *
      * @param matrix the matrix to transform
      * @param spatial the spatial to transform it by
      * @return a clone of the matrix transformed based on the given spatial
      */
     private static Matrix4f transform(Matrix4f matrix, Spatial spatial) {
         Matrix4f out = matrix.clone();
-        
+
         if (spatial instanceof MatrixGeometry) {
             out.multLocal(((MatrixGeometry) spatial).getLocalTransform());
         } else {
             out.scale(spatial.getLocalScale());
             out.multLocal(spatial.getLocalRotation());
-            
+
             Matrix4f translate = new Matrix4f();
             translate.setTranslation(spatial.getLocalTranslation());
             out.multLocal(translate);
         }
-        
+
         return out;
     }
-    
+
     /**
      * Find the optimal distance for the given radius and field-of-view
      *
@@ -272,5 +282,4 @@ public class BestViewUtils {
 
         return (float) eyeDist;
     }
-
 }

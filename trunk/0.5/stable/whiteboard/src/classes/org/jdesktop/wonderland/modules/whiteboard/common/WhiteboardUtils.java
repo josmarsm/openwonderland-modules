@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2012, Open Wonderland Foundation, All Rights Reserved
@@ -67,12 +71,14 @@ import org.w3c.dom.Element;
 /**
  *
  * @author jbarratt
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardUtils {
     private static final Logger LOGGER =
             Logger.getLogger(WhiteboardUtils.class.getName());
     
     public static final String svgNS = SVGDOMImplementation.SVG_NAMESPACE_URI;
+    public static final String xlinkNS = "http://www.w3.org/1999/xlink";
     public static final DOMImplementation impl = SVGDOMImplementation.getDOMImplementation();
     public static final SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(XMLResourceDescriptor.getXMLParserClassName());
 
@@ -214,6 +220,12 @@ public class WhiteboardUtils {
                     y = elementBounds.getMinY(),
                     w = elementBounds.getWidth(),
                     h = elementBounds.getHeight();
+            s = new Rectangle2D.Double(x, y, w, h);
+        } else if (tagName.equals("image")) {
+            double x = Double.parseDouble(e.getAttributeNS(null, "x")),
+                    y = Double.parseDouble(e.getAttributeNS(null, "y")),
+                    w = Double.parseDouble(e.getAttributeNS(null, "width")),
+                    h = Double.parseDouble(e.getAttributeNS(null, "height"));
             s = new Rectangle2D.Double(x, y, w, h);
         }
 
