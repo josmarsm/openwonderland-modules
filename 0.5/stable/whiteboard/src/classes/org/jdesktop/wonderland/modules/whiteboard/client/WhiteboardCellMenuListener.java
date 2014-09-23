@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -21,10 +25,11 @@ package org.jdesktop.wonderland.modules.whiteboard.client;
  *
  * @author jbarratt
  * @author nsimpson
+ * @author Abhishek Upadhyay
  */
 public interface WhiteboardCellMenuListener {
 
-    public void newDoc();
+    public void remove();
 
     public void openDoc();
 
@@ -32,15 +37,9 @@ public interface WhiteboardCellMenuListener {
 
     public void line();
 
-    public void rect();
+    public void rect(boolean filled);
 
-    public void ellipse();
-
-    public void text();
-
-    public void fill();
-
-    public void draw();
+    public void ellipse(boolean filled);
 
     public void black();
 
@@ -61,4 +60,18 @@ public interface WhiteboardCellMenuListener {
     public void unsync();
 
     public void toggleHUD();
+    
+    public void backgroundImage();
+    
+    public void changeFont();
+    
+    public void image();
+    
+    public void newText();
+    
+    public void colorChooser();
+    
+    public void sendToBack();
+    
+    public void bringToFront();
 }

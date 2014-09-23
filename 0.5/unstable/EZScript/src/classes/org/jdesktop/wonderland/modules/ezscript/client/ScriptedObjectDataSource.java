@@ -1,7 +1,7 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
  */
+
 package org.jdesktop.wonderland.modules.ezscript.client;
 
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.client.cell.registry.annotation.CellFactory;
 import org.jdesktop.wonderland.client.cell.registry.spi.CellFactorySPI;
 import org.jdesktop.wonderland.client.login.LoginManager;
@@ -28,6 +27,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.generators.javascript.*;
 /**
  *
  * @author JagWire
+ * @author Abhishek Upadhyay
  */
 public enum ScriptedObjectDataSource {
 
@@ -264,11 +264,23 @@ public enum ScriptedObjectDataSource {
     
     private String generateCommandFactory(Bindings bindings) {
         
+        /**
+         * The rhino javascript engine is replaced by nashorn javascript engine from java8
+         * It has some different behavior. So we have changed some script here.
+         */
+        String firstArg = "";
+        if(engine.getClass().getName().equals("jdk.nashorn.api.scripting.NashornScriptEngine")) {
+            firstArg = "java.lang.Object.class";
+        } else {
+            firstArg = "java.lang.Object";
+        }
+        
         String void_factory = "function command_factory(iface) {\n"
                 + "\t return function() {\n"
-                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance("+firstArg+", arguments.length);\n"
                 + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
-                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t\t if(isNaN(parseFloat(arguments[i]))) {args[i] = arguments[i];} \n"
+                + "\t\t\t else { args[i] = parseFloat(arguments[i]); }\n"
                 + "\t\t }\n"
                 + "\t\t iface.setArguments(args);\n"
                 + "\t\t iface.run();\n"
@@ -279,9 +291,10 @@ public enum ScriptedObjectDataSource {
         
         String returnable_factory = "function returnable_factory(iface) {\n"
                 + "\t return function() {\n"
-                + "\t\t var args = java.lang.reflect.Array.newInstance(java.lang.Object, arguments.length);\n"
+                + "\t\t var args = java.lang.reflect.Array.newInstance("+firstArg+", arguments.length);\n"
                 + "\t\t for(var i = 0; i < arguments.length; i++) {\n"
-                + "\t\t\t args[i] = arguments[i];\n"
+                + "\t\t\t if(isNaN(parseFloat(arguments[i]))) {args[i] = arguments[i];} \n"
+                + "\t\t\t else { args[i] = parseFloat(arguments[i]); }\n"
                 + "\t\t }\n"
                 + "\t\t iface.setArguments(args);\n"
                 + "\t\t iface.run();\n"

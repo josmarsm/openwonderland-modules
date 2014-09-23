@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Open Wonderland
  *
  * Copyright (c) 2010, Open Wonderland Foundation, All Rights Reserved
@@ -52,6 +56,7 @@ import org.jdesktop.wonderland.modules.appbase.client.ControlArbMulti;
  * @author paulby
  * @author deronj
  * @author nsimpson
+ * @author Abhishek Upadhyay
  */
 @ExperimentalAPI
 public class WhiteboardApp extends App2D implements ControlChangeListener {
@@ -159,6 +164,30 @@ public class WhiteboardApp extends App2D implements ControlChangeListener {
         Element updating = importElement(e, notify);
         if (updating != null) {
             whiteboardWindow.updateElement(updating, notify);
+        }
+    }
+    
+    /**
+     * Add background image to an SVG document
+     * @param e the element to add
+     * @param notify whether to notify other clients
+     */
+    public void addBackgroundImage(Element e, boolean notify) {
+        Element adding = importElement(e, notify);
+        if (adding != null) {
+            whiteboardWindow.addElement(adding, notify);
+        }
+    }
+    
+    /**
+     * update background image in an SVG document
+     * @param e the element to update
+     * @param notify whether to notify other clients
+     */
+    public void updateBackgroundImage(Element e, boolean notify) {
+        Element updating = importElement(e, notify);
+        if (updating != null) {
+            whiteboardWindow.updateBackgroundImage(updating, notify);
         }
     }
 

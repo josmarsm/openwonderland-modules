@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
 /*
  * Project Wonderland
  * 
@@ -23,21 +27,35 @@
  */
 package org.jdesktop.wonderland.modules.whiteboard.client;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.MouseInfo;
+import java.awt.Point;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardColor;
 import org.jdesktop.wonderland.modules.whiteboard.client.WhiteboardToolManager.WhiteboardTool;
 
 /**
  *
  * @author nsimpson
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMenu {
 
@@ -48,6 +66,8 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     protected Map colorMappings;
     protected WhiteboardDragGestureListener gestureListener;
     protected WhiteboardWindow window;
+    protected ButtonHoverListener hoverListener;
+    protected Map<JButton,String> toolTipTextMap;
 
     public WhiteboardControlPanel(WhiteboardWindow window) {
         this.window = window;
@@ -70,14 +90,107 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         toolMappings.put(WhiteboardTool.LINE, lineButton);
         toolMappings.put(WhiteboardTool.RECT, rectangleButton);
         toolMappings.put(WhiteboardTool.ELLIPSE, ellipseButton);
-        toolMappings.put(WhiteboardTool.TEXT, textButton);
+        toolMappings.put(WhiteboardTool.RECT_FILL, rectangleFillButton);
+        toolMappings.put(WhiteboardTool.ELLIPSE_FILL, ellipseFillButton);
+        toolMappings.put(WhiteboardTool.NEW_TEXT, textButton);
+        toolMappings.put(WhiteboardTool.BACKGROUND_IMAGE, backgroundImageButton);
+        toolMappings.put(WhiteboardTool.IMAGE, moveableImage);
 
         colorMappings = Collections.synchronizedMap(new HashMap());
-        colorMappings.put(WhiteboardColor.RED, colorRedButton);
-        colorMappings.put(WhiteboardColor.GREEN, colorGreenButton);
-        colorMappings.put(WhiteboardColor.BLUE, colorBlueButton);
-        colorMappings.put(WhiteboardColor.BLACK, colorBlackButton);
-        colorMappings.put(WhiteboardColor.WHITE, colorWhiteButton);
+        colorMappings.put(WhiteboardColor.RED, new Object());
+        colorMappings.put(WhiteboardColor.GREEN, new Object());
+        colorMappings.put(WhiteboardColor.BLUE, new Object());
+        colorMappings.put(WhiteboardColor.BLACK, new Object());
+        colorMappings.put(WhiteboardColor.WHITE, new Object());
+        
+        //add tooltips
+        toolTipTextMap = new HashMap<JButton, String>();
+        toolTipTextMap.put(selectButton, " selector ");
+        toolTipTextMap.put(textButton, " add text ");
+        toolTipTextMap.put(fontButton, " change font ");
+        toolTipTextMap.put(lineButton, " line ");
+        toolTipTextMap.put(rectangleButton, " rectangle ");
+        toolTipTextMap.put(rectangleFillButton, " filled rectangle ");
+        toolTipTextMap.put(ellipseButton, " ellipse ");
+        toolTipTextMap.put(ellipseFillButton, " filled ellipse ");
+        toolTipTextMap.put(colorChooserButton, " color chooser ");
+        toolTipTextMap.put(bringToFrontButton, " bring to front ");
+        toolTipTextMap.put(sendToBackButton, " send to back ");
+        toolTipTextMap.put(moveableImage, " add moveable image ");
+        toolTipTextMap.put(backgroundImageButton, " add backgroung image ");
+        toolTipTextMap.put(newButton, " clear ");
+        toolTipTextMap.put(resizeButton, " resize element ");
+        toolTipTextMap.put(dragButton, " drag ");
+        if (!System.getProperty("os.name").contains("Windows")) {
+            if(hoverListener==null) {
+                hoverListener = new ButtonHoverListener();
+                selectButton.addMouseListener(hoverListener);
+                textButton.addMouseListener(hoverListener);
+                fontButton.addMouseListener(hoverListener);
+                lineButton.addMouseListener(hoverListener);
+                rectangleButton.addMouseListener(hoverListener);
+                rectangleFillButton.addMouseListener(hoverListener);
+                ellipseButton.addMouseListener(hoverListener);
+                ellipseFillButton.addMouseListener(hoverListener);
+                colorChooserButton.addMouseListener(hoverListener);
+                bringToFrontButton.addMouseListener(hoverListener);
+                sendToBackButton.addMouseListener(hoverListener);
+                moveableImage.addMouseListener(hoverListener);
+                backgroundImageButton.addMouseListener(hoverListener);
+                newButton.addMouseListener(hoverListener);
+                resizeButton.addMouseListener(hoverListener);
+                dragButton.addMouseListener(hoverListener);
+            }
+        } else {
+            selectButton.setToolTipText(toolTipTextMap.get(selectButton));
+            textButton.setToolTipText(toolTipTextMap.get(textButton));
+            fontButton.setToolTipText(toolTipTextMap.get(fontButton));
+            lineButton.setToolTipText(toolTipTextMap.get(lineButton));
+            rectangleButton.setToolTipText(toolTipTextMap.get(rectangleButton));
+            rectangleFillButton.setToolTipText(toolTipTextMap.get(rectangleFillButton));
+            ellipseButton.setToolTipText(toolTipTextMap.get(ellipseButton));
+            ellipseFillButton.setToolTipText(toolTipTextMap.get(ellipseFillButton));
+            colorChooserButton.setToolTipText(toolTipTextMap.get(colorChooserButton));
+            bringToFrontButton.setToolTipText(toolTipTextMap.get(bringToFrontButton));
+            sendToBackButton.setToolTipText(toolTipTextMap.get(sendToBackButton));
+            moveableImage.setToolTipText(toolTipTextMap.get(moveableImage));
+            backgroundImageButton.setToolTipText(toolTipTextMap.get(backgroundImageButton));
+            newButton.setToolTipText(toolTipTextMap.get(newButton));
+            resizeButton.setToolTipText(toolTipTextMap.get(resizeButton));
+            dragButton.setToolTipText(toolTipTextMap.get(dragButton));
+        }
+    }
+    
+    private class ButtonHoverListener extends MouseAdapter {
+
+        Popup popup = null;
+
+        @Override
+        public void mouseEntered(final MouseEvent e) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    JButton but = (JButton) e.getSource();
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BorderLayout(2,2));
+                    panel.setBackground(new Color(240,220,130));
+                    panel.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
+                    JLabel l = new JLabel(toolTipTextMap.get(but));
+                    panel.add(l);
+                    Point location = MouseInfo.getPointerInfo().getLocation();
+                    popup = PopupFactory.getSharedInstance().getPopup(selectButton, panel
+                            , location.x + 30, location.y);
+                    popup.show();
+                }
+            });
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            if (popup != null) {
+                popup.hide();
+            }
+        }
     }
 
     private void initListeners() {
@@ -114,30 +227,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         button.setBorderPainted(depress);
     }
 
-    public void setFillMode() {
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardFill32x32.png")));
-    }
-
-    public void setDrawMode() {
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardEditStrokeFill32x32.png")));
-    }
-
-    public void setOnHUD(boolean onHUD) {
-        if (onHUD) {
-            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDock32x32.png")));
-        } else {
-            toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardUndock32x32.png")));
-        }
-    }
-
-    public void setSynced(boolean synced) {
-        if (synced == true) {
-            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png")));
-        } else {
-            syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardUnsync32x32.png")));
-        }
-    }
-
     public void selectTool(WhiteboardTool tool) {
         JButton button = (JButton) toolMappings.get(tool);
         if (button != null) {
@@ -153,10 +242,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     }
 
     public void selectColor(WhiteboardColor color) {
-        JButton button = (JButton) colorMappings.get(color);
-        if (button != null) {
-            depressButton(button, true);
-        }
+
     }
 
     public void deselectColor(WhiteboardColor color) {
@@ -164,6 +250,10 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         if (button != null) {
             depressButton(button, false);
         }
+    }
+
+    public JSpinner getResizeSpinner() {
+        return resizeSpinner;
     }
 
     /** This method is called from within the constructor to
@@ -175,42 +265,34 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        toggleHUDButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
         lineButton = new javax.swing.JButton();
         rectangleButton = new javax.swing.JButton();
         ellipseButton = new javax.swing.JButton();
-        textButton = new javax.swing.JButton();
-        fillButton = new javax.swing.JButton();
-        colorRedButton = new javax.swing.JButton();
-        colorGreenButton = new javax.swing.JButton();
-        colorBlueButton = new javax.swing.JButton();
-        colorBlackButton = new javax.swing.JButton();
-        colorWhiteButton = new javax.swing.JButton();
-        syncButton = new javax.swing.JButton();
         dragButton = new javax.swing.JButton();
+        backgroundImageButton = new javax.swing.JButton();
+        fontButton = new javax.swing.JButton();
+        moveableImage = new javax.swing.JButton();
+        textButton = new javax.swing.JButton();
+        colorChooserButton = new javax.swing.JButton();
+        sendToBackButton = new javax.swing.JButton();
+        bringToFrontButton = new javax.swing.JButton();
+        rectangleFillButton = new javax.swing.JButton();
+        ellipseFillButton = new javax.swing.JButton();
+        resizeButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        resizeSpinner = new javax.swing.JSpinner();
+        jLabel1 = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(231, 230, 230));
-
-        toggleHUDButton.setBackground(new java.awt.Color(231, 230, 230));
-        toggleHUDButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDock32x32.png"))); // NOI18N
-        toggleHUDButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        toggleHUDButton.setBorderPainted(false);
-        toggleHUDButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        toggleHUDButton.setOpaque(true);
-        toggleHUDButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toggleHUDButtonActionPerformed(evt);
-            }
-        });
 
         newButton.setBackground(new java.awt.Color(231, 230, 230));
         newButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardNewDocument32x32.png"))); // NOI18N
         newButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         newButton.setBorderPainted(false);
         newButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        newButton.setOpaque(true);
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
@@ -222,7 +304,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         selectButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         selectButton.setBorderPainted(false);
         selectButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        selectButton.setOpaque(true);
         selectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectButtonActionPerformed(evt);
@@ -234,7 +315,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         lineButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         lineButton.setBorderPainted(false);
         lineButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        lineButton.setOpaque(true);
         lineButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 lineButtonActionPerformed(evt);
@@ -246,7 +326,6 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         rectangleButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         rectangleButton.setBorderPainted(false);
         rectangleButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        rectangleButton.setOpaque(true);
         rectangleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rectangleButtonActionPerformed(evt);
@@ -258,106 +337,9 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         ellipseButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         ellipseButton.setBorderPainted(false);
         ellipseButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        ellipseButton.setOpaque(true);
         ellipseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ellipseButtonActionPerformed(evt);
-            }
-        });
-
-        textButton.setBackground(new java.awt.Color(231, 230, 230));
-        textButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardAddText32x32.png"))); // NOI18N
-        textButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        textButton.setBorderPainted(false);
-        textButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        textButton.setOpaque(true);
-        textButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                textButtonActionPerformed(evt);
-            }
-        });
-
-        fillButton.setBackground(new java.awt.Color(231, 230, 230));
-        fillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardEditStrokeFill32x32.png"))); // NOI18N
-        fillButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        fillButton.setBorderPainted(false);
-        fillButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        fillButton.setOpaque(true);
-        fillButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fillButtonActionPerformed(evt);
-            }
-        });
-
-        colorRedButton.setBackground(new java.awt.Color(231, 230, 230));
-        colorRedButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/red.png"))); // NOI18N
-        colorRedButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        colorRedButton.setBorderPainted(false);
-        colorRedButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorRedButton.setOpaque(true);
-        colorRedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colorRedButtonActionPerformed(evt);
-            }
-        });
-
-        colorGreenButton.setBackground(new java.awt.Color(231, 230, 230));
-        colorGreenButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/green.png"))); // NOI18N
-        colorGreenButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        colorGreenButton.setBorderPainted(false);
-        colorGreenButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorGreenButton.setOpaque(true);
-        colorGreenButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colorGreenButtonActionPerformed(evt);
-            }
-        });
-
-        colorBlueButton.setBackground(new java.awt.Color(231, 230, 230));
-        colorBlueButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/blue.png"))); // NOI18N
-        colorBlueButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        colorBlueButton.setBorderPainted(false);
-        colorBlueButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorBlueButton.setOpaque(true);
-        colorBlueButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colorBlueButtonActionPerformed(evt);
-            }
-        });
-
-        colorBlackButton.setBackground(new java.awt.Color(231, 230, 230));
-        colorBlackButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/black.png"))); // NOI18N
-        colorBlackButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        colorBlackButton.setBorderPainted(false);
-        colorBlackButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorBlackButton.setOpaque(true);
-        colorBlackButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colorBlackButtonActionPerformed(evt);
-            }
-        });
-
-        colorWhiteButton.setBackground(new java.awt.Color(231, 230, 230));
-        colorWhiteButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/white.png"))); // NOI18N
-        colorWhiteButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        colorWhiteButton.setBorderPainted(false);
-        colorWhiteButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        colorWhiteButton.setOpaque(true);
-        colorWhiteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                colorWhiteButtonActionPerformed(evt);
-            }
-        });
-
-        syncButton.setBackground(new java.awt.Color(231, 230, 230));
-        syncButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSync32x32.png"))); // NOI18N
-        syncButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
-        syncButton.setBorderPainted(false);
-        syncButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        syncButton.setOpaque(true);
-        syncButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                syncButtonActionPerformed(evt);
             }
         });
 
@@ -366,68 +348,220 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         dragButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         dragButton.setBorderPainted(false);
         dragButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
-        dragButton.setOpaque(true);
         dragButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dragButtonActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(3, 3, 3)
-                .add(toggleHUDButton)
+        backgroundImageButton.setBackground(new java.awt.Color(231, 230, 230));
+        backgroundImageButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardBackgroundImage32x32.png"))); // NOI18N
+        backgroundImageButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        backgroundImageButton.setBorderPainted(false);
+        backgroundImageButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        backgroundImageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backgroundImageButtonActionPerformed(evt);
+            }
+        });
+
+        fontButton.setBackground(new java.awt.Color(231, 230, 230));
+        fontButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardFont32x32.png"))); // NOI18N
+        fontButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        fontButton.setBorderPainted(false);
+        fontButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        fontButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fontButtonActionPerformed(evt);
+            }
+        });
+
+        moveableImage.setBackground(new java.awt.Color(231, 230, 230));
+        moveableImage.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardMovableImage32x32.png"))); // NOI18N
+        moveableImage.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        moveableImage.setBorderPainted(false);
+        moveableImage.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        moveableImage.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                moveableImageActionPerformed(evt);
+            }
+        });
+
+        textButton.setBackground(new java.awt.Color(231, 230, 230));
+        textButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardAddText32x32.png"))); // NOI18N
+        textButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        textButton.setBorderPainted(false);
+        textButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        textButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                textButtonActionPerformed(evt);
+            }
+        });
+
+        colorChooserButton.setBackground(new java.awt.Color(231, 230, 230));
+        colorChooserButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardFill32x32.png"))); // NOI18N
+        colorChooserButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        colorChooserButton.setBorderPainted(false);
+        colorChooserButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        colorChooserButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                colorChooserButtonActionPerformed(evt);
+            }
+        });
+
+        sendToBackButton.setBackground(new java.awt.Color(231, 230, 230));
+        sendToBackButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardSendToBack32x32.png"))); // NOI18N
+        sendToBackButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        sendToBackButton.setBorderPainted(false);
+        sendToBackButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        sendToBackButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sendToBackButtonActionPerformed(evt);
+            }
+        });
+
+        bringToFrontButton.setBackground(new java.awt.Color(231, 230, 230));
+        bringToFrontButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardBringToFront32x32.PNG"))); // NOI18N
+        bringToFrontButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        bringToFrontButton.setBorderPainted(false);
+        bringToFrontButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        bringToFrontButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bringToFrontButtonActionPerformed(evt);
+            }
+        });
+
+        rectangleFillButton.setBackground(new java.awt.Color(231, 230, 230));
+        rectangleFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrawFillRectangle32x32.png"))); // NOI18N
+        rectangleFillButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        rectangleFillButton.setBorderPainted(false);
+        rectangleFillButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        rectangleFillButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rectangleFillButtonActionPerformed(evt);
+            }
+        });
+
+        ellipseFillButton.setBackground(new java.awt.Color(231, 230, 230));
+        ellipseFillButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardDrawEllipseFilled32x32.png"))); // NOI18N
+        ellipseFillButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        ellipseFillButton.setBorderPainted(false);
+        ellipseFillButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        ellipseFillButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ellipseFillButtonActionPerformed(evt);
+            }
+        });
+
+        resizeButton.setBackground(new java.awt.Color(231, 230, 230));
+        resizeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/jdesktop/wonderland/modules/whiteboard/client/resources/WhiteboardResize32x32.PNG"))); // NOI18N
+        resizeButton.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.LOWERED));
+        resizeButton.setBorderPainted(false);
+        resizeButton.setMargin(new java.awt.Insets(0, -4, 0, -4));
+        resizeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resizeButtonActionPerformed(evt);
+            }
+        });
+
+        resizeSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        jLabel1.setText("%");
+
+        org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .add(resizeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 64, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(0, 0, 0)
-                .add(newButton)
-                .add(0, 0, 0)
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(jPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(resizeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel1))
+                .addContainerGap())
+        );
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
                 .add(selectButton)
+                .add(0, 0, 0)
+                .add(textButton)
+                .add(0, 0, 0)
+                .add(fontButton)
                 .add(0, 0, 0)
                 .add(lineButton)
                 .add(0, 0, 0)
                 .add(rectangleButton)
                 .add(0, 0, 0)
+                .add(rectangleFillButton)
+                .add(0, 0, 0)
                 .add(ellipseButton)
                 .add(0, 0, 0)
-                .add(textButton)
+                .add(ellipseFillButton)
                 .add(0, 0, 0)
-                .add(fillButton)
+                .add(colorChooserButton)
                 .add(0, 0, 0)
-                .add(colorRedButton)
+                .add(bringToFrontButton)
                 .add(0, 0, 0)
-                .add(colorGreenButton)
+                .add(sendToBackButton)
                 .add(0, 0, 0)
-                .add(colorBlueButton)
+                .add(moveableImage)
                 .add(0, 0, 0)
-                .add(colorBlackButton)
+                .add(backgroundImageButton)
                 .add(0, 0, 0)
-                .add(colorWhiteButton)
-                .add(0, 0, 0)
-                .add(syncButton)
+                .add(newButton)
                 .add(0, 0, 0)
                 .add(dragButton)
-                .add(6, 6, 6))
+                .add(0, 0, 0)
+                .add(resizeButton)
+                .add(0, 0, 0)
+                .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(0, 0, 0))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1Layout.createSequentialGroup()
+                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(fontButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(moveableImage, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(backgroundImageButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(colorChooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(sendToBackButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(bringToFrontButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(rectangleFillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(ellipseFillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(resizeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jPanel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .add(0, 0, 0))
+        );
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(toggleHUDButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(newButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(selectButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(lineButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(rectangleButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(ellipseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(textButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(fillButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(colorRedButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(colorGreenButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(colorBlueButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(colorBlackButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(colorWhiteButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(syncButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(dragButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 38, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -435,7 +569,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
         Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
         while (iter.hasNext()) {
             WhiteboardCellMenuListener listener = iter.next();
-            listener.newDoc();
+            listener.remove();
         }
 }//GEN-LAST:event_newButtonActionPerformed
 
@@ -464,7 +598,7 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
             while (iter.hasNext()) {
                 WhiteboardCellMenuListener listener = iter.next();
-                listener.rect();
+                listener.rect(false);
             }
         }
 }//GEN-LAST:event_rectangleButtonActionPerformed
@@ -474,109 +608,126 @@ public class WhiteboardControlPanel extends javax.swing.JPanel implements CellMe
             Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
             while (iter.hasNext()) {
                 WhiteboardCellMenuListener listener = iter.next();
-                listener.ellipse();
+                listener.ellipse(false);
             }
         }
 }//GEN-LAST:event_ellipseButtonActionPerformed
-
-    private void textButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textButtonActionPerformed
-        if (!isButtonDepressed(textButton)) {
-            Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-            while (iter.hasNext()) {
-                WhiteboardCellMenuListener listener = iter.next();
-                listener.text();
-            }
-        }
-}//GEN-LAST:event_textButtonActionPerformed
-
-    private void fillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fillButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            fillMode = !fillMode;   // toggle between fill and draw modes
-            if (fillMode == true) {
-                listener.fill();
-            } else {
-                listener.draw();
-            }
-        }
-}//GEN-LAST:event_fillButtonActionPerformed
-
-    private void colorRedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorRedButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.red();
-        }
-}//GEN-LAST:event_colorRedButtonActionPerformed
-
-    private void colorGreenButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorGreenButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.green();
-        }
-}//GEN-LAST:event_colorGreenButtonActionPerformed
-
-    private void colorBlueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlueButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.blue();
-        }
-}//GEN-LAST:event_colorBlueButtonActionPerformed
-
-    private void colorBlackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorBlackButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.black();
-        }
-}//GEN-LAST:event_colorBlackButtonActionPerformed
-
-    private void colorWhiteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorWhiteButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.white();
-        }
-}//GEN-LAST:event_colorWhiteButtonActionPerformed
-
-    private void syncButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.sync();
-        }
-}//GEN-LAST:event_syncButtonActionPerformed
-
-    private void toggleHUDButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleHUDButtonActionPerformed
-        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
-        while (iter.hasNext()) {
-            WhiteboardCellMenuListener listener = iter.next();
-            listener.toggleHUD();
-        }
-}//GEN-LAST:event_toggleHUDButtonActionPerformed
 
     private void dragButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dragButtonActionPerformed
         // TODO add your handling code here:
 }//GEN-LAST:event_dragButtonActionPerformed
 
+    private void backgroundImageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundImageButtonActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.backgroundImage();
+        }
+    }//GEN-LAST:event_backgroundImageButtonActionPerformed
+
+    private void fontButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fontButtonActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.changeFont();
+        }
+    }//GEN-LAST:event_fontButtonActionPerformed
+
+    private void moveableImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveableImageActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.image();
+        }
+    }//GEN-LAST:event_moveableImageActionPerformed
+
+    private void textButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textButtonActionPerformed
+        // TODO add your handling code here:
+        if (!isButtonDepressed(textButton)) {
+            Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+            while (iter.hasNext()) {
+                WhiteboardCellMenuListener listener = iter.next();
+                listener.newText();
+            }
+        }
+    }//GEN-LAST:event_textButtonActionPerformed
+
+    private void colorChooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorChooserButtonActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.colorChooser();
+        }
+    }//GEN-LAST:event_colorChooserButtonActionPerformed
+
+    private void sendToBackButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendToBackButtonActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.sendToBack();
+        }
+    }//GEN-LAST:event_sendToBackButtonActionPerformed
+
+    private void bringToFrontButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bringToFrontButtonActionPerformed
+        // TODO add your handling code here:
+        Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+        while (iter.hasNext()) {
+            WhiteboardCellMenuListener listener = iter.next();
+            listener.bringToFront();
+        }
+    }//GEN-LAST:event_bringToFrontButtonActionPerformed
+
+    private void rectangleFillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rectangleFillButtonActionPerformed
+        // TODO add your handling code here:
+        if (!isButtonDepressed(rectangleFillButton)) {
+            Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+            while (iter.hasNext()) {
+                WhiteboardCellMenuListener listener = iter.next();
+                listener.rect(true);
+            }
+        }
+    }//GEN-LAST:event_rectangleFillButtonActionPerformed
+
+    private void ellipseFillButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ellipseFillButtonActionPerformed
+        // TODO add your handling code here:
+        if (!isButtonDepressed(ellipseFillButton)) {
+            Iterator<WhiteboardCellMenuListener> iter = cellMenuListeners.iterator();
+            while (iter.hasNext()) {
+                WhiteboardCellMenuListener listener = iter.next();
+                listener.ellipse(true);
+            }
+        }
+    }//GEN-LAST:event_ellipseFillButtonActionPerformed
+
+    private void resizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resizeButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_resizeButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton colorBlackButton;
-    private javax.swing.JButton colorBlueButton;
-    private javax.swing.JButton colorGreenButton;
-    private javax.swing.JButton colorRedButton;
-    private javax.swing.JButton colorWhiteButton;
+    private javax.swing.JButton backgroundImageButton;
+    private javax.swing.JButton bringToFrontButton;
+    private javax.swing.JButton colorChooserButton;
     private javax.swing.JButton dragButton;
     private javax.swing.JButton ellipseButton;
-    private javax.swing.JButton fillButton;
+    private javax.swing.JButton ellipseFillButton;
+    private javax.swing.JButton fontButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JButton lineButton;
+    private javax.swing.JButton moveableImage;
     private javax.swing.JButton newButton;
     private javax.swing.JButton rectangleButton;
+    private javax.swing.JButton rectangleFillButton;
+    private javax.swing.JButton resizeButton;
+    private javax.swing.JSpinner resizeSpinner;
     private javax.swing.JButton selectButton;
-    private javax.swing.JButton syncButton;
+    private javax.swing.JButton sendToBackButton;
     private javax.swing.JButton textButton;
-    private javax.swing.JButton toggleHUDButton;
     // End of variables declaration//GEN-END:variables
 }

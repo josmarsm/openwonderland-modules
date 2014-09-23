@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="navigate-to" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.navigate-to}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+    <property file="${current.dir}/../modules-stable.properties"/>
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+    <property name="module.stable.dir" value="${current.dir}/../../stable"/>
+    <property name="module.unstable.dir" value="${current.dir}/../"/>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
+        <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
+        <path location="${module.stable.dir}/best-view/build/client/best-view-client.jar"/>
+        <path location="${module.stable.dir}/capability-bridge/build/client/capability-bridge-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>
+        <path location="${module.stable.dir}/best-view/build/server/best-view-server.jar"/>
+    </pathconvert>
+
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="${module.version.major}" 
+        minorVersion="${module.version.minor}" jarfile="${module.dist.dir}/${module.name}.jar" 
+        moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="avatarbase" majorversion="0" minorversion="5"/>
+            <requires name="best-view" majorversion="2" minorversion="1"/>
+            <requires name="capability-bridge" majorversion="1" minorversion="0"/>
+            
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+
+                    <!-- include icons -->
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                        <include name="${module.src}/client/**/*.jpg"/>
+                    </fileset>
+                </clientjar> 
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+        </module>
+    </target>                                  
+                                           
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>

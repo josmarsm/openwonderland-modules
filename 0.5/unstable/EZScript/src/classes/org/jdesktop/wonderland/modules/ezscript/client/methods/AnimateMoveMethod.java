@@ -1,6 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
  */
 
 package org.jdesktop.wonderland.modules.ezscript.client.methods;
@@ -37,6 +36,7 @@ import org.jdesktop.wonderland.modules.ezscript.client.cell.AnotherMovableCompon
 /**
  *
  * @author JagWire
+ * @author Abhishek Upadhyay
  */
 @ExperimentalAPI
 @ScriptMethod
@@ -232,7 +232,7 @@ public class AnimateMoveMethod implements ScriptMethodSPI {
             String position = "X: " + translate.x + "\n"
                     + "Y: " +translate.y + "\n"
                     + "Z: " +translate.z;
-            System.out.println(position);
+//            System.out.println(position);
             //quaternion.fromAngles(0.0f, degrees, 0.0f);
             frameIndex +=1;
 

@@ -59,6 +59,8 @@
     <target name="-modules-stable-dist-copy-selected" unless="modules.include.all">
         <copy todir="dist">
             <filelist dir=".">
+				<file name="capability-bridge/dist/capability-bridge.jar"/>
+				<file name="sittingComponent/dist/Sittable.jar"/>
                 <file name="wonderland-almostempty-world/dist/wonderland-almostempty-world.jar"/>
                 <file name="wonderland-auditorium-world/dist/wonderland-auditorium-world.jar"/>
                 <file name="wonderland-combined-world/dist/wonderland-combined-world.jar"/>
@@ -73,14 +75,13 @@
                 <file name="audiorecorder-module/dist/audiorecorder.jar"/>
                 <file name="stickynote/dist/stickynote.jar"/>
                 <file name="clickablelink/dist/clickable-link.jar"/>
-		<file name="quick-reference/dist/quick-reference.jar"/>
+				<file name="quick-reference/dist/quick-reference.jar"/>
                 <file name="quickstartguide/dist/quickstartguide.jar"/>
                 <file name="admin-tools/dist/admin-tools.jar"/>
                 <file name="poster/dist/poster.jar"/>
                 <file name="tooltip-component/dist/tooltip-component.jar"/>
                 <file name="microphone/dist/microphone.jar"/>
                 <file name="best-view/dist/best-view.jar"/>
-                <file name="sittingComponent/dist/Sittable.jar"/>
             </filelist>
             <mapper type="flatten"/>
         </copy> 

@@ -1,4 +1,8 @@
 /**
+ * Copyright (c) 2014, WonderBuilders, Inc., All Rights Reserved
+ */
+
+/**
  * Project Wonderland
  *
  * Copyright (c) 2004-2009, Sun Microsystems, Inc., All Rights Reserved
@@ -19,7 +23,6 @@ package org.jdesktop.wonderland.modules.whiteboard.server.cell;
 
 import org.jdesktop.wonderland.modules.whiteboard.server.*;
 import com.jme.math.Vector2f;
-import com.sun.sgs.app.AppContext;
 import com.sun.sgs.app.ManagedReference;
 import java.awt.Point;
 import java.util.Calendar;
@@ -33,6 +36,8 @@ import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMess
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.RequestStatus;
 import org.jdesktop.wonderland.modules.whiteboard.common.WhiteboardUtils;
 import org.jdesktop.wonderland.modules.appbase.server.cell.App2DCellMO;
+import static org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action.ADD_ELEMENT;
+import static org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardCellMessage.Action.UPDATE_ELEMENT;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellClientState;
 import org.jdesktop.wonderland.modules.whiteboard.common.cell.WhiteboardSVGCellServerState;
 import org.jdesktop.wonderland.server.cell.annotation.UsesCellComponentMO;
@@ -45,6 +50,7 @@ import org.w3c.dom.Element;
  * A server cell associated with a whiteboard
  * @author nsimpson
  * @author jbarratt
+ * @author Abhishek Upadhyay
  */
 public class WhiteboardCellMO extends App2DCellMO {
     // The communications component used to broadcast to all clients
@@ -406,11 +412,39 @@ public class WhiteboardCellMO extends App2DCellMO {
                         updateElement(updatingElement);
                         persistDocument();
                         break;
+                    case ADD_TEXT_ELEMENT:
+                        Element toAdd1 = WhiteboardUtils.xmlStringToElement(messageReceived.getXMLString());
+                        constructDocument();
+                        Element addingElement1 = (Element) svgDocument.importNode(toAdd1, true);
+                        addElement(addingElement1);
+                        persistDocument();
+                        break;
+                    case UPDATE_TEXT_ELEMENT:
+                        Element toUpdate1 = WhiteboardUtils.xmlStringToElement(messageReceived.getXMLString());
+                        constructDocument();
+                        Element updatingElement1 = (Element) svgDocument.importNode(toUpdate1, true);
+                        updateElement(updatingElement1);
+                        persistDocument();
+                        break;
                     case SET_VIEW_POSITION:
                         setPosition(messageReceived.getPosition());
                         break;
                     case SET_ZOOM:
                         setZoom(messageReceived.getZoom());
+                        break;
+                    case UPDATE_BACKGROUND_IMAGE:
+                        Element toUpdateBI = WhiteboardUtils.xmlStringToElement(messageReceived.getXMLString());
+                        constructDocument();
+                        Element updatingBIElement = (Element) svgDocument.importNode(toUpdateBI, true);
+                        updateElement(updatingBIElement);
+                        persistDocument();
+                        break;
+                    case ADD_BACKGROUND_IMAGE:
+                        Element toAddBI = WhiteboardUtils.xmlStringToElement(messageReceived.getXMLString());
+                        constructDocument();
+                        Element addingBIElement = (Element) svgDocument.importNode(toAddBI, true);
+                        addElement(addingBIElement);
+                        persistDocument();
                         break;
                     default:
                         break;
