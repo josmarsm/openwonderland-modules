@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.1" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd">
+  <tlib-version>1.0</tlib-version>
+  <short-name>isocial</short-name>
+  <uri>/WEB-INF/tlds/isocial</uri>
+  <function>
+    <name>isAdmin</name>
+    <function-class>org.jdesktop.wonderland.modules.isocial.weblib.ISocialWebUtils</function-class>
+    <function-signature>boolean isAdmin(javax.servlet.http.HttpServletRequest)</function-signature>
+  </function>
+  <function>
+    <name>isGuide</name>
+    <function-class>org.jdesktop.wonderland.modules.isocial.weblib.ISocialWebUtils</function-class>
+    <function-signature>boolean isGuide(javax.servlet.http.HttpServletRequest)</function-signature>
+  </function>
+  <function>
+    <name>isStudent</name>
+    <function-class>org.jdesktop.wonderland.modules.isocial.weblib.ISocialWebUtils</function-class>
+    <function-signature>boolean isStudent(javax.servlet.http.HttpServletRequest)</function-signature>
+  </function>
+</taglib>

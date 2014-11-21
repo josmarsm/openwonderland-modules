@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model-cell>
+    <name>Booth Desk</name>
+    <model-cell-component>
+        <deployedModelURL>wla://FairBooth/table_4-3_colored_v04.DAE/table_4-3_colored_v04.DAE.gz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>true</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+        <TransparencyMode>DEFAULT</TransparencyMode>
+    </model-cell-component>
+    <colortheme-component>
+        <textureMapping/>
+    </colortheme-component>
+
+    <position-component>
+        <translation>
+            <x>0.47</x>
+            <y>-1.3</y>
+            <z>1.75</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.5</x>
+            <y>2.0</y>
+            <z>0.02</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+</model-cell>
+
+

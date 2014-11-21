@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="scavengerhunt-sheet" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.isocial-sample-sheet}"/>
+
+    <!-- import properties from the common modules properties. These values
+         may overwrite some values in my.module.properties, such as the
+         location of the Wonderland directory in the case of the entire modules
+         directory being checked out instead of an individual file -->
+
+    <!-- import properties for this module -->
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/security/build/lib/client/security-client.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${current.dir}/../build/client/isocial-sheets-client.jar"/>
+        <path location="${wonderland-modules.stable.dir}/best-view/build/client/best-view-client.jar"/>
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${current.dir}/../build/lib/web/isocial-sheets-weblib.jar"/>
+        <path location="${wonderland-modules.stable.dir}/poster/build/client/poster-client.jar" />
+        <path location="${modules.dir}/tools/capability-bridge/build/client/capability-bridge-client.jar"/>
+        <path location="${wonderland-modules.stable.dir}/best-view/build/client/best-view-client.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${current.dir}/../build/client/isocial-sheets-client.jar"/>
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${current.dir}/../build/lib/web/isocial-sheets-weblib.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/security/build/lib/server/security-server.jar"/>
+        <path location="${current.dir}/../build/server/isocial-sheets-server.jar"/>
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${wonderland-modules.stable.dir}/best-view/build/server/best-view-server.jar"/>
+        <path location="${modules.dir}/tools/audio-manager/lib/voicelib.jar" />
+        <path location="${modules.dir}/tools/audio-manager/lib/voip.jar" />
+        <path location="${modules.dir}/tools/audio-manager/lib/bridge_connector.jar" />
+        <path location="${wonderland.dir}/core/build/lib/wonderland-server.jar"/>
+    </pathconvert>
+
+    <pathconvert property="module-web.classpath">
+        <path location="${wonderland.dir}/web/front/dist/wonderland-webadmin-core.jar"/>
+        <path location="${modules.dir}/foundation/darkstar-api/build/lib/darkstar-api.jar"/>
+        <path location="${wonderland.dir}/web/runner/dist/wonderland-runner-api.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-client.jar"/>
+        <path location="${wonderland.dir}/core/build/lib/wonderland-common.jar"/>
+        <path location="${current.dir}/../build/lib/web/isocial-sheets-weblib.jar"/>
+        <path location="${modules.dir}/tools/sharedstate/build/server/sharedstate-server.jar"/>
+    </pathconvert>
+
+
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <target name="build" depends="-module-init, -module-compile-common, 
+                                                -module-compile-server,
+                                                -module-compile-client,
+                                                -module-compile-web,
+                                                -isocial-sample-sheet-compile-weblib"/>
+
+    <target name="-isocial-sample-sheet-compile-weblib" depends="-module-init">
+        <wl-compile>
+            <compile-classes>
+                <include name="${module.src}/weblib/**"/>
+            </compile-classes>
+
+            <compile-classpath>
+                <pathelement path="${web.classpath}"/>
+                <pathelement path="${module-weblib.classpath}"/>
+            </compile-classpath>
+        </wl-compile>
+    </target>
+
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+
+        <module name="${module.name}" majorVersion="1" minorVersion="0" 
+                jarfile="${module.dist.dir}/${module.name}.jar" 
+                moduleDescription="${module.description}" builddir="${build.dir}">
+            <requires name="capability-bridge" majorversion="1" minorversion="0"/>
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <include name="${module.src}/common/**"/>
+
+                    <!-- include icons -->
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/**/*.properties"/>
+                        <include name="${module.src}/client/**/*.png"/>
+                        <include name="${module.src}/client/**/*.au"/>
+                    </fileset>
+                </clientjar> 
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+
+            <part name="web">
+                <jar name="${module.name}.war">
+                    <zipfileset dir="${build.classes.dir}" prefix="WEB-INF/classes">
+                        <include name="${module.src}/web/**"/>
+                    </zipfileset>
+                    <fileset dir="${current.dir}/web"/>
+                </jar>
+            </part>
+
+            <part name="weblib">
+                <jar name="${module.name}-weblib.jar">
+                    <fileset dir="${build.classes.dir}">
+                        <include name="${module.src}/weblib/**"/>
+                        <include name="${module.src}/common/**"/>
+                        <exclude name="${module.src}/common/Shared**"/>
+                    </fileset>
+                </jar>
+            </part>
+        </module>
+    </target>                                  
+                                           
+    <target name="deploy" depends="dist, -deploy-with-dir, -deploy-without-dir"/>
+
+    <target name="-deploy-with-dir" if="isocial.deploy.dir">
+        <unzip src="${module.dist.dir}/${module.name}.jar" dest="${isocial.deploy.dir}"/>
+    </target>
+
+    <target name="-deploy-without-dir" unless="isocial.deploy.dir">
+        <echo message="Deploy disabled"/>
+    </target>
+
+    <target name="clean" depends="-module-clean"/>
+</project>

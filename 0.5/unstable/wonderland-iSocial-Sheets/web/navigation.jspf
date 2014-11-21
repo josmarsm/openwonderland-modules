@@ -1,0 +1,23 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="MacRoman" %>
+
+<style>
+    div#nav-tabs { background: transparent; }
+    div#nav-content { padding: 0px 5px 0px 5px; };
+</style>
+
+<script type="text/javascript">
+    function navSelect(id) {
+        $("#nav-tabs #" + id).addClass("ui-tabs-selected");
+        $("#nav-tabs #" + id).addClass("ui-state-active");
+    }
+</script>
+
+<div id="nav-tabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
+    <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+        <li id="lessons" class="ui-state-default ui-corner-top"><a href="lessons.jsp">Lessons</a></li>
+        <li id="cohorts" class="ui-state-default ui-corner-top"><a href="cohorts.jsp">Cohorts</a></li>
+        <li id="results" class="ui-state-default ui-corner-top"><a href="results.jsp">Results</a></li>
+    </ul>
+
+    <div id="nav-content">

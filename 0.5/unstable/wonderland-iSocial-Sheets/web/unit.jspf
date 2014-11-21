@@ -1,0 +1,229 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="MacRoman" %>
+
+<script type="text/javascript">
+    function Units(table) {
+      
+        
+        var units = {};
+        var table = table;
+
+        this.getAll = function() {
+            return units;
+        }
+
+        this.get = function(unitId) {
+            return units[unitId];
+        }
+
+        this.load = function(lessons, sheets) {
+           
+            $.getJSON("resources/units", function(data) {
+                if (!data) return;
+                var res = ensureArray(data.unit);
+                $.each(res, function(i, unit) {
+                    update(unit, $("#" + table.name + "-body"), lessons, sheets);
+                });
+
+                table.rebuild();
+            });
+        }
+        
+        var update = function(unit, tableBody, lessons, sheets) {
+            units[unit.id] = unit;
+
+            tableBody.append(
+            "<tr id=\"" + unit.id + "\"> " +
+                "<td><span class=\"icon24 folder\">" + unit.name + "</span></td>" +
+                "<td>" + generateActions(unit.id + "-select",
+            [["edit", "Edit"],
+                ["copy", "Copy"],
+                ["delete", "Delete"],
+                ["add", "Add lesson"],
+                ["results", "Get results"]]) +
+
+                "</td><td>" + dateHuman(unit.updated) + "</td>" +
+                "<td></td></tr>");
+
+            // create a styled select menu
+            $('select#' + unit.id + "-select").selectmenu({
+                select: function(event, options) {
+                    switch (options.value) {
+                        case "edit":
+                            showEditDialog(unit);
+                            break;
+                        case "delete":
+                            showDeleteDialog(unit);
+                            break;
+                        case "copy":
+                            copy(unit);
+                            break;
+                        case "add":
+                            lessons.showCreateDialog(unit);
+                            break;
+                        case "results":
+                            getResults(unit);
+                            break;
+                    }
+                }
+            });
+
+            // get lessons
+            lessons.load(unit, sheets);
+        }
+
+        var createDialogs = function() {
+            $( "#create-unit-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Create unit": function() {
+                        var unit = new Object();
+                        unit.name = $( "#create-unit-name" ).val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/units/new",
+                            data: JSON.stringify(unit),
+                            dataType: 'json',
+                            success: function(data) {
+                                $( "#create-unit-form" ).dialog( "close" );
+                                $( "#create-unit-name" ).val("");
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            // create the edit unit dialog
+            $( "#edit-unit-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Update unit": function() {
+                        // find the unit to update
+                        
+                        
+                        
+                        var unitId = $( "#edit-unit-id").val();
+                        var unit = units[unitId];
+
+                        // change its name
+                        unit.name = $( "#edit-unit-name" ).val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/units/" + unit.id,
+                            data: JSON.stringify(unit),
+                            dataType: 'json',
+                            success: function(data) {
+                                $( "#edit-unit-form" ).dialog( "close" );
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#delete-unit-dialog" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:140,
+                modal: true,
+                buttons: {
+                    "Delete unit": function() {
+                        var unitId = $( "#delete-unit-id" ).val();
+
+                        $.ajax({
+                            type: 'DELETE',
+                            url: "resources/units/" + unitId,
+                            success: function(data) {
+                                $( "#delete-unit-dialog" ).dialog( "close" );
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        }
+
+        this.showCreateDialog = function() {
+            $( "#create-unit-form" ).dialog( "open" );
+            $( ".ui-dialog-buttonset > button:first" ).focus();
+        }
+
+        var showEditDialog = function(unit) {
+            $( "#edit-unit-id" ).val(unit.id);
+            $( "#edit-unit-name" ).val(unit.name);
+            $( "#edit-unit-form" ).dialog( "open" );
+        }
+
+        var copy = function(unit) {
+            $.ajax({
+                type: 'POST',
+                url: "resources/units/" + unit.id + "/copy",
+                success: function(data) {
+                    table.update();
+                },
+                contentType: "application/json"
+            });
+        }
+
+        var showDeleteDialog = function(unit) {
+            $( "#delete-unit-id" ).val(unit.id);
+            $( "#delete-unit-dialog" ).dialog( "open" );
+        }
+
+        // create dialogs
+        createDialogs();
+    }
+</script>
+
+<div id="create-unit-form" title="Create new unit">
+    <form action="#">
+        <fieldset>
+            <label for="unit-name">Name</label>
+            <input type="text" name="create-unit-name" id="create-unit-name" class="text ui-widget-content ui-corner-all" />
+        </fieldset>
+    </form>
+</div>
+
+<div id="edit-unit-form" title="Edit unit">
+    <form action="#">
+        <fieldset>
+            <label for="edit-unit-name">Name</label>
+            <input type="text" name="edit-unit-name" id="edit-unit-name" class="text ui-widget-content ui-corner-all" />
+            <input type="hidden" name="edit-unit-id" id="edit-unit-id"/>
+        </fieldset>
+    </form>
+</div>
+
+<div id="delete-unit-dialog" title="Delete unit?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+        This unit will be permanently deleted and cannot be recovered. Are you sure?</p>
+
+    <form action="#">
+        <fieldset>
+            <input type="hidden" name="delete-unit-id" id="delete-unit-id"/>
+        </fieldset>
+    </form>
+</div>

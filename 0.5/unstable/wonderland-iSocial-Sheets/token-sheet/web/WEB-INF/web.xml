@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <listener>
+        <listener-class>org.jdesktop.wonderland.modules.isocial.weblib.servlet.ISocialContextListener</listener-class>
+    </listener>
+    <servlet>
+        <servlet-name>EditorServlet</servlet-name>
+        <servlet-class>org.jdesktop.wonderland.modules.isocial.tokensheet.web.EditorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EditorServlet</servlet-name>
+        <url-pattern>/edit</url-pattern>
+    </servlet-mapping>
+    <security-constraint>
+        <display-name>Require Login</display-name>
+        <web-resource-collection>
+            <web-resource-name>Everything</web-resource-name>
+            <description>All pages</description>
+            <url-pattern>/</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>Require login</description>
+            <role-name>student</role-name>
+            <role-name>guide</role-name>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-constraint>
+        <display-name>Require Guide</display-name>
+        <web-resource-collection>
+            <web-resource-name>Sheet editor</web-resource-name>
+            <description>Sheet editor</description>
+            <url-pattern>/edit</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <description>Require Guide</description>
+            <role-name>admin</role-name>
+            <role-name>guide</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <security-role>
+        <description>A system administrator</description>
+        <role-name>admin</role-name>
+    </security-role>
+    <security-role>
+        <description>Online guide</description>
+        <role-name>guide</role-name>
+    </security-role>
+    <security-role>
+        <description>Student</description>
+        <role-name>student</role-name>
+    </security-role>
+</web-app>

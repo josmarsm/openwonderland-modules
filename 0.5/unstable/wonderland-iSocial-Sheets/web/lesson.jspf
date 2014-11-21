@@ -1,0 +1,370 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="MacRoman" %>
+
+<style>
+    div#move-lesson-unit select { width: 200px; }
+    div#edit-lesson-form select { width: 300px; }
+    div#create-lesson-form select { width: 300px; }
+</style>
+
+<script type="text/javascript">
+    function Lessons(table) {
+        var lessons = {};
+        var table = table;
+
+        this.getAll = function() {
+            return lessons;
+        }
+
+        this.get = function(unitId, lessonId) {
+            return lessons[unitId + "-" + lessonId];
+        }
+
+        this.getFor = function(unitId) {
+            var out = new Array();
+
+            $.each(lessons, function(index, lesson) {
+                if (lesson.unitId == unitId) {
+                    out.push(lesson);
+                }
+            });
+
+            return out;
+        }
+
+        this.load = function(unit, sheets) {
+            $.getJSON("resources/lessons/" + unit.id, function(data) {
+                if (!data) return;
+                var res = ensureArray(data.lesson);
+                $.each(res, function(i, lesson) {
+                    update(unit, lesson, sheets);
+                });
+
+                table.rebuild();
+            });
+        }
+
+        var update = function(unit, lesson, sheets) {
+            lessons[unit.id + "-" + lesson.id] = lesson;
+
+            appendTo(unit.id,
+            "<tr id=\"" + unit.id + "-" + lesson.id + "\" class=\"child-of-" + unit.id + "\"> " +
+                "<td><span class=\"icon24 folder\">" + lesson.name + "</span></td>" +
+                "<td>" + generateActions(unit.id + "-" + lesson.id + "-select",
+            [["edit", "Edit"],
+                ["copy", "Copy"],
+                ["move", "Move"],
+                ["delete", "Delete"],
+                ["add", "Add sheet"],
+                ["results", "Get results"]]) +
+                "</td><td>" + dateHuman(lesson.updated) + "</td>" +
+                "<td></td></tr>");
+
+            // create a styled select menu
+            $('select#' + unit.id + "-" + lesson.id + "-select").selectmenu({
+                style: 'dropdown',
+                select: function(event, options) {
+                    switch (options.value) {
+                        case "edit":
+                            showEditDialog(unit, lesson);
+                            break;
+                        case "copy":
+                            copy(unit, lesson);
+                            break;
+                        case "move":
+                            showMoveDialog(unit, lesson);
+                            break;
+                        case "delete":
+                            showDeleteDialog(unit, lesson);
+                            break;
+                        case "add":
+                            sheets.showCreateDialog(unit, lesson);
+                            break;
+                        case "results":
+                            getResults(unit, lesson);
+                            break;
+                    }
+                }
+            });
+
+            sheets.load(unit, lesson);
+        }
+
+        var createDialogs = function() {
+            $( "#create-lesson-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Create lesson": function() {
+                        var unitId = $( "#create-lesson-unit-id").val();
+
+                        var lesson = new Object();
+                        lesson.name = $( "#create-lesson-name" ).val();
+                        lesson.snapshotName = getSelectedName("create-lesson-snapshot-select");
+                        lesson.snapshotId = $( "#create-lesson-snapshot-select" ).val();
+                        
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/lessons/" + unitId + "/new",
+                            data: JSON.stringify(lesson),
+                            dataType: 'json',
+                            success: function(data) {
+                                $( "#create-lesson-form" ).dialog( "close" );
+                                $( "#create-lesson-name" ).val("");
+                                $( "#" + unitId ).expand();
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#edit-lesson-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Update lesson": function() {
+                        // find the unit to update
+                        var unitId = $( "#edit-lesson-unit-id").val();
+                        var lessonId = $( "#edit-lesson-id" ).val();
+
+                        var lesson = lessons[unitId + "-" + lessonId];
+
+                        // change its name
+                        lesson.name = $( "#edit-lesson-name" ).val();
+                        lesson.snapshotName = getSelectedName("edit-lesson-snapshot-select");
+                        lesson.snapshotId = $( "#edit-lesson-snapshot-select" ).val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/lessons/" + unitId + "/" + lessonId,
+                            data: JSON.stringify(lesson),
+                            dataType: 'json',
+                            success: function(data) {
+                                $( "#edit-lesson-form" ).dialog( "close" );
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#move-lesson-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Move": function() {
+                        // find the unit to update
+                        var unitId = $( "#move-lesson-unit-id").val();
+                        var lessonId = $( "#move-lesson-id" ).val();
+                        var toUnitId = $( "#move-lesson-unit-select" ).val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/lessons/" + unitId + "/" +
+                                 lessonId + "/move?toUnitId=" + toUnitId,
+                            success: function(data) {
+                                $( "#move-lesson-form" ).dialog( "close" );
+                                $( "#" + toUnitId ).expand();
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#delete-lesson-dialog" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:140,
+                modal: true,
+                buttons: {
+                    "Delete lesson": function() {
+                        var unitId = $( "#delete-lesson-unit-id" ).val();
+                        var lessonId = $( "#delete-lesson-id" ).val();
+
+                        $.ajax({
+                            type: 'DELETE',
+                            url: "resources/lessons/" + unitId + "/" + lessonId,
+                            success: function(data) {
+                                $( "#delete-lesson-dialog" ).dialog( "close" );
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        }
+
+        this.showCreateDialog = function(unit) {
+            $( "#create-lesson-unit-id").val(unit.id);
+            loadSnapshots("create-lesson-snapshot");
+
+            $( "#create-lesson-form" ).dialog( "open" );
+        }
+
+        function compareFunction(a, b){
+            return a - b;
+        }
+        
+        var loadSnapshots = function(selector, current) {
+            $( "#" + selector ).html("");
+            $( "#" + selector ).append(
+            "<label for=\"" + selector + "-select\">Select the snapshot</label>" +
+                "<select id=\"" + selector + "-select\"" +
+                "name=\"" + selector + "-select\">" +
+                "</select>");
+
+            $.getJSON("resources/snapshots", function(data) {
+                if (!data) return;
+
+                var res = ensureArray(data.snapshots);
+                // Snapshots sorting added by Kaustubh.+
+                res.sort(function(a,b){
+                    var aName = a.name.toLowerCase();
+                    var bName = b.name.toLowerCase();
+                    return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));                
+                });
+                // Snapshots sorting added by Kaustubh.-
+                $.each(res, function(i, snapshot) {
+                    var selected = "";
+                    if (current == snapshot.id) {
+                        selected = "selected=\"selected\""
+                    }
+
+                    $( "#" + selector + "-select" ).append("<option value=\"" + snapshot.id +
+                        "\" " + selected + ">" + snapshot.name + "</option>");
+                });
+
+                $( "#" + selector + "-select" ).selectmenu({});
+            });
+        }
+
+        var getSelectedName = function(selector) {
+            var select = $( "#" + selector)[0];
+            var option = select[select.selectedIndex];
+            return option.text;
+        }
+
+        var showEditDialog = function(unit, lesson) {
+            $( "#edit-lesson-unit-id" ).val(unit.id);
+            $( "#edit-lesson-id" ).val(lesson.id);
+            $( "#edit-lesson-name" ).val(lesson.name);
+            loadSnapshots("edit-lesson-snapshot", lesson.snapshotId);
+
+            $( "#edit-lesson-form" ).dialog( "open" );
+        }
+
+        var copy = function(unit, lesson) {
+            $.ajax({
+                type: 'POST',
+                url: "resources/lessons/" + unit.id + "/" + lesson.id + "/copy",
+                success: function(data) {
+                    $( "#" + unit.id ).expand();
+                    table.update();
+                },
+                contentType: "application/json"
+            });
+        }
+
+        var showMoveDialog = function(unit, lesson) {
+            $( "#move-lesson-unit" ).html("");
+            $( "#move-lesson-unit" ).append(
+            "<label for=\"move-lesson-unit-select\">Unit</label>" +
+                "<select id=\"move-lesson-unit-select\"" +
+                "name=\"move-lesson-unit-select\">" +
+                "</select>");
+            $.each(table.units.getAll(), function(index, unit) {
+                $( "#move-lesson-unit-select" ).append(
+                "<option value=\"" + unit.id + "\">" +
+                    unit.name + "</option>");
+            });
+
+            $( "#move-lesson-unit-select" ).selectmenu({});
+
+            $( "#move-lesson-unit-id").val(unit.id);
+            $( "#move-lesson-id").val(lesson.id);
+            $( "#move-lesson-form" ).dialog( "open" );
+        }
+
+        var showDeleteDialog = function(unit, lesson) {
+            $( "#delete-lesson-unit-id" ).val(unit.id);
+            $( "#delete-lesson-id" ).val(lesson.id);
+            $( "#delete-lesson-dialog" ).dialog( "open" );
+        }
+
+        // create dialogs
+        createDialogs();
+    }
+</script>
+
+<div id="create-lesson-form" title="Create new lesson">
+    <form action="#">
+        <fieldset>
+            <label for="create-lesson-name">Name</label>
+            <input type="text" name="create-lesson-name" id="create-lesson-name" class="text ui-widget-content ui-corner-all" />
+            <div id="create-lesson-snapshot"></div>
+            
+            <input type="hidden" name="create-lesson-unit-id" id="create-lesson-unit-id"/>
+        </fieldset>
+    </form>
+</div>
+
+<div id="edit-lesson-form" title="Edit lesson">
+    <form action="#">
+        <fieldset>
+            <label for="edit-lesson-name">Name</label>
+            <input type="text" name="edit-lesson-name" id="edit-lesson-name" class="text ui-widget-content ui-corner-all" />
+            <div id="edit-lesson-snapshot"></div>
+            
+            <input type="hidden" name="edit-lesson-unit-id" id="edit-lesson-unit-id"/>
+            <input type="hidden" name="edit-lesson-id" id="edit-lesson-id"/>
+        </fieldset>
+    </form>
+</div>
+
+<div id="move-lesson-form" title="Move lesson">
+    <form action="#">
+        <fieldset>
+            <div id="move-lesson-unit"></div>
+            <input type="hidden" name="move-lesson-unit-id" id="move-lesson-unit-id"/>
+            <input type="hidden" name="move-lesson-id" id="move-lesson-id"/>
+        </fieldset>
+    </form>
+</div>
+
+<div id="delete-lesson-dialog" title="Delete lesson?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+        This lesson will be permanently deleted and cannot be recovered. Are you sure?</p>
+
+    <form action="#">
+        <fieldset>
+            <input type="hidden" name="delete-lesson-unit-id" id="delete-lesson-unit-id"/>
+            <input type="hidden" name="delete-lesson-id" id="delete-lesson-id"/>
+        </fieldset>
+    </form>
+</div>

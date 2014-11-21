@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="office-building-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="build/client/office-building-client.jar:../../wonderland/core/build/lib/wonderland-client.jar:../../wonderland/core/build/lib/wonderland-common.jar:../../wonderland/core/ext/jme20/target/jme.jar:../../wonderland/core/ext/common/mtgame.jar:../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-0.9.10.jar:../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-internal-api-0.9.10.jar:../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../wonderland/modules/foundation/security/build/lib/client/security-client.jar:../../wonderland/modules/foundation/security/build/lib/server/security-server.jar:../../wonderland/modules/tools/security-group/build/lib/client/securitygroups-client.jar:../../wonderland/modules/tools/security-group/build/lib/server/securitygroups-server.jar:../../wonderland/modules/world/avatarbase/build/client/avatarbase-client.jar:../../wonderland/modules/world/avatarbase/lib/avatars.jar:../../wonderland/modules/foundation/content-repository/build/client/contentrepo-client.jar"/>
+            </classpath>
+        </java>
+    </target>
+</project>
