@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir=".." name="openwonderland-standard-sheet-IDE">
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="run-selected-file-in-classes">
+        <fail unless="run.class">Must set property 'run.class'</fail>
+        <java classname="${run.class}" failonerror="true" fork="true">
+            <classpath>
+                <pathelement path="build/classes"/>
+                <pathelement path="../../wonderland/core/build/lib/wonderland-client.jar:../../wonderland/core/build/lib/wonderland-common.jar:../../wonderland/core/build/lib/wonderland-server.jar:../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../wonderland/core/ext/common/mtgame.jar:../../wonderland/core/ext/jme20/target/jme.jar:../../wonderland/core/ext/common/vecmath.jar:../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../wonderland/modules/foundation/security/build/lib/client/security-client.jar:../../wonderland/modules/foundation/security/build/lib/server/security-server.jar:../../wonderland/web/lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../../wonderland/web/lib/restlib/jsr311-api-1.1.1.jar:../../wonderland/modules/foundation/darkstar-api/build/lib/darkstar-api.jar:../../wonderland/web/front/dist/wonderland-webadmin-core.jar:../build/client/isocial-sheets-client.jar:../build/server/isocial-sheets-server.jar:../build/lib/web/isocial-sheets-weblib.jar:../../wonderland/core/ext/common/scannotation-1.0.2.jar:../../Dock/dist/Dock.jar:../../Dock/build/client/Dock-client.jar"/>
+            </classpath>
+        </java>
+    </target>
+    <!-- TODO: edit the following target according to your needs -->
+    <!-- (more info: http://www.netbeans.org/kb/articles/freeform-config.html#runsingle) -->
+    <target name="debug-selected-file-in-classes">
+        <fail unless="debug.class">Must set property 'debug.class'</fail>
+        <path id="cp">
+            <pathelement path="build/classes"/>
+            <pathelement path="../../wonderland/core/build/lib/wonderland-client.jar:../../wonderland/core/build/lib/wonderland-common.jar:../../wonderland/core/build/lib/wonderland-server.jar:../../wonderland/core/ext/sgs/sgs-server-dist-0.9.10/lib/sgs-server-api-0.9.10.jar:../../wonderland/core/ext/common/mtgame.jar:../../wonderland/core/ext/jme20/target/jme.jar:../../wonderland/core/ext/common/vecmath.jar:../../wonderland/modules/tools/sharedstate/build/client/sharedstate-client.jar:../../wonderland/modules/tools/sharedstate/build/server/sharedstate-server.jar:../../wonderland/modules/foundation/security/build/lib/client/security-client.jar:../../wonderland/modules/foundation/security/build/lib/server/security-server.jar:../../wonderland/web/lib/glassfish/glassfish-embedded-all-3.0-b74b.jar:../../wonderland/web/lib/restlib/jsr311-api-1.1.1.jar:../../wonderland/modules/foundation/darkstar-api/build/lib/darkstar-api.jar:../../wonderland/web/front/dist/wonderland-webadmin-core.jar:../build/client/isocial-sheets-client.jar:../build/server/isocial-sheets-server.jar:../build/lib/web/isocial-sheets-weblib.jar:../../wonderland/core/ext/common/scannotation-1.0.2.jar:../../Dock/dist/Dock.jar:../../Dock/build/client/Dock-client.jar"/>
+        </path>
+        <nbjpdastart addressproperty="jpda.address" name="openwonderland-standard-sheet" transport="dt_socket">
+            <classpath refid="cp"/>
+        </nbjpdastart>
+        <java classname="${debug.class}" fork="true">
+            <classpath refid="cp"/>
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+        </java>
+    </target>
+</project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loader-data>
+    <version>1</version>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+    <deployedTextures key="./images/frame_default_01.png" value="images/frame_default_01.png"/>
+    
+    <deployedTextures key="./images/color_F.png" value="images/color_F.png"/>
+    
+    <deployedTextures key="./images/frame_default_inner_blackRGB222_01.png" value="images/frame_default_inner_blackRGB222_01.png"/>
+</loader-data>

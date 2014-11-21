@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="appframe" default="dist" basedir=".">
+    <!-- current directory needed in all scripts -->
+    <dirname property="current.dir" file="${ant.file.appframe}"/>
+    
+    <property file="${current.dir}/my.module.properties"/>
+
+    <property name="modules.dir" location="${wonderland.dir}/modules"/>
+    <property name="module.src" value="${module.plugin.src}"/>
+    <property name="module.jarname" value="${module.name}"/>
+    <property name="mysrc.dir" location="${current.dir}/src/classes"/>
+    <property name="reports.dir" location="${current.dir}/reports"/>
+    <property name="modules.stable.dir" location="${wonderland.dir}/../wonderland-modules/stable" />
+    <!-- import common build file -->
+    <import file="${modules.dir}/build-tools/build-scripts/module-build.xml"/>
+
+    <pathconvert property="module-common.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${wonderland.dir}/../wonderland-modules/stable/best-view/build/client/best-view-client.jar"/>
+        
+    </pathconvert>
+
+    <pathconvert property="module-client.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
+        <path location="${modules.stable.dir}/best-view/build/client/best-view-client.jar"/>
+        <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar"/>
+        
+    </pathconvert>
+
+    <pathconvert property="module-server.classpath">
+        <path location="${modules.dir}/foundation/sharedstate/build/server/sharedstate-server.jar"/>
+        <path location="${modules.dir}/foundation/appbase/build/client/appbase-server.jar"/>
+    </pathconvert>
+
+    <target name="build" depends="-module-init, -module-compile-common,
+                                                -module-compile-server,
+                                                -module-compile-client"/>
+    <target name="dist" depends="build">
+        <mkdir dir="${module.dist.dir}"/>
+        
+        <module name="${module.name}" majorVersion="${module.version.major}" minorVersion="${module.version.minor}"
+                jarfile="${module.dist.dir}/${module.name}.jar"
+                moduleDescription="${module.description}" builddir="${build.dir}">
+
+            <client>
+                <clientjar name="${module.name}-client" basedir="${build.classes.dir}">
+                    <include name="${module.src}/client/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                        <include name="${module.src}/client/resources/**"/>
+                    </fileset>
+
+  <include name="${module.src}/client/resources/**/*.png"/>
+                                         
+ <include name="${module.src}/common/**"/>
+                </clientjar>
+            </client>
+
+            <server>
+                <serverjar name="${module.name}-server" basedir="${build.classes.dir}">
+                    <include name="${module.src}/server/**"/>
+                    <fileset dir="${current.dir}/src/classes">
+                       
+ <include name="${module.src}/server/resources/**"/>
+                    </fileset>
+
+                    <include name="${module.src}/common/**"/>
+                </serverjar>
+            </server>
+
+            <art dir="${current.dir}/art"/>
+        </module>
+    </target>
+    <target name="javadocs" depends="build">
+        <mkdir dir="${reports.dir}/javadoc"/>
+
+        <javadoc sourcepath="${mysrc.dir}" packagenames="org.jdesktop.wonderland.modules.*" destdir="${reports.dir}/javadoc"  private="true">
+            <doclet name="org.umlgraph.doclet.UmlGraphDoc" path="${current.dir}/lib/UMLGraph.jar">
+                <param name="-attributes" />
+                <param name="-operations" />
+                <param name="-qualify" />
+                <param name="-types" />
+                <param name="-visibility" />
+            </doclet>
+        </javadoc>
+
+        <apply executable="dot" dest="${reports.dir}" parallel="false">
+            <arg value="-Tpng"/>
+            <arg value="-o"/>
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="${reports.dir}" includes="*.dot"/>
+            <mapper type="glob" from="*.dot" to="*.png"/>
+        </apply>
+    </target>
+    <target name="deploy" depends="dist, -module-deploy"/>
+    <target name="clean" depends="-module-clean"/>
+</project>
+

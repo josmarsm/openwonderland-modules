@@ -25,7 +25,7 @@
         <path location="${modules.dir}/foundation/content-repository/build/client/contentrepo-client.jar"/>
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client-cell.jar" />
         <path location="${modules.dir}/foundation/appbase/build/client/appbase-client.jar" />
-        <path location="${module.stable.dir}/capability-bridge/build/client/capability-bridge-client.jar"/>
+        <path location="${modules.dir}/tools/capability-bridge/build/client/capability-bridge-client.jar"/>
     </pathconvert>
     <pathconvert property="module-server.classpath">
         <path location="${modules.dir}/foundation/appbase/build/server/appbase-server.jar"/>

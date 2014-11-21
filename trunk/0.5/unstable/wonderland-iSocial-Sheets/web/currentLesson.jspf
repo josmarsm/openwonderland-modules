@@ -1,0 +1,274 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="MacRoman" %>
+
+<style>
+    div#change-lesson-form select { width: 300px; }
+</style>
+
+<script type="text/javascript">
+    var currentInstance;
+
+    $(function() {
+        $( "a", "#change-lesson" ).button();
+        $( "a", "#change-lesson" ).click(function() { changeLesson() });
+
+        $( "#change-lesson-form" ).dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Make current": function() {
+                    var cohortId = $( "#change-lesson-cohort-select" ).val();
+                    var unitId = $( "#change-lesson-unit-select" ).val();
+                    var lessonId = $( "#change-lesson-lesson-select" ).val();
+
+                    setInstance(cohortId, unitId, lessonId);
+                    $( this ).dialog( "close" );
+                },
+                Cancel: function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+
+        $( "#progress-form" ).dialog({
+            autoOpen: false,
+            height: 200,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Done": function() {
+                    $( this ).dialog( "close" );
+                }
+            }
+        });
+
+        $( "#progress-form-progress-bar" ).progressbar({});
+
+        $.getJSON("resources/instances/current", function(data) {
+            currentInstance = data;
+
+            $( "#current-unit" ).append( data.unit.name );
+            $( "#current-lesson" ).append( data.lesson.name );
+
+            $.getJSON("resources/cohorts/" + data.cohortId, function(data) {
+                $( "#current-cohort" ).append( data.name );
+            });
+
+            $( "#current-date" ).append( new Date(Date.parse(data.created)).format() );
+        });
+    });
+
+    function changeLesson() {
+        $( "#change-lesson-cohort-select" ).selectmenu({});
+        $( "#change-lesson-unit-select" ).selectmenu({});
+        $( "#change-lesson-lesson-select" ).selectmenu({});
+
+        retrieveMenu({
+            url: "resources/cohorts",
+            selector: "change-lesson-cohort",
+            name: "Cohort",
+            getData: function(data) {
+                return data.cohort;
+            },
+            select: function(event, options) {
+                cohortSelected(options.value);
+            }
+        });
+
+        var selectedId;
+        if (currentInstance && currentInstance.unit) {
+            selectedId = currentInstance.unit.id;
+        }
+
+        populateMenu(toArray(table.units.getAll()), {
+            selector: "change-lesson-unit",
+            name: "Unit",
+            selected: selectedId,
+            select: function(event, options) {
+                loadLessons(options.value);
+            }
+        });
+
+        $( "#change-lesson-form" ).dialog( "open" );
+    }
+
+    function loadLessons(unitId) {
+        var selectedId;
+        if (currentInstance && currentInstance.lesson) {
+            selectedId = currentInstance.lesson.id;
+        }
+
+        populateMenu(table.lessons.getFor(unitId), {
+            selector: "change-lesson-lesson",
+            name: "Lesson",
+            selected: selectedId
+        });
+    }
+
+    function retrieveMenu(options) {
+        $.getJSON(options.url, function(data) {
+            populateMenu(data, options);
+        });
+    }
+
+    function populateMenu(data, options) {
+        var getData = options.getData || function(data) {
+            return data;
+        };
+
+        var getId = options.getId || function(obj) {
+            return obj.id;
+        };
+
+        var getName = options.getName || function(obj) {
+            return obj.name;
+        };
+
+        var isFirst = false;
+        var selectedId;
+
+        $( "#" + options.selector ).html("");
+        $( "#" + options.selector ).append(
+        "<label for=\"" + options.selector + "-select\">" +
+            options.name + "</label>" +
+            "<select id=\"" + options.selector + "-select\"" +
+            "name=\"" + options.selector + "-select\">" +
+            "</select>");
+
+        var res = ensureArray(getData(data));
+        $.each(res, function(index, obj) {
+            var selected = "";
+
+            if (isFirst) {
+                selectedId = getId(obj);
+                isFirst = false;
+            }
+
+            if (getId(obj) == options.selected) {
+                selected = "selected=\"selected\"";
+                selectedId = options.selected;
+            }
+
+            $( "#" + options.selector + "-select" ).append(
+            "<option value=\"" + getId(obj) + "\"" + selected + ">" +
+                getName(obj) + "</option>");
+        });
+
+        $( "#" + options.selector + "-select" ).selectmenu({
+            select: options.select
+        });
+
+        // if the selected item was found, fake a select event
+        if (selectedId && options.select) {
+            var opts = new Object();
+            opts.value = selectedId;
+            options.select(null, opts);
+        }
+    }
+
+    function setInstance(cohortId, unitId, lessonId) {
+        var instance = new Object();
+        instance.cohortId = cohortId;
+        instance.unitId = unitId;
+        instance.lessonId = lessonId;
+
+        $( "#progress-form-progress-bar" ).progressbar("value", 0);
+        $( "#progress-form-status" ).html("Setting current lesson...");
+        $( "#progress-form" ).dialog( "open" );
+
+        $.ajax({
+            type: 'POST',
+            url: "resources/instances/new",
+            data: JSON.stringify(instance),
+            dataType: 'json',
+            success: function(data) {
+                $.ajax({
+                    type: 'POST',
+                    url: "resources/instances/setCurrent?instanceId=" + data.id,
+                    dataType: 'json',
+                    success: function() {
+                        $( "#progress-form-progress-bar" ).progressbar("value", 25);
+                        $( "#progress-form-status" ).html("Restarting server...");
+
+                        restartServer(unitId, lessonId);
+                    },
+                    contentType: "application/json"
+                });
+            },
+            contentType: "application/json"
+        });
+    }
+
+    function restartServer(unitId, lessonId) {
+        var lesson = table.lessons.get(unitId, lessonId);
+
+        $.ajax({
+            type: 'POST',
+            url: "resources/snapshots?snapshotId=" + lesson.snapshotId,
+            success: function(data) {
+                $( "#progress-form-progress-bar" ).progressbar("value", 100);
+                $( "#progress-form-status" ).html("Server is ready.");
+            },
+            contentType: "application/json"
+        });
+    }
+</script>
+
+<div id="current-lesson-form" class="ui-widget">
+    <h1>Current Lesson</h1>
+
+    <table class="ui-widget ui-widget-content" id="current-lessons-table">
+        <thead>
+            <tr class="ui-widget-header">
+                <td>Cohort</td>
+                <td>Unit </td>
+                <td>Lesson</td>
+                <td>Date</td>
+                <td></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td id="current-cohort"></td>
+                <td id="current-unit"></td>
+                <td id="current-lesson"></td>
+                <td id="current-date"></td>
+                <td id="change-lesson"><a href="#">Change</a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div id="change-lesson-form" title="Select Lesson">
+    <form action="#">
+        <fieldset>
+            <div id="change-lesson-cohort">
+                <label for="change-lesson-unit-select">Cohort</label>
+                <select id="change-lesson-cohort-select">
+                    <option>Loading</option>
+                </select>
+            </div>
+
+            <div id="change-lesson-unit">
+                <label for="change-lesson-unit-select">Unit</label>
+                <select id="change-lesson-unit-select">
+                    <option>Loading</option>
+                </select>
+            </div>
+
+            <div id="change-lesson-lesson">
+                <label for="change-lesson-lesson-select">Lesson</label>
+                <select id="change-lesson-lesson-select">
+                    <option>Choose Unit...</option>
+                </select>
+            </div>
+        </fieldset>
+    </form>
+</div>
+
+<div id="progress-form" title="Setting current lesson">
+    <div id="progress-form-status" style="padding-top: 25px;">Setting current lesson</div>
+    <div id="progress-form-progress-bar"></div>
+</div>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<loader-data>
+    <version>1</version>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+    <deployedTextures key="./images/booth_frame_tex_02.png" value="images/booth_frame_tex_02.png"/>
+    <deployedTextures key="./images/Gray-999999.jpg" value="images/Gray-999999.jpg"/>
+</loader-data>

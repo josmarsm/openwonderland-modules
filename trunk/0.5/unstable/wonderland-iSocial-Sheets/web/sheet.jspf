@@ -1,0 +1,391 @@
+<%-- any content can be specified here e.g.: --%>
+<%@ page pageEncoding="MacRoman" %>
+
+<style>
+    div#move-sheet-unit select { width: 200px; }
+    div#move-sheet-lesson select { width: 200px; }
+</style>
+
+<script type="text/javascript">
+    function Sheets(table) {
+        var sheets = {};
+        var table = table;
+
+        this.getAll = function() {
+            return sheets;
+        }
+
+        this.get = function(unitId, lessonId, sheetId) {
+            return sheets[unitId + "-" + lessonId + "-" + sheetId];
+        }
+
+        this.getFor = function(unitId, lessonId) {
+            var out = new Array();
+
+            $.each(sheets, function(index, sheet) {
+                if (sheet.unitId == unitId &&
+                    sheet.lessonId == lessonId)
+                {
+                    out.push(sheet);
+                }
+            });
+
+            return out;
+        }
+
+        this.load = function(unit, lesson) {
+            // get sheets
+            $.getJSON("resources/sheets/" + unit.id + "/" + lesson.id, function(data) {
+                if (!data) return;
+                var res = ensureArray(data.sheet);
+                $.each(res, function(i, sheet) {
+                    update(unit, lesson, sheet);
+                });
+
+                table.rebuild();
+            });
+        }
+        
+        var update = function(unit, lesson, sheet) {
+            var id = unit.id + "-" + lesson.id + "-" + sheet.id;
+            sheets[id] = sheet;
+
+            var actions = [["edit", "Edit"],
+                           ["copy", "Copy"],
+                           ["move", "Move"]];
+            var status;
+            if (sheet.published == "true") {
+                actions.push(["unpublish", "Unpublish"]);
+                status = "<span class=\"icon24 published\">Published</span>";
+            } else {
+                actions.push(["publish", "Publish"]);
+                status = "<span class=\"icon24 not-published\">Not published</span>";
+            }
+            actions.push(["delete", "Delete"]);
+            actions.push(["results", "Get results"]);
+
+            appendTo(unit.id + "-" + lesson.id,
+            "<tr id=\"" + id + "\" class=\"child-of-" + unit.id + "-" + lesson.id + "\"> " +
+                "<td><span class=\"icon24 sheet\">" + sheet.name + "</span></td>" +
+                "<td>" + generateActions(unit.id + "-" + lesson.id + "-" + sheet.id + "-select",
+            actions) +
+                "</td><td>" + dateHuman(sheet.updated) + "</td>" +
+                "<td>" + status + "</td></tr>");
+
+            // create a styled select menu
+            $('select#' + unit.id + "-" + lesson.id + "-" + sheet.id + "-select").selectmenu({
+                select: function(event, options) {
+                    switch (options.value) {
+                        case "edit":
+                            edit(sheet);
+                            break;
+                        case "copy":
+                            copy(unit, lesson, sheet);
+                            break;
+                        case "move":
+                            showMoveDialog(unit, lesson, sheet);
+                            break;
+                        case "publish":
+                            publish(sheet);
+                            break;
+                        case "unpublish":
+                            unpublish(sheet);
+                            break;
+                        case "delete":
+                            showDeleteDialog(unit, lesson, sheet);
+                            break;
+                        case "results":
+                            getResults(unit, lesson, sheet);
+                            break;
+                    }
+                }
+            });
+        }
+
+        var createDialogs = function() {
+            // get sheets
+            $.getJSON("resources/sheets/types", function(data) {
+                var types = ensureArray(data.sheetTypes);
+                $.each(types, function(index, type) {
+                    $( "#create-sheet-type" ).append(
+                    "<option value=\"" + type.type + "\">" + type.name + "</option>");
+                });
+
+                $( "select#create-sheet-type" ).selectmenu({
+                    select: function(event, options) {
+                        var idx = $( "#create-sheet-type" )[0].selectedIndex;
+                        var desc = types[idx].description;
+
+                        $( "#create-sheet-description" ).html(desc || "");
+                    }
+                });
+
+                // initial description
+                $( "#create-sheet-description" ).html(types[0].description || "");
+
+                completeCreateDialogs();
+            });
+
+            $( "#move-sheet-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Move": function() {
+                        // find the unit to update
+                        var unitId = $( "#move-sheet-unit-id").val();
+                        var lessonId = $( "#move-sheet-lesson-id" ).val();
+                        var sheetId = $( "#move-sheet-id" ).val();
+                        var toUnitId = $( "#move-sheet-unit-select" ).val();
+                        var toLessonId = $( "#move-sheet-lesson-select" ).val();
+
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/sheets/" + unitId + "/" +
+                                 lessonId + "/" + sheetId + "/move?toUnitId=" +
+                                 toUnitId + "&toLessonId=" + toLessonId,
+                            success: function(data) {
+                                $( "#move-sheet-form" ).dialog( "close" );
+                                $( "#" + toUnitId ).expand();
+                                $( "#" + toUnitId + "-" + toLessonId ).expand();
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+
+            $( "#delete-sheet-dialog" ).dialog({
+                autoOpen: false,
+                resizable: false,
+                height:140,
+                modal: true,
+                buttons: {
+                    "Delete sheet": function() {
+                        var unitId = $( "#delete-sheet-unit-id" ).val();
+                        var lessonId = $( "#delete-sheet-lesson-id" ).val();
+                        var sheetId = $( "#delete-sheet-id" ).val();
+
+                        $.ajax({
+                            type: 'DELETE',
+                            url: "resources/sheets/" + unitId + "/" + lessonId + "/" + sheetId,
+                            success: function(data) {
+                                $( "#delete-sheet-dialog" ).dialog( "close" );
+                                table.update();
+                            },
+                            contentType: "application/json"
+                        });
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        }
+
+        var completeCreateDialogs = function() {
+            $( "#create-sheet-form" ).dialog({
+                autoOpen: false,
+                height: 300,
+                width: 350,
+                modal: true,
+                buttons: {
+                    "Create sheet": function() {
+                        var unitId = $( "#create-sheet-unit-id").val();
+                        var lessonId = $( "#create-sheet-lesson-id").val();
+                        var type = $( "#create-sheet-type" ).val();
+
+                        var sheet = new Object();
+                        sheet.unitId = unitId;
+                        sheet.lessonId = lessonId;
+                        sheet[type] = new Array();
+                            
+                        $.ajax({
+                            type: 'POST',
+                            url: "resources/sheets/" + unitId + "/" + lessonId+ "/new",
+                            data: JSON.stringify(sheet),
+                            dataType: 'json',
+                            success: function(data) {
+                                $( "#create-sheet-form" ).dialog( "close" );
+                                edit(data);
+                            },
+                            contentType: "application/json"
+                        });
+
+                    },
+                    Cancel: function() {
+                        $( this ).dialog( "close" );
+                    }
+                }
+            });
+        }
+
+
+        this.showCreateDialog = function(unit, lesson) {
+            $( "#create-sheet-unit-id").val(unit.id);
+            $( "#create-sheet-lesson-id").val(lesson.id);
+            $( "#create-sheet-form" ).dialog( "open" );
+        }
+
+        var showDeleteDialog = function(unit, lesson, sheet) {
+            $( "#delete-sheet-unit-id" ).val(unit.id);
+            $( "#delete-sheet-lesson-id" ).val(lesson.id);
+            $( "#delete-sheet-id" ).val(sheet.id);
+            $( "#delete-sheet-dialog" ).dialog( "open" );
+        }
+
+        var edit = function(sheet) {
+            window.location.href="../" + sheet.editURL +
+                "?unitId=" + sheet.unitId +
+                "&lessonId=" + sheet.lessonId +
+                "&sheetId=" + sheet.id;
+        }
+
+        var copy = function(unit, lesson, sheet) {
+            $.ajax({
+                type: 'POST',
+                url: "resources/sheets/" + unit.id + "/" + lesson.id +
+                     "/" + sheet.id + "/copy",
+                success: function(data) {
+                    $( "#" + unit.id ).expand();
+                    $( "#" + unit.id + "-" + lesson.id ).expand();
+                    table.update();
+                },
+                contentType: "application/json"
+            });
+        }
+
+        var showMoveDialog = function(unit, lesson, sheet) {
+            $( "#move-sheet-unit" ).html("");
+            $( "#move-sheet-unit" ).append(
+            "<label for=\"move-sheet-unit-select\">Unit</label>" +
+                "<select id=\"move-sheet-unit-select\"" +
+                "name=\"move-sheet-unit-select\">" +
+                "</select>");
+
+            var first = true;
+            $.each(table.units.getAll(), function(index, unit) {
+                $( "#move-sheet-unit-select" ).append(
+                "<option value=\"" + unit.id + "\">" +
+                    unit.name + "</option>");
+
+                // if this is the first unit, update the move dialog
+                // as well
+                if (first) {
+                    first = false;
+                    updateMoveDialog(unit.id);
+                }
+            });
+
+            $( "#move-sheet-unit-select" ).selectmenu({
+                select: function(event, options) {
+                    updateMoveDialog(options.value);
+                }
+            });
+
+            $( "#move-sheet-unit-id").val(unit.id);
+            $( "#move-sheet-lesson-id").val(lesson.id);
+            $( "#move-sheet-id").val(sheet.id);
+            $( "#move-sheet-form" ).dialog( "open" );
+        }
+
+        var updateMoveDialog = function(unitId) {
+            $( "#move-sheet-lesson" ).html("");
+            $( "#move-sheet-lesson" ).append(
+            "<label for=\"move-sheet-lesson-select\">Lesson</label>" +
+                "<select id=\"move-sheet-lesson-select\"" +
+                "name=\"move-sheet-lesson-select\">" +
+                "</select>");
+            $.each(table.lessons.getAll(), function(index, lesson) {
+                if (lesson.unitId == unitId) {
+                    $( "#move-sheet-lesson-select" ).append(
+                    "<option value=\"" + lesson.id + "\">" +
+                        lesson.name + "</option>");
+                }
+            });
+
+            $( "#move-sheet-lesson-select" ).selectmenu({});
+        }
+
+        var publish = function(sheet) {
+            sheet.published = "true";
+
+            $.ajax({
+                type: 'POST',
+                url: "resources/sheets/" + sheet.unitId + "/" + sheet.lessonId + "/" + sheet.id,
+                data: JSON.stringify(sheet),
+                dataType: 'json',
+                success: function(data) {
+                    table.update();
+                },
+                contentType: "application/json"
+            });
+        }
+
+        var unpublish = function(sheet) {
+            sheet.published = "false";
+
+            $.ajax({
+                type: 'POST',
+                url: "resources/sheets/" + sheet.unitId + "/" + sheet.lessonId + "/" + sheet.id,
+                data: JSON.stringify(sheet),
+                dataType: 'json',
+                success: function(data) {
+                    table.update();
+                },
+                contentType: "application/json"
+            });
+        }
+
+        // create dialogs
+        createDialogs();
+    }
+</script>
+
+<div id="create-sheet-form" title="Create new sheet">
+    <form action="#">
+        <fieldset>
+            <label for="create-sheet-type">Type</label>
+            <select name="create-sheet-type" id="create-sheet-type"></select>
+
+            <div id="create-sheet-desc-div" style="padding-top: 15px;">
+            Description
+            <div class="ui-widget ui-widget-content ui-corner-all" id="create-sheet-description" style="padding: 5px;"></div>
+            </div>
+
+            <input type="hidden" name="create-sheet-unit-id" id="create-sheet-unit-id">
+            <input type="hidden" name="create-sheet-lesson-id" id="create-sheet-lesson-id">
+        </fieldset>
+    </form>
+</div>
+
+<div id="move-sheet-form" title="Move sheet">
+    <form action="#">
+        <fieldset>
+            <div id="move-sheet-unit"></div>
+            <div id="move-sheet-lesson"></div>
+
+            <input type="hidden" name="move-sheet-unit-id" id="move-sheet-unit-id"/>
+            <input type="hidden" name="move-sheet-lesson-id" id="move-sheet-lesson-id"/>
+            <input type="hidden" name="move-sheet-id" id="move-sheet-id"/>
+        </fieldset>
+    </form>
+</div>
+
+<div id="delete-sheet-dialog" title="Delete sheet?">
+    <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>
+        This sheet will be permanently deleted and cannot be recovered. Are you sure?</p>
+
+    <form action="#">
+        <fieldset>
+            <input type="hidden" name="delete-sheet-unit-id" id="delete-sheet-unit-id"/>
+            <input type="hidden" name="delete-sheet-lesson-id" id="delete-sheet-lesson-id"/>
+            <input type="hidden" name="delete-sheet-id" id="delete-sheet-id"/>
+        </fieldset>
+    </form>
+</div>

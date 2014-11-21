@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app-frame>
+    <name>App Frame</name>
+    <model-cell-component>
+        <deployedModelURL>wla://app-frame/Frame_4-3_BW_frame_07.DAE/Frame_4-3_BW_frame_07.DAE.gz.dep</deployedModelURL>
+        <PickingEnabled>true</PickingEnabled>
+        <CollisionEnabled>true</CollisionEnabled>
+        <LightingEnabled>false</LightingEnabled>
+        <BackfaceCullingEnabled>true</BackfaceCullingEnabled>
+        <GraphOptimizationEnabled>true</GraphOptimizationEnabled>
+        <TransparencyMode>DEFAULT</TransparencyMode>
+    </model-cell-component>
+    <position-component>
+        <translation>
+            <x>0.0</x>
+            <y>2.0</y>
+            <z>3.6413202</z>
+        </translation>
+        <bounds>
+            <type>BOX</type>
+            <x>1.5</x>
+            <y>2.0</y>
+            <z>0.02</z>
+        </bounds>
+        <scale>
+            <x>1.0</x>
+            <y>1.0</y>
+            <z>1.0</z>
+        </scale>
+        <rotation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>-0.0</z>
+            <angle>3.1415927</angle>
+        </rotation>
+    </position-component>
+</app-frame>
+
+

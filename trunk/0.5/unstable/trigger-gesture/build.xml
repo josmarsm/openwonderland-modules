@@ -15,7 +15,7 @@
         <path location="${modules.dir}/world/avatarbase/build/client/avatarbase-client.jar"/>
         <path location="${modules.dir}/foundation/sharedstate/build/client/sharedstate-client.jar"/>
         <path location="${modules.dir}/world/avatarbase/lib/avatars.jar"/>
-        <path location="${module.stable.dir}/capability-bridge/build/client/capability-bridge-client.jar"/>
+        <path location="${modules.dir}/tools/capability-bridge/build/client/capability-bridge-client.jar"/>
     </pathconvert>
 
     <pathconvert property="module-common.classpath">

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<deployed-model>
+    <version>1</version>
+    <modelURL>wla://app-frame/Frame_16-9_BW_frame_07.DAE/Frame_16-9_BW_frame_07.DAE.gz</modelURL>
+    <loaderDataURL>wla://app-frame/Frame_16-9_BW_frame_07.DAE/Frame_16-9_BW_frame_07.DAE.gz.ldr</loaderDataURL>
+    <modelBGScale>
+        <x>0.044311</x>
+        <y>0.044311</y>
+        <z>0.044311</z>
+    </modelBGScale>
+    <modelBGTranslation>
+        <x>2.4825335E-4</x>
+        <y>0.0</y>
+        <z>0.0</z>
+    </modelBGTranslation>
+    <modelBGRotation>
+        <x>-0.99999994</x>
+        <y>0.0</y>
+        <z>0.0</z>
+        <angle>1.5707964</angle>
+    </modelBGRotation>
+    <modelBounds>
+        <boundsType>BOX</boundsType>
+        <center_x>0.0</center_x>
+        <center_y>0.0</center_y>
+        <center_z>0.0</center_z>
+        <dimension_x>0.56497043</dimension_x>
+        <dimension_y>0.338516</dimension_y>
+        <dimension_z>0.01508123</dimension_z>
+    </modelBounds>
+    <modelLoaderClassname>org.jdesktop.wonderland.modules.jmecolladaloader.client.JmeColladaLoader</modelLoaderClassname>
+</deployed-model>
