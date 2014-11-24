@@ -69,6 +69,12 @@ public class AttachToComponent extends CellComponent implements CellStatusChange
                 public void run() {
                     MovableComponent mc = cell.getComponent(MovableComponent.class);
                     while(mc==null) {
+                        /**
+                         * hack to get movable component
+                         */
+                        ClientContextJME.getWorldManager().getRenderManager().setRunning(false);
+                        ClientContextJME.getWorldManager().getRenderManager().setRunning(true);
+                        
                         mc = cell.getComponent(MovableComponent.class);
                     }
                     Cell targetCell = getTargetCell(cellName, cell.getCellCache().getRootCells());
