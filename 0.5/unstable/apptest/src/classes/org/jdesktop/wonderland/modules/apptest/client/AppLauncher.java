@@ -70,7 +70,7 @@ public class AppLauncher implements Runnable{
             logger.warning("AppLauncher for app " + app.getDisplayName()  + ": App launch " + 
                            (++numLaunches));
 
-            // Wait until app is stopped or the launch attempt is abandonned.
+            // Wait until app is stopped or the launch attempt is abandoned.
             while (!testStopped && appIsRunning) {
                 synchronized (this) {
                     try {
